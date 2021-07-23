@@ -1,0 +1,24 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "UnrealYAML",
+	"Description": "An Unreal-Compatible Wrapper for the yaml-cpp Library",
+	"Category": "Other",
+	"CreatedBy": "Jonathan Windgassen",
+	"CreatedByURL": "j.windgassen@fz-juelich.de",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "UnrealYAML",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}
