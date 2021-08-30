@@ -2,19 +2,12 @@
 
 #include "node/convert.h"
 
-// class FString;
-// class FText;
-// class FVector;
-// class FQuat;
-
 namespace YAML{
 	// encode and decode an FString
 	template <>
 	struct convert<FString> {
 		static Node encode(const FString& String) {
-			Node Node;
-			Node = std::string(TCHAR_TO_UTF8(&String));
-			return Node;
+			return Node(std::string(TCHAR_TO_UTF8(*String)));
 		}
 
 		static bool decode(const Node& Node, FString& Out) {
@@ -31,9 +24,7 @@ namespace YAML{
 	template <>
 	struct convert<FText> {
 		static Node encode(const FText& Text) {
-			Node Node;
-			Node = Text.ToString();
-			return Node;
+			return Node(Text.ToString());
 		}
 
 		static bool decode(const Node& Node, FText& Out) {

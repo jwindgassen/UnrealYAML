@@ -9,7 +9,10 @@ public class UnrealYAML : ModuleRules {
 
 		bEnableExceptions = true;
 		bUseRTTI = true;
-
+		
+		PublicDefinitions.Add("YAML_CPP_DLL=1");
+		PublicDefinitions.Add("yaml_cpp_EXPORTS=1");
+		
 		PublicIncludePaths.Add(Path.Combine(PluginDirectory, "Source", "UnrealYAML", "yaml-cpp", "include"));
 		PrivateIncludePaths.Add(Path.Combine(PluginDirectory, "Source", "UnrealYAML","yaml-cpp", "src"));
 	}

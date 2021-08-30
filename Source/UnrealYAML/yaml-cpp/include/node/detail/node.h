@@ -171,6 +171,8 @@ class node {
   size_t m_index;
   static std::atomic<size_t> m_amount;
 };
+
+  std::atomic<size_t> node::m_amount{0};
 }  // namespace detail
 }  // namespace YAML
 
