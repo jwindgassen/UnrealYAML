@@ -83,7 +83,7 @@ namespace YAML{
 			Out.X = Node[0].as<double>();
 			Out.Y = Node[1].as<double>();
 			Out.Z = Node[2].as<double>();
-			Out.Z = Node[3].as<double>();
+			Out.W = Node[3].as<double>();
 			return true;
 		}
 	};

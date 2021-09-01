@@ -7,7 +7,7 @@
 /** A wrapper for the Yaml Node class. Base YAML class. Stores a YAML-Structure in a Tree-like hierarchy.
  * Can therefore either hold a single value or be a Container for other Nodes.
  * Conversion from one Type to another will be done automatically as needed */
-class FYamlNode {
+class UNREALYAML_API FYamlNode {
 	friend void operator<<(std::ostream& Out, const FYamlNode& Node);
 	friend void operator<<(FYamlEmitter& Out, const FYamlNode& Node);
 
@@ -95,11 +95,23 @@ public:
 	// Access --------------------------------------------------------------------------
 	/** Try to Convert the Contents of the Node to the Given Type */
 	template <typename T>
-	T& As() const {
+	bool As(T& Out) const {
 		try {
-			return Node.as<T>();
+			Out = Node.as<T>();
+			return true;
 		} catch (YAML::Exception) {
-			return nullptr;
+			return false;
+		}
+	}
+
+	/** Check if the given node can be converted to the given Type */
+	template <typename T>
+	bool CanConvertTo() const {
+		try {
+			Node.as<T>();
+			return true;
+		} catch (YAML::Exception) {
+			return false;
 		}
 	}
 	
