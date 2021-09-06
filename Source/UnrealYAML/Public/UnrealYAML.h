@@ -3,8 +3,8 @@
 
 #include "YAMLAliases.h"
 #include "FYamlNode.h"
-#include "UnrealTypes.h"
 #include "Parse.h"
+#include "Iteration.h"
 
 #include "Modules/ModuleInterface.h"
 

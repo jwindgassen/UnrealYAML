@@ -2,7 +2,9 @@
 
 #include "yaml.h"
 #include "YAMLAliases.h"
-#include "UnrealYAML.h"
+#include "UnrealTypes.h"
+
+class FYamlIterator;
 
 /** A wrapper for the Yaml Node class. Base YAML class. Stores a YAML-Structure in a Tree-like hierarchy.
  * Can therefore either hold a single value or be a Container for other Nodes.
@@ -125,16 +127,10 @@ public:
 	/** Returns the Size of the Node if it is a Sequence or Map, 0 otherwise */
 	int32 Size() const;
 
-	/** Returns the start for a constant iterator. Use in combination with End() */
-	FYamlConstIterator begin() const;
-
-	/** Returns the start for an iterator. Use in combination with End() */
+	/** Returns the start for an iterator. Use in combination with end() */
 	FYamlIterator begin();
 
-	/** Returns the end for a constant iterator. Use in combination with Start() */
-	FYamlConstIterator end() const;
-
-	/** Returns the end for a iterator. Use in combination with Start() */
+	/** Returns the end for a iterator. Use in combination with begin() */
 	FYamlIterator end();
 
 	// Sequence ------------------------------------------------------------------------
@@ -199,7 +195,7 @@ public:
 	}
 };
 
-// Global Conversions ------------------------------------------------------------------
+// Global Variables --------------------------------------------------------------------
 
 /** Write the Contents of the Node to an OutputStream */
 inline void operator<<(std::ostream& Out, const FYamlNode& Node) {

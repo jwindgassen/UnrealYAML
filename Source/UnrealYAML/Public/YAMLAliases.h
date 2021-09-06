@@ -19,8 +19,3 @@ using EYamlEmitterStyle = YAML::EmitterStyle::value;
 
 /** Use these to begin a Sequence or create Map Key-Value pairs */
 using EYamlEmitterTags = YAML::EMITTER_MANIP;
-
-
-// Iteration ------------------------------------------------------------------------------------------
-using FYamlConstIterator = YAML::const_iterator;
-using FYamlIterator = YAML::iterator;

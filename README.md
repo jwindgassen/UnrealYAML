@@ -10,9 +10,9 @@ For a Tutorial, please visit the official [yaml-cpp wiki](https://github.com/jbe
 ## Implemented Features
 - Basic Functionality of the Node class (Assignment, Creating a YAML structure)
 - Conversion to and from most frequently used Unreal Types
+- Iterators
 
 ## TODO
 - Wrapper class for the Emitter
-- Iterators
 - Better Stability
 - More conversions

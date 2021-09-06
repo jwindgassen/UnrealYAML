@@ -62,7 +62,7 @@ namespace YAML{
 	};
 
 
-	// encode and decode an FVector
+	// encode and decode an FQuad
 	template <>
 	struct convert<FQuat> {
 		static Node encode(const FQuat& Quad) {
@@ -109,6 +109,85 @@ namespace YAML{
 			Out.SetTranslation(Node[0].as<FVector>());
 			Out.SetRotation(Node[1].as<FQuat>());
 			Out.SetScale3D(Node[2].as<FVector>());
+			return true;
+		}
+	};
+
+
+	// encode and decode an TArray to a sequence
+	template<class T>
+	struct convert<TArray<T>> {
+		static Node encode(const TArray<T> Array) {
+			Node Node(NodeType::Sequence);
+			for (T& Element : Array) {
+				Node.push_back(Element);
+			}
+			return Node;
+		}
+
+		static bool decode(const Node& Node, TArray<T>& Out) {
+			if (!(Node.Type() == NodeType::Map || Node.Type() == NodeType::Sequence)) {
+				return false;
+			}
+
+			Out = {};
+			for(const_iterator Iterator = Node.begin(); Iterator != Node.end(); ++Iterator) {
+				Out.Add(Iterator->as<T>());
+			}
+
+			return true;
+		}
+	};
+
+
+	// encode and decode an TArray to a sequence
+	template<class T>
+	struct convert<TSet<T>> {
+		static Node encode(const TSet<T> Array) {
+			Node Node(NodeType::Sequence);
+			for (T& Element : Array) {
+				Node.push_back(Element);
+			}
+			return Node;
+		}
+
+		static bool decode(const Node& Node, TSet<T>& Out) {
+			if (!(Node.Type() == NodeType::Map || Node.Type() == NodeType::Sequence)) {
+				return false;
+			}
+
+			Out = {};
+			for(const_iterator Iterator = Node.begin(); Iterator != Node.end(); ++Iterator) {
+				Out.Add(Iterator->as<T>());
+			}
+
+			return true;
+		}
+	};
+
+
+	// encode and decode an TMap to a Map
+	template<class TKey, class TValue>
+	struct convert<TMap<TKey, TValue>> {
+		static Node encode(const TMap<TKey, TValue> Map) {
+			Node Node(NodeType::Map);
+			
+			for (TTuple<TKey, TValue> Element : Map) {
+				Node[Element.Key] = Element.Value;
+			} 
+			return Node;
+		}
+
+		static bool decode(const Node& Node, TMap<TKey, TValue>& Out) {
+			if (Node.Type() != NodeType::Map) {
+				return false;
+			}
+
+			Out = {};
+			for(const_iterator Iterator = Node.begin(); Iterator != Node.end(); ++Iterator) {
+				Out.Add(Iterator->first.as<TKey>(), Iterator->second.as<TValue>());
+			}
+
 			return true;
 		}
 	};

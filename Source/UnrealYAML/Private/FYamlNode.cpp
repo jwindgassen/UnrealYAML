@@ -1,5 +1,7 @@
 ﻿#include "FYamlNode.h"
 
+#include "Iteration.h"
+
 EYamlNodeType FYamlNode::Type() const {
 	try {
 		return Node.Type();
@@ -97,18 +99,10 @@ int32 FYamlNode::Size() const {
 	}
 }
 
-FYamlConstIterator FYamlNode::begin() const {
-	return Node.begin();
-}
-
 FYamlIterator FYamlNode::begin() {
-	return Node.begin();
-}
-
-FYamlConstIterator FYamlNode::end() const {
-	return Node.end();
+	return FYamlIterator(Node.begin());
 }
 
 FYamlIterator FYamlNode::end() {
-	return Node.end();
+	return FYamlIterator(Node.end());
 }
