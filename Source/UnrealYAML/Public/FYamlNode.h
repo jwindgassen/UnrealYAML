@@ -100,11 +100,28 @@ public:
 	 * @return A Pointer to the Converted Value. If the Conversion was unsuccessful, return a nullptr
 	 */
 	template <typename T>
-	T* As() const {
+	T* AsPointer() const {
 		try {
 			return &Node.as<T>();
 		} catch (YAML::Exception) {
 			return nullptr;
+		}
+	}
+
+	/** Try to Convert the Contents of the Node to the Given Type or return the Default Value
+	* when conversion is not possible.  Serves as a more Secure version of AsPointer()
+	*
+	* The DefaultValue will default to the default Constructor of the Type. If this Constructor is not available,
+	* you must supply a DefaultValue manually
+	* 
+	* @return A Reference to the Converted Value. If the Conversion was unsuccessful, return the DefaultValue
+	*/
+	template <typename T>
+	T As(T DefaultValue = T()) const {
+		try {
+			return Node.as<T>();
+		} catch (YAML::Exception) {
+			return DefaultValue;
 		}
 	}
 
