@@ -75,7 +75,7 @@ public:
 	FYamlNode& operator=(const T& Value) {
 		try {
 			Node = Value;
-		} catch (YAML::InvalidNode) {
+		} catch (YAML::InvalidNode e) {
 			UE_LOG(LogTemp, Warning, TEXT("Node was Invalid, won't assign any Value!"))
 		}
 		return *this;
@@ -95,14 +95,16 @@ public:
 
 	
 	// Access --------------------------------------------------------------------------
-	/** Try to Convert the Contents of the Node to the Given Type */
+	/** Try to Convert the Contents of the Node to the Given Type or a nullptr when conversion is not possible
+	 *
+	 * @return A Pointer to the Converted Value. If the Conversion was unsuccessful, return a nullptr
+	 */
 	template <typename T>
-	bool As(T& Out) const {
+	T* As() const {
 		try {
-			Out = Node.as<T>();
-			return true;
+			return &Node.as<T>();
 		} catch (YAML::Exception) {
-			return false;
+			return nullptr;
 		}
 	}
 

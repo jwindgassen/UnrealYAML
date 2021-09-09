@@ -119,7 +119,7 @@ namespace YAML{
 	struct convert<TArray<T>> {
 		static Node encode(const TArray<T> Array) {
 			Node Node(NodeType::Sequence);
-			for (T& Element : Array) {
+			for (const T& Element : Array) {
 				Node.push_back(Element);
 			}
 			return Node;
@@ -145,7 +145,7 @@ namespace YAML{
 	struct convert<TSet<T>> {
 		static Node encode(const TSet<T> Array) {
 			Node Node(NodeType::Sequence);
-			for (T& Element : Array) {
+			for (const T& Element : Array) {
 				Node.push_back(Element);
 			}
 			return Node;
@@ -172,7 +172,7 @@ namespace YAML{
 		static Node encode(const TMap<TKey, TValue> Map) {
 			Node Node(NodeType::Map);
 			
-			for (TTuple<TKey, TValue> Element : Map) {
+			for (const TTuple<TKey, TValue> Element : Map) {
 				Node[Element.Key] = Element.Value;
 			} 
 			return Node;
