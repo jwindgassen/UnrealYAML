@@ -153,7 +153,7 @@ void WriteCodePoint(ostream_wrapper& out, int codePoint) {
   }
 }
 
-bool IsValidPlainScalar(const std::string& str, FlowType::value flowType,
+bool IsValidPlainScalar(const std::string& str, FlowType flowType,
                         bool allowOnlyAscii) {
   // check against null
   if (IsNullString(str)) {
@@ -207,7 +207,7 @@ bool IsValidSingleQuotedScalar(const std::string& str, bool escapeNonAscii) {
   });
 }
 
-bool IsValidLiteralScalar(const std::string& str, FlowType::value flowType,
+bool IsValidLiteralScalar(const std::string& str, FlowType flowType,
                           bool escapeNonAscii) {
   if (flowType == FlowType::Flow) {
     return false;
@@ -228,7 +228,7 @@ std::pair<uint16_t, uint16_t> EncodeUTF16SurrogatePair(int codePoint) {
   };
 }
 
-void WriteDoubleQuoteEscapeSequence(ostream_wrapper& out, int codePoint, StringEscaping::value stringEscapingStyle) {
+void WriteDoubleQuoteEscapeSequence(ostream_wrapper& out, int codePoint, StringEscaping stringEscapingStyle) {
   static const char hexDigits[] = "0123456789abcdef";
 
   out << "\\";
@@ -268,24 +268,24 @@ bool WriteAliasName(ostream_wrapper& out, const std::string& str) {
 }
 }  // namespace
 
-StringFormat::value ComputeStringFormat(const std::string& str,
-                                        EMITTER_MANIP strFormat,
-                                        FlowType::value flowType,
+StringFormat ComputeStringFormat(const std::string& str,
+                                        EmitterManip strFormat,
+                                        FlowType flowType,
                                         bool escapeNonAscii) {
   switch (strFormat) {
-    case Auto:
+    case EmitterManip::Auto:
       if (IsValidPlainScalar(str, flowType, escapeNonAscii)) {
         return StringFormat::Plain;
       }
       return StringFormat::DoubleQuoted;
-    case SingleQuoted:
+    case EmitterManip::SingleQuoted:
       if (IsValidSingleQuotedScalar(str, escapeNonAscii)) {
         return StringFormat::SingleQuoted;
       }
       return StringFormat::DoubleQuoted;
-    case DoubleQuoted:
+    case EmitterManip::DoubleQuoted:
       return StringFormat::DoubleQuoted;
-    case Literal:
+    case EmitterManip::Literal:
       if (IsValidLiteralScalar(str, flowType, escapeNonAscii)) {
         return StringFormat::Literal;
       }
@@ -318,7 +318,7 @@ bool WriteSingleQuotedString(ostream_wrapper& out, const std::string& str) {
 }
 
 bool WriteDoubleQuotedString(ostream_wrapper& out, const std::string& str,
-                             StringEscaping::value stringEscaping) {
+                             StringEscaping stringEscaping) {
   out << "\"";
   int codePoint;
   for (std::string::const_iterator i = str.begin();
@@ -380,7 +380,7 @@ bool WriteLiteralString(ostream_wrapper& out, const std::string& str,
   return true;
 }
 
-bool WriteChar(ostream_wrapper& out, char ch, StringEscaping::value stringEscapingStyle) {
+bool WriteChar(ostream_wrapper& out, char ch, StringEscaping stringEscapingStyle) {
   if (('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z')) {
     out << ch;
   } else if (ch == '\"') {

@@ -70,7 +70,7 @@ public:
 	}
 
 	
-	FYamlIterator& operator++(int) {
+	FYamlIterator operator++(int) {
 		FYamlIterator Pre(*this);
 		++(*this);
 		Index++;

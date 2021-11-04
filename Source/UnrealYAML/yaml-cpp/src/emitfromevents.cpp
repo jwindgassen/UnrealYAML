@@ -47,53 +47,53 @@ void EmitFromEvents::OnScalar(const Mark&, const std::string& tag,
 
 void EmitFromEvents::OnSequenceStart(const Mark&, const std::string& tag,
                                      anchor_t anchor,
-                                     EmitterStyle::value style) {
+                                     EmitterStyle style) {
   BeginNode();
   EmitProps(tag, anchor);
   switch (style) {
     case EmitterStyle::Block:
-      m_emitter << Block;
+      m_emitter << EmitterManip::Block;
       break;
-    case EmitterStyle::Flow:
-      m_emitter << Flow;
+  case EmitterStyle::Flow:
+      m_emitter << EmitterManip::Flow;
       break;
     default:
       break;
   }
   // Restore the global settings to eliminate the override from node style
   m_emitter.RestoreGlobalModifiedSettings();
-  m_emitter << BeginSeq;
+  m_emitter << EmitterManip::BeginSeq;
   m_stateStack.push(State::WaitingForSequenceEntry);
 }
 
 void EmitFromEvents::OnSequenceEnd() {
-  m_emitter << EndSeq;
+  m_emitter << EmitterManip::EndSeq;
   assert(m_stateStack.top() == State::WaitingForSequenceEntry);
   m_stateStack.pop();
 }
 
 void EmitFromEvents::OnMapStart(const Mark&, const std::string& tag,
-                                anchor_t anchor, EmitterStyle::value style) {
+                                anchor_t anchor, EmitterStyle style) {
   BeginNode();
   EmitProps(tag, anchor);
   switch (style) {
     case EmitterStyle::Block:
-      m_emitter << Block;
+      m_emitter << EmitterManip::Block;
       break;
     case EmitterStyle::Flow:
-      m_emitter << Flow;
+      m_emitter << EmitterManip::Flow;
       break;
     default:
       break;
   }
   // Restore the global settings to eliminate the override from node style
   m_emitter.RestoreGlobalModifiedSettings();
-  m_emitter << BeginMap;
+  m_emitter << EmitterManip::BeginMap;
   m_stateStack.push(State::WaitingForKey);
 }
 
 void EmitFromEvents::OnMapEnd() {
-  m_emitter << EndMap;
+  m_emitter << EmitterManip::EndMap;
   assert(m_stateStack.top() == State::WaitingForKey);
   m_stateStack.pop();
 }
@@ -104,11 +104,11 @@ void EmitFromEvents::BeginNode() {
 
   switch (m_stateStack.top()) {
     case State::WaitingForKey:
-      m_emitter << Key;
+      m_emitter << EmitterManip::Key;
       m_stateStack.top() = State::WaitingForValue;
       break;
     case State::WaitingForValue:
-      m_emitter << Value;
+      m_emitter << EmitterManip::Value;
       m_stateStack.top() = State::WaitingForKey;
       break;
     default:

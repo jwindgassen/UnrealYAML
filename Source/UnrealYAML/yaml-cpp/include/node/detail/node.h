@@ -18,12 +18,12 @@
 namespace YAML {
 namespace detail {
 class node {
- private:
+private:
   struct less {
     bool operator ()(const node* l, const node* r) const {return l->m_index < r->m_index;}
   };
 
- public:
+public:
   node() : m_pRef(new node_ref), m_dependencies{}, m_index{} {}
   node(const node&) = delete;
   node& operator=(const node&) = delete;
@@ -33,11 +33,11 @@ class node {
 
   bool is_defined() const { return m_pRef->is_defined(); }
   const Mark& mark() const { return m_pRef->mark(); }
-  NodeType::value type() const { return m_pRef->type(); }
+  NodeType type() const { return m_pRef->type(); }
 
   const std::string& scalar() const { return m_pRef->scalar(); }
   const std::string& tag() const { return m_pRef->tag(); }
-  EmitterStyle::value style() const { return m_pRef->style(); }
+  EmitterStyle style() const { return m_pRef->style(); }
 
   template <typename T>
   bool equals(const T& rhs, shared_memory_holder pMemory);
@@ -73,7 +73,7 @@ class node {
 
   void set_mark(const Mark& mark) { m_pRef->set_mark(mark); }
 
-  void set_type(NodeType::value type) {
+  void set_type(NodeType type) {
     if (type != NodeType::Undefined)
       mark_defined();
     m_pRef->set_type(type);
@@ -92,7 +92,7 @@ class node {
   }
 
   // style
-  void set_style(EmitterStyle::value style) {
+  void set_style(EmitterStyle style) {
     mark_defined();
     m_pRef->set_style(style);
   }
@@ -164,15 +164,16 @@ class node {
     m_pRef->force_insert(key, value, pMemory);
   }
 
- private:
+private:
   shared_node_ref m_pRef;
   using nodes = std::set<node*, less>;
   nodes m_dependencies;
   size_t m_index;
-  static std::atomic<size_t> m_amount;
+  static YAML_CPP_API std::atomic<size_t> m_amount;
 };
 
-  std::atomic<size_t> node::m_amount{0};
+std::atomic<size_t> node::m_amount{ 0 };
+  
 }  // namespace detail
 }  // namespace YAML
 

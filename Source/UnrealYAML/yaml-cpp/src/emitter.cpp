@@ -31,15 +31,15 @@ const std::string Emitter::GetLastError() const {
 }
 
 // global setters
-bool Emitter::SetOutputCharset(EMITTER_MANIP value) {
+bool Emitter::SetOutputCharset(EmitterManip value) {
   return m_pState->SetOutputCharset(value, FmtScope::Global);
 }
 
-bool Emitter::SetStringFormat(EMITTER_MANIP value) {
+bool Emitter::SetStringFormat(EmitterManip value) {
   return m_pState->SetStringFormat(value, FmtScope::Global);
 }
 
-bool Emitter::SetBoolFormat(EMITTER_MANIP value) {
+bool Emitter::SetBoolFormat(EmitterManip value) {
   bool ok = false;
   if (m_pState->SetBoolFormat(value, FmtScope::Global))
     ok = true;
@@ -50,19 +50,19 @@ bool Emitter::SetBoolFormat(EMITTER_MANIP value) {
   return ok;
 }
 
-bool Emitter::SetNullFormat(EMITTER_MANIP value) {
+bool Emitter::SetNullFormat(EmitterManip value) {
   return m_pState->SetNullFormat(value, FmtScope::Global);
 }
 
-bool Emitter::SetIntBase(EMITTER_MANIP value) {
+bool Emitter::SetIntBase(EmitterManip value) {
   return m_pState->SetIntFormat(value, FmtScope::Global);
 }
 
-bool Emitter::SetSeqFormat(EMITTER_MANIP value) {
+bool Emitter::SetSeqFormat(EmitterManip value) {
   return m_pState->SetFlowType(GroupType::Seq, value, FmtScope::Global);
 }
 
-bool Emitter::SetMapFormat(EMITTER_MANIP value) {
+bool Emitter::SetMapFormat(EmitterManip value) {
   bool ok = false;
   if (m_pState->SetFlowType(GroupType::Map, value, FmtScope::Global))
     ok = true;
@@ -97,37 +97,37 @@ void Emitter::RestoreGlobalModifiedSettings() {
 
 // SetLocalValue
 // . Either start/end a group, or set a modifier locally
-Emitter& Emitter::SetLocalValue(EMITTER_MANIP value) {
+Emitter& Emitter::SetLocalValue(EmitterManip value) {
   if (!good())
     return *this;
 
   switch (value) {
-    case BeginDoc:
+    case EmitterManip::BeginDoc:
       EmitBeginDoc();
       break;
-    case EndDoc:
+    case EmitterManip::EndDoc:
       EmitEndDoc();
       break;
-    case BeginSeq:
+    case EmitterManip::BeginSeq:
       EmitBeginSeq();
       break;
-    case EndSeq:
+    case EmitterManip::EndSeq:
       EmitEndSeq();
       break;
-    case BeginMap:
+    case EmitterManip::BeginMap:
       EmitBeginMap();
       break;
-    case EndMap:
+    case EmitterManip::EndMap:
       EmitEndMap();
       break;
-    case Key:
-    case Value:
+    case EmitterManip::Key:
+    case EmitterManip::Value:
       // deprecated (these can be deduced by the parity of nodes in a map)
       break;
-    case TagByKind:
+    case EmitterManip::TagByKind:
       EmitKindTag();
       break;
-    case Newline:
+    case EmitterManip::Newline:
       EmitNewline();
       break;
     default:
@@ -206,7 +206,7 @@ void Emitter::EmitBeginSeq() {
 void Emitter::EmitEndSeq() {
   if (!good())
     return;
-  FlowType::value originalType = m_pState->CurGroupFlowType();
+  FlowType originalType = m_pState->CurGroupFlowType();
 
   if (m_pState->CurGroupChildCount() == 0)
     m_pState->ForceFlow();
@@ -241,7 +241,7 @@ void Emitter::EmitBeginMap() {
 void Emitter::EmitEndMap() {
   if (!good())
     return;
-  FlowType::value originalType = m_pState->CurGroupFlowType();
+  FlowType originalType = m_pState->CurGroupFlowType();
 
   if (m_pState->CurGroupChildCount() == 0)
     m_pState->ForceFlow();
@@ -276,7 +276,7 @@ bool Emitter::CanEmitNewline() const { return true; }
 
 // Put the stream in a state so we can simply write the next node
 // E.g., if we're in a sequence, write the "- "
-void Emitter::PrepareNode(EmitterNodeType::value child) {
+void Emitter::PrepareNode(EmitterNodeType child) {
   switch (m_pState->CurGroupNodeType()) {
     case EmitterNodeType::NoType:
       PrepareTopNode(child);
@@ -300,7 +300,7 @@ void Emitter::PrepareNode(EmitterNodeType::value child) {
   }
 }
 
-void Emitter::PrepareTopNode(EmitterNodeType::value child) {
+void Emitter::PrepareTopNode(EmitterNodeType child) {
   if (child == EmitterNodeType::NoType)
     return;
 
@@ -326,7 +326,7 @@ void Emitter::PrepareTopNode(EmitterNodeType::value child) {
   }
 }
 
-void Emitter::FlowSeqPrepareNode(EmitterNodeType::value child) {
+void Emitter::FlowSeqPrepareNode(EmitterNodeType child) {
   const std::size_t lastIndent = m_pState->LastIndent();
 
   if (!m_pState->HasBegunNode()) {
@@ -357,7 +357,7 @@ void Emitter::FlowSeqPrepareNode(EmitterNodeType::value child) {
   }
 }
 
-void Emitter::BlockSeqPrepareNode(EmitterNodeType::value child) {
+void Emitter::BlockSeqPrepareNode(EmitterNodeType child) {
   const std::size_t curIndent = m_pState->CurIndent();
   const std::size_t nextIndent = curIndent + m_pState->CurGroupIndent();
 
@@ -391,9 +391,9 @@ void Emitter::BlockSeqPrepareNode(EmitterNodeType::value child) {
   }
 }
 
-void Emitter::FlowMapPrepareNode(EmitterNodeType::value child) {
+void Emitter::FlowMapPrepareNode(EmitterNodeType child) {
   if (m_pState->CurGroupChildCount() % 2 == 0) {
-    if (m_pState->GetMapKeyFormat() == LongKey)
+    if (m_pState->GetMapKeyFormat() == EmitterManip::LongKey)
       m_pState->SetLongKey();
 
     if (m_pState->CurGroupLongKey())
@@ -408,7 +408,7 @@ void Emitter::FlowMapPrepareNode(EmitterNodeType::value child) {
   }
 }
 
-void Emitter::FlowMapPrepareLongKey(EmitterNodeType::value child) {
+void Emitter::FlowMapPrepareLongKey(EmitterNodeType child) {
   const std::size_t lastIndent = m_pState->LastIndent();
 
   if (!m_pState->HasBegunNode()) {
@@ -439,7 +439,7 @@ void Emitter::FlowMapPrepareLongKey(EmitterNodeType::value child) {
   }
 }
 
-void Emitter::FlowMapPrepareLongKeyValue(EmitterNodeType::value child) {
+void Emitter::FlowMapPrepareLongKeyValue(EmitterNodeType child) {
   const std::size_t lastIndent = m_pState->LastIndent();
 
   if (!m_pState->HasBegunNode()) {
@@ -467,7 +467,7 @@ void Emitter::FlowMapPrepareLongKeyValue(EmitterNodeType::value child) {
   }
 }
 
-void Emitter::FlowMapPrepareSimpleKey(EmitterNodeType::value child) {
+void Emitter::FlowMapPrepareSimpleKey(EmitterNodeType child) {
   const std::size_t lastIndent = m_pState->LastIndent();
 
   if (!m_pState->HasBegunNode()) {
@@ -498,7 +498,7 @@ void Emitter::FlowMapPrepareSimpleKey(EmitterNodeType::value child) {
   }
 }
 
-void Emitter::FlowMapPrepareSimpleKeyValue(EmitterNodeType::value child) {
+void Emitter::FlowMapPrepareSimpleKeyValue(EmitterNodeType child) {
   const std::size_t lastIndent = m_pState->LastIndent();
 
   if (!m_pState->HasBegunNode()) {
@@ -529,9 +529,9 @@ void Emitter::FlowMapPrepareSimpleKeyValue(EmitterNodeType::value child) {
   }
 }
 
-void Emitter::BlockMapPrepareNode(EmitterNodeType::value child) {
+void Emitter::BlockMapPrepareNode(EmitterNodeType child) {
   if (m_pState->CurGroupChildCount() % 2 == 0) {
-    if (m_pState->GetMapKeyFormat() == LongKey)
+    if (m_pState->GetMapKeyFormat() == EmitterManip::LongKey)
       m_pState->SetLongKey();
     if (child == EmitterNodeType::BlockSeq ||
         child == EmitterNodeType::BlockMap)
@@ -549,7 +549,7 @@ void Emitter::BlockMapPrepareNode(EmitterNodeType::value child) {
   }
 }
 
-void Emitter::BlockMapPrepareLongKey(EmitterNodeType::value child) {
+void Emitter::BlockMapPrepareLongKey(EmitterNodeType child) {
   const std::size_t curIndent = m_pState->CurIndent();
   const std::size_t childCount = m_pState->CurGroupChildCount();
 
@@ -584,7 +584,7 @@ void Emitter::BlockMapPrepareLongKey(EmitterNodeType::value child) {
   }
 }
 
-void Emitter::BlockMapPrepareLongKeyValue(EmitterNodeType::value child) {
+void Emitter::BlockMapPrepareLongKeyValue(EmitterNodeType child) {
   const std::size_t curIndent = m_pState->CurIndent();
 
   if (child == EmitterNodeType::NoType)
@@ -614,7 +614,7 @@ void Emitter::BlockMapPrepareLongKeyValue(EmitterNodeType::value child) {
   }
 }
 
-void Emitter::BlockMapPrepareSimpleKey(EmitterNodeType::value child) {
+void Emitter::BlockMapPrepareSimpleKey(EmitterNodeType child) {
   const std::size_t curIndent = m_pState->CurIndent();
   const std::size_t childCount = m_pState->CurGroupChildCount();
 
@@ -642,7 +642,7 @@ void Emitter::BlockMapPrepareSimpleKey(EmitterNodeType::value child) {
   }
 }
 
-void Emitter::BlockMapPrepareSimpleKeyValue(EmitterNodeType::value child) {
+void Emitter::BlockMapPrepareSimpleKeyValue(EmitterNodeType child) {
   const std::size_t curIndent = m_pState->CurIndent();
   const std::size_t nextIndent = curIndent + m_pState->CurGroupIndent();
 
@@ -682,14 +682,14 @@ void Emitter::SpaceOrIndentTo(bool requireSpace, std::size_t indent) {
 void Emitter::PrepareIntegralStream(std::stringstream& stream) const {
 
   switch (m_pState->GetIntFormat()) {
-    case Dec:
+    case EmitterManip::Dec:
       stream << std::dec;
       break;
-    case Hex:
+    case EmitterManip::Hex:
       stream << "0x";
       stream << std::hex;
       break;
-    case Oct:
+    case EmitterManip::Oct:
       stream << "0";
       stream << std::oct;
       break;
@@ -703,11 +703,11 @@ void Emitter::StartedScalar() { m_pState->StartedScalar(); }
 // *******************************************************************************************
 // overloads of Write
 
-StringEscaping::value GetStringEscapingStyle(const EMITTER_MANIP emitterManip) {
+StringEscaping GetStringEscapingStyle(const EmitterManip emitterManip) {
   switch (emitterManip) {
-    case EscapeNonAscii:
+    case EmitterManip::EscapeNonAscii:
       return StringEscaping::NonAscii;
-    case EscapeAsJson:
+    case EmitterManip::EscapeAsJson:
       return StringEscaping::JSON;
     default:
       return StringEscaping::None;
@@ -719,14 +719,14 @@ Emitter& Emitter::Write(const std::string& str) {
   if (!good())
     return *this;
 
-  StringEscaping::value stringEscaping = GetStringEscapingStyle(m_pState->GetOutputCharset());
+  StringEscaping stringEscaping = GetStringEscapingStyle(m_pState->GetOutputCharset());
 
-  const StringFormat::value strFormat =
+  const StringFormat strFormat =
       Utils::ComputeStringFormat(str, m_pState->GetStringFormat(),
                                  m_pState->CurGroupFlowType(), stringEscaping == StringEscaping::NonAscii);
 
   if (strFormat == StringFormat::Literal || str.size() > 1024)
-    m_pState->SetMapKeyFormat(YAML::LongKey, FmtScope::Local);
+    m_pState->SetMapKeyFormat(EmitterManip::LongKey, FmtScope::Local);
 
   PrepareNode(EmitterNodeType::Scalar);
 
@@ -760,42 +760,42 @@ std::size_t Emitter::GetDoublePrecision() const {
 }
 
 const char* Emitter::ComputeFullBoolName(bool b) const {
-  const EMITTER_MANIP mainFmt = (m_pState->GetBoolLengthFormat() == ShortBool
-                                     ? YesNoBool
+  const EmitterManip mainFmt = (m_pState->GetBoolLengthFormat() == EmitterManip::ShortBool
+                                     ? EmitterManip::YesNoBool
                                      : m_pState->GetBoolFormat());
-  const EMITTER_MANIP caseFmt = m_pState->GetBoolCaseFormat();
+  const EmitterManip caseFmt = m_pState->GetBoolCaseFormat();
   switch (mainFmt) {
-    case YesNoBool:
+    case EmitterManip::YesNoBool:
       switch (caseFmt) {
-        case UpperCase:
+        case EmitterManip::UpperCase:
           return b ? "YES" : "NO";
-        case CamelCase:
+        case EmitterManip::CamelCase:
           return b ? "Yes" : "No";
-        case LowerCase:
+        case EmitterManip::LowerCase:
           return b ? "yes" : "no";
         default:
           break;
       }
       break;
-    case OnOffBool:
+    case EmitterManip::OnOffBool:
       switch (caseFmt) {
-        case UpperCase:
+        case EmitterManip::UpperCase:
           return b ? "ON" : "OFF";
-        case CamelCase:
+        case EmitterManip::CamelCase:
           return b ? "On" : "Off";
-        case LowerCase:
+        case EmitterManip::LowerCase:
           return b ? "on" : "off";
         default:
           break;
       }
       break;
-    case TrueFalseBool:
+    case EmitterManip::TrueFalseBool:
       switch (caseFmt) {
-        case UpperCase:
+        case EmitterManip::UpperCase:
           return b ? "TRUE" : "FALSE";
-        case CamelCase:
+        case EmitterManip::CamelCase:
           return b ? "True" : "False";
-        case LowerCase:
+        case EmitterManip::LowerCase:
           return b ? "true" : "false";
         default:
           break;
@@ -810,13 +810,13 @@ const char* Emitter::ComputeFullBoolName(bool b) const {
 
 const char* Emitter::ComputeNullName() const {
   switch (m_pState->GetNullFormat()) {
-    case LowerNull:
+    case EmitterManip::LowerNull:
       return "null";
-    case UpperNull:
+    case EmitterManip::UpperNull:
       return "NULL";
-    case CamelNull:
+    case EmitterManip::CamelNull:
       return "Null";
-    case TildeNull:
+    case EmitterManip::TildeNull:
       // fallthrough
     default:
       return "~";
@@ -830,7 +830,7 @@ Emitter& Emitter::Write(bool b) {
   PrepareNode(EmitterNodeType::Scalar);
 
   const char* name = ComputeFullBoolName(b);
-  if (m_pState->GetBoolLengthFormat() == ShortBool)
+  if (m_pState->GetBoolLengthFormat() == EmitterManip::ShortBool)
     m_stream << name[0];
   else
     m_stream << name;

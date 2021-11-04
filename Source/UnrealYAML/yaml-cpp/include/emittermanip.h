@@ -10,7 +10,7 @@
 #include <string>
 
 namespace YAML {
-enum EMITTER_MANIP {
+enum class EmitterManip {
   // general manipulators
   Auto,
   TagByKind,
@@ -91,16 +91,13 @@ struct _Anchor {
 inline _Anchor Anchor(const std::string& content) { return _Anchor(content); }
 
 struct _Tag {
-  struct Type {
-    enum value { Verbatim, PrimaryHandle, NamedHandle };
-  };
+  enum class Type {Verbatim, PrimaryHandle, NamedHandle};
 
-  explicit _Tag(const std::string& prefix_, const std::string& content_,
-                Type::value type_)
+  explicit _Tag(const std::string& prefix_, const std::string& content_, Type type_)
       : prefix(prefix_), content(content_), type(type_) {}
   std::string prefix;
   std::string content;
-  Type::value type;
+  Type type;
 };
 
 inline _Tag VerbatimTag(const std::string& content) {

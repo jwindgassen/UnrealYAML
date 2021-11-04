@@ -16,3 +16,7 @@ For a Tutorial, please visit the official [yaml-cpp wiki](https://github.com/jbe
 - Wrapper class for the Emitter
 - Better Stability
 - More conversions
+
+
+## Patches
+- **enum-class**: Changed enums to enum classes to remove *-Wshadow* error

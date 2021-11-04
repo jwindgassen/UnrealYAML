@@ -1,0 +1,1782 @@
+Index: Source/UnrealYAML/yaml-cpp/src/emitterstate.h
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Source/UnrealYAML/yaml-cpp/src/emitterstate.h b/Source/UnrealYAML/yaml-cpp/src/emitterstate.h
+--- a/Source/UnrealYAML/yaml-cpp/src/emitterstate.h	(revision f71623dfaa3d15b250dbfa8f9911cb323e49e5d5)
++++ b/Source/UnrealYAML/yaml-cpp/src/emitterstate.h	(date 1636024479137)
+@@ -18,15 +18,11 @@
+ #include <vector>
+ 
+ namespace YAML {
+-struct FmtScope {
+-  enum value { Local, Global };
+-};
+-struct GroupType {
+-  enum value { NoType, Seq, Map };
+-};
+-struct FlowType {
+-  enum value { NoType, Flow, Block };
+-};
++enum class FmtScope {Local, Global};
++  
++enum class GroupType {NoType, Seq, Map};
++  
++enum class FlowType {NoType, Flow, Block};
+ 
+ class EmitterState {
+  public:
+@@ -51,14 +47,14 @@
+   void StartedDoc();
+   void EndedDoc();
+   void StartedScalar();
+-  void StartedGroup(GroupType::value type);
+-  void EndedGroup(GroupType::value type);
++  void StartedGroup(GroupType type);
++  void EndedGroup(GroupType type);
+ 
+-  EmitterNodeType::value NextGroupType(GroupType::value type) const;
+-  EmitterNodeType::value CurGroupNodeType() const;
++  EmitterNodeType NextGroupType(GroupType type) const;
++  EmitterNodeType CurGroupNodeType() const;
+ 
+-  GroupType::value CurGroupType() const;
+-  FlowType::value CurGroupFlowType() const;
++  GroupType CurGroupType() const;
++  FlowType CurGroupFlowType() const;
+   std::size_t CurGroupIndent() const;
+   std::size_t CurGroupChildCount() const;
+   bool CurGroupLongKey() const;
+@@ -77,52 +73,52 @@
+   void RestoreGlobalModifiedSettings();
+ 
+   // formatters
+-  void SetLocalValue(EMITTER_MANIP value);
++  void SetLocalValue(EmitterManip value);
+ 
+-  bool SetOutputCharset(EMITTER_MANIP value, FmtScope::value scope);
+-  EMITTER_MANIP GetOutputCharset() const { return m_charset.get(); }
++  bool SetOutputCharset(EmitterManip value, FmtScope scope);
++  EmitterManip GetOutputCharset() const { return m_charset.get(); }
+ 
+-  bool SetStringFormat(EMITTER_MANIP value, FmtScope::value scope);
+-  EMITTER_MANIP GetStringFormat() const { return m_strFmt.get(); }
++  bool SetStringFormat(EmitterManip value, FmtScope scope);
++  EmitterManip GetStringFormat() const { return m_strFmt.get(); }
+ 
+-  bool SetBoolFormat(EMITTER_MANIP value, FmtScope::value scope);
+-  EMITTER_MANIP GetBoolFormat() const { return m_boolFmt.get(); }
++  bool SetBoolFormat(EmitterManip value, FmtScope scope);
++  EmitterManip GetBoolFormat() const { return m_boolFmt.get(); }
+ 
+-  bool SetBoolLengthFormat(EMITTER_MANIP value, FmtScope::value scope);
+-  EMITTER_MANIP GetBoolLengthFormat() const { return m_boolLengthFmt.get(); }
++  bool SetBoolLengthFormat(EmitterManip value, FmtScope scope);
++  EmitterManip GetBoolLengthFormat() const { return m_boolLengthFmt.get(); }
+ 
+-  bool SetBoolCaseFormat(EMITTER_MANIP value, FmtScope::value scope);
+-  EMITTER_MANIP GetBoolCaseFormat() const { return m_boolCaseFmt.get(); }
++  bool SetBoolCaseFormat(EmitterManip value, FmtScope scope);
++  EmitterManip GetBoolCaseFormat() const { return m_boolCaseFmt.get(); }
+ 
+-  bool SetNullFormat(EMITTER_MANIP value, FmtScope::value scope);
+-  EMITTER_MANIP GetNullFormat() const { return m_nullFmt.get(); }
++  bool SetNullFormat(EmitterManip value, FmtScope scope);
++  EmitterManip GetNullFormat() const { return m_nullFmt.get(); }
+ 
+-  bool SetIntFormat(EMITTER_MANIP value, FmtScope::value scope);
+-  EMITTER_MANIP GetIntFormat() const { return m_intFmt.get(); }
++  bool SetIntFormat(EmitterManip value, FmtScope scope);
++  EmitterManip GetIntFormat() const { return m_intFmt.get(); }
+ 
+-  bool SetIndent(std::size_t value, FmtScope::value scope);
++  bool SetIndent(std::size_t value, FmtScope scope);
+   std::size_t GetIndent() const { return m_indent.get(); }
+ 
+-  bool SetPreCommentIndent(std::size_t value, FmtScope::value scope);
++  bool SetPreCommentIndent(std::size_t value, FmtScope scope);
+   std::size_t GetPreCommentIndent() const { return m_preCommentIndent.get(); }
+-  bool SetPostCommentIndent(std::size_t value, FmtScope::value scope);
++  bool SetPostCommentIndent(std::size_t value, FmtScope scope);
+   std::size_t GetPostCommentIndent() const { return m_postCommentIndent.get(); }
+ 
+-  bool SetFlowType(GroupType::value groupType, EMITTER_MANIP value,
+-                   FmtScope::value scope);
+-  EMITTER_MANIP GetFlowType(GroupType::value groupType) const;
++  bool SetFlowType(GroupType groupType, EmitterManip value,
++                   FmtScope scope);
++  EmitterManip GetFlowType(GroupType groupType) const;
+ 
+-  bool SetMapKeyFormat(EMITTER_MANIP value, FmtScope::value scope);
+-  EMITTER_MANIP GetMapKeyFormat() const { return m_mapKeyFmt.get(); }
++  bool SetMapKeyFormat(EmitterManip value, FmtScope scope);
++  EmitterManip GetMapKeyFormat() const { return m_mapKeyFmt.get(); }
+ 
+-  bool SetFloatPrecision(std::size_t value, FmtScope::value scope);
++  bool SetFloatPrecision(std::size_t value, FmtScope scope);
+   std::size_t GetFloatPrecision() const { return m_floatPrecision.get(); }
+-  bool SetDoublePrecision(std::size_t value, FmtScope::value scope);
++  bool SetDoublePrecision(std::size_t value, FmtScope scope);
+   std::size_t GetDoublePrecision() const { return m_doublePrecision.get(); }
+ 
+  private:
+   template <typename T>
+-  void _Set(Setting<T>& fmt, T value, FmtScope::value scope);
++  void _Set(Setting<T>& fmt, T value, FmtScope scope);
+ 
+   void StartedNode();
+ 
+@@ -132,18 +128,18 @@
+   std::string m_lastError;
+ 
+   // other state
+-  Setting<EMITTER_MANIP> m_charset;
+-  Setting<EMITTER_MANIP> m_strFmt;
+-  Setting<EMITTER_MANIP> m_boolFmt;
+-  Setting<EMITTER_MANIP> m_boolLengthFmt;
+-  Setting<EMITTER_MANIP> m_boolCaseFmt;
+-  Setting<EMITTER_MANIP> m_nullFmt;
+-  Setting<EMITTER_MANIP> m_intFmt;
++  Setting<EmitterManip> m_charset;
++  Setting<EmitterManip> m_strFmt;
++  Setting<EmitterManip> m_boolFmt;
++  Setting<EmitterManip> m_boolLengthFmt;
++  Setting<EmitterManip> m_boolCaseFmt;
++  Setting<EmitterManip> m_nullFmt;
++  Setting<EmitterManip> m_intFmt;
+   Setting<std::size_t> m_indent;
+   Setting<std::size_t> m_preCommentIndent, m_postCommentIndent;
+-  Setting<EMITTER_MANIP> m_seqFmt;
+-  Setting<EMITTER_MANIP> m_mapFmt;
+-  Setting<EMITTER_MANIP> m_mapKeyFmt;
++  Setting<EmitterManip> m_seqFmt;
++  Setting<EmitterManip> m_mapFmt;
++  Setting<EmitterManip> m_mapKeyFmt;
+   Setting<std::size_t> m_floatPrecision;
+   Setting<std::size_t> m_doublePrecision;
+ 
+@@ -151,7 +147,7 @@
+   SettingChanges m_globalModifiedSettings;
+ 
+   struct Group {
+-    explicit Group(GroupType::value type_)
++    explicit Group(GroupType type_)
+         : type(type_),
+           flowType{},
+           indent(0),
+@@ -159,15 +155,15 @@
+           longKey(false),
+           modifiedSettings{} {}
+ 
+-    GroupType::value type;
+-    FlowType::value flowType;
++    GroupType type;
++    FlowType flowType;
+     std::size_t indent;
+     std::size_t childCount;
+     bool longKey;
+ 
+     SettingChanges modifiedSettings;
+ 
+-    EmitterNodeType::value NodeType() const {
++    EmitterNodeType NodeType() const {
+       if (type == GroupType::Seq) {
+         if (flowType == FlowType::Flow)
+           return EmitterNodeType::FlowSeq;
+@@ -196,7 +192,7 @@
+ };
+ 
+ template <typename T>
+-void EmitterState::_Set(Setting<T>& fmt, T value, FmtScope::value scope) {
++void EmitterState::_Set(Setting<T>& fmt, T value, FmtScope scope) {
+   switch (scope) {
+     case FmtScope::Local:
+       m_modifiedSettings.push(fmt.set(value));
+Index: Source/UnrealYAML/yaml-cpp/include/emitterstyle.h
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Source/UnrealYAML/yaml-cpp/include/emitterstyle.h b/Source/UnrealYAML/yaml-cpp/include/emitterstyle.h
+--- a/Source/UnrealYAML/yaml-cpp/include/emitterstyle.h	(revision f71623dfaa3d15b250dbfa8f9911cb323e49e5d5)
++++ b/Source/UnrealYAML/yaml-cpp/include/emitterstyle.h	(date 1636024001371)
+@@ -8,9 +8,7 @@
+ #endif
+ 
+ namespace YAML {
+-struct EmitterStyle {
+-  enum value { Default, Block, Flow };
+-};
++	enum class EmitterStyle { Default, Block, Flow };
+ }
+ 
+ #endif  // EMITTERSTYLE_H_62B23520_7C8E_11DE_8A39_0800200C9A66
+Index: Source/UnrealYAML/yaml-cpp/src/nodebuilder.cpp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Source/UnrealYAML/yaml-cpp/src/nodebuilder.cpp b/Source/UnrealYAML/yaml-cpp/src/nodebuilder.cpp
+--- a/Source/UnrealYAML/yaml-cpp/src/nodebuilder.cpp	(revision f71623dfaa3d15b250dbfa8f9911cb323e49e5d5)
++++ b/Source/UnrealYAML/yaml-cpp/src/nodebuilder.cpp	(date 1636024950885)
+@@ -54,7 +54,7 @@
+ }
+ 
+ void NodeBuilder::OnSequenceStart(const Mark& mark, const std::string& tag,
+-                                  anchor_t anchor, EmitterStyle::value style) {
++                                  anchor_t anchor, EmitterStyle style) {
+   detail::node& node = Push(mark, anchor);
+   node.set_tag(tag);
+   node.set_type(NodeType::Sequence);
+@@ -64,7 +64,7 @@
+ void NodeBuilder::OnSequenceEnd() { Pop(); }
+ 
+ void NodeBuilder::OnMapStart(const Mark& mark, const std::string& tag,
+-                             anchor_t anchor, EmitterStyle::value style) {
++                             anchor_t anchor, EmitterStyle style) {
+   detail::node& node = Push(mark, anchor);
+   node.set_type(NodeType::Map);
+   node.set_tag(tag);
+Index: Source/UnrealYAML/yaml-cpp/src/contrib/graphbuilderadapter.h
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Source/UnrealYAML/yaml-cpp/src/contrib/graphbuilderadapter.h b/Source/UnrealYAML/yaml-cpp/src/contrib/graphbuilderadapter.h
+--- a/Source/UnrealYAML/yaml-cpp/src/contrib/graphbuilderadapter.h	(revision f71623dfaa3d15b250dbfa8f9911cb323e49e5d5)
++++ b/Source/UnrealYAML/yaml-cpp/src/contrib/graphbuilderadapter.h	(date 1636024245441)
+@@ -45,11 +45,11 @@
+                         anchor_t anchor, const std::string& value);
+ 
+   virtual void OnSequenceStart(const Mark& mark, const std::string& tag,
+-                               anchor_t anchor, EmitterStyle::value style);
++                               anchor_t anchor, EmitterStyle style);
+   virtual void OnSequenceEnd();
+ 
+   virtual void OnMapStart(const Mark& mark, const std::string& tag,
+-                          anchor_t anchor, EmitterStyle::value style);
++                          anchor_t anchor, EmitterStyle style);
+   virtual void OnMapEnd();
+ 
+   void* RootNode() const { return m_pRootNode; }
+Index: Source/UnrealYAML/yaml-cpp/src/contrib/graphbuilderadapter.cpp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Source/UnrealYAML/yaml-cpp/src/contrib/graphbuilderadapter.cpp b/Source/UnrealYAML/yaml-cpp/src/contrib/graphbuilderadapter.cpp
+--- a/Source/UnrealYAML/yaml-cpp/src/contrib/graphbuilderadapter.cpp	(revision f71623dfaa3d15b250dbfa8f9911cb323e49e5d5)
++++ b/Source/UnrealYAML/yaml-cpp/src/contrib/graphbuilderadapter.cpp	(date 1636024244777)
+@@ -31,7 +31,7 @@
+ void GraphBuilderAdapter::OnSequenceStart(const Mark &mark,
+                                           const std::string &tag,
+                                           anchor_t anchor,
+-                                          EmitterStyle::value /* style */) {
++                                          EmitterStyle /* style */) {
+   void *pNode = m_builder.NewSequence(mark, tag, GetCurrentParent());
+   m_containers.push(ContainerFrame(pNode));
+   RegisterAnchor(anchor, pNode);
+@@ -46,7 +46,7 @@
+ 
+ void GraphBuilderAdapter::OnMapStart(const Mark &mark, const std::string &tag,
+                                      anchor_t anchor,
+-                                     EmitterStyle::value /* style */) {
++                                     EmitterStyle /* style */) {
+   void *pNode = m_builder.NewMap(mark, tag, GetCurrentParent());
+   m_containers.push(ContainerFrame(pNode, m_pKeyNode));
+   m_pKeyNode = nullptr;
+Index: Source/UnrealYAML/yaml-cpp/include/eventhandler.h
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Source/UnrealYAML/yaml-cpp/include/eventhandler.h b/Source/UnrealYAML/yaml-cpp/include/eventhandler.h
+--- a/Source/UnrealYAML/yaml-cpp/include/eventhandler.h	(revision f71623dfaa3d15b250dbfa8f9911cb323e49e5d5)
++++ b/Source/UnrealYAML/yaml-cpp/include/eventhandler.h	(date 1636024204775)
+@@ -28,11 +28,11 @@
+                         anchor_t anchor, const std::string& value) = 0;
+ 
+   virtual void OnSequenceStart(const Mark& mark, const std::string& tag,
+-                               anchor_t anchor, EmitterStyle::value style) = 0;
++                               anchor_t anchor, EmitterStyle style) = 0;
+   virtual void OnSequenceEnd() = 0;
+ 
+   virtual void OnMapStart(const Mark& mark, const std::string& tag,
+-                          anchor_t anchor, EmitterStyle::value style) = 0;
++                          anchor_t anchor, EmitterStyle style) = 0;
+   virtual void OnMapEnd() = 0;
+ 
+   virtual void OnAnchor(const Mark& /*mark*/,
+Index: Source/UnrealYAML/yaml-cpp/include/emitfromevents.h
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Source/UnrealYAML/yaml-cpp/include/emitfromevents.h b/Source/UnrealYAML/yaml-cpp/include/emitfromevents.h
+--- a/Source/UnrealYAML/yaml-cpp/include/emitfromevents.h	(revision f71623dfaa3d15b250dbfa8f9911cb323e49e5d5)
++++ b/Source/UnrealYAML/yaml-cpp/include/emitfromevents.h	(date 1636025145578)
+@@ -33,11 +33,11 @@
+                         anchor_t anchor, const std::string& value) override;
+ 
+   void OnSequenceStart(const Mark& mark, const std::string& tag,
+-                               anchor_t anchor, EmitterStyle::value style) override;
++                               anchor_t anchor, EmitterStyle style) override;
+   void OnSequenceEnd() override;
+ 
+   void OnMapStart(const Mark& mark, const std::string& tag,
+-                          anchor_t anchor, EmitterStyle::value style) override;
++                          anchor_t anchor, EmitterStyle style) override;
+   void OnMapEnd() override;
+ 
+  private:
+@@ -47,10 +47,8 @@
+  private:
+   Emitter& m_emitter;
+ 
+-  struct State {
+-    enum value { WaitingForSequenceEntry, WaitingForKey, WaitingForValue };
+-  };
+-  std::stack<State::value> m_stateStack;
++  enum class State {WaitingForSequenceEntry, WaitingForKey, WaitingForValue};
++  std::stack<State> m_stateStack;
+ };
+ }
+ 
+Index: Source/UnrealYAML/yaml-cpp/include/stlemitter.h
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Source/UnrealYAML/yaml-cpp/include/stlemitter.h b/Source/UnrealYAML/yaml-cpp/include/stlemitter.h
+--- a/Source/UnrealYAML/yaml-cpp/include/stlemitter.h	(revision f71623dfaa3d15b250dbfa8f9911cb323e49e5d5)
++++ b/Source/UnrealYAML/yaml-cpp/include/stlemitter.h	(date 1636026098540)
+@@ -15,10 +15,10 @@
+ namespace YAML {
+ template <typename Seq>
+ inline Emitter& EmitSeq(Emitter& emitter, const Seq& seq) {
+-  emitter << BeginSeq;
++  emitter << EmitterManip::BeginSeq;
+   for (const auto& v : seq)
+     emitter << v;
+-  emitter << EndSeq;
++  emitter << EmitterManip::EndSeq;
+   return emitter;
+ }
+ 
+@@ -39,10 +39,10 @@
+ 
+ template <typename K, typename V>
+ inline Emitter& operator<<(Emitter& emitter, const std::map<K, V>& m) {
+-  emitter << BeginMap;
++  emitter << EmitterManip::BeginMap;
+   for (const auto& v : m)
+-    emitter << Key << v.first << Value << v.second;
+-  emitter << EndMap;
++    emitter << EmitterManip::Key << v.first << EmitterManip::Value << v.second;
++  emitter << EmitterManip::EndMap;
+   return emitter;
+ }
+ }
+Index: Source/UnrealYAML/yaml-cpp/src/node/detail/node_data.cpp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Source/UnrealYAML/yaml-cpp/src/node/detail/node_data.cpp b/Source/UnrealYAML/yaml-cpp/src/node/detail/node_data.cpp
+--- a/Source/UnrealYAML/yaml-cpp/src/node/detail/node_data.cpp	(revision f71623dfaa3d15b250dbfa8f9911cb323e49e5d5)
++++ b/Source/UnrealYAML/yaml-cpp/src/node/detail/node_data.cpp	(date 1636024307205)
+@@ -39,7 +39,7 @@
+ 
+ void node_data::set_mark(const Mark& mark) { m_mark = mark; }
+ 
+-void node_data::set_type(NodeType::value type) {
++void node_data::set_type(NodeType type) {
+   if (type == NodeType::Undefined) {
+     m_type = type;
+     m_isDefined = false;
+@@ -72,7 +72,7 @@
+ 
+ void node_data::set_tag(const std::string& tag) { m_tag = tag; }
+ 
+-void node_data::set_style(EmitterStyle::value style) { m_style = style; }
++void node_data::set_style(EmitterStyle style) { m_style = style; }
+ 
+ void node_data::set_null() {
+   m_isDefined = true;
+Index: Source/UnrealYAML/yaml-cpp/include/emitter.h
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Source/UnrealYAML/yaml-cpp/include/emitter.h b/Source/UnrealYAML/yaml-cpp/include/emitter.h
+--- a/Source/UnrealYAML/yaml-cpp/include/emitter.h	(revision f71623dfaa3d15b250dbfa8f9911cb323e49e5d5)
++++ b/Source/UnrealYAML/yaml-cpp/include/emitter.h	(date 1636025977164)
+@@ -47,13 +47,13 @@
+   const std::string GetLastError() const;
+ 
+   // global setters
+-  bool SetOutputCharset(EMITTER_MANIP value);
+-  bool SetStringFormat(EMITTER_MANIP value);
+-  bool SetBoolFormat(EMITTER_MANIP value);
+-  bool SetNullFormat(EMITTER_MANIP value);
+-  bool SetIntBase(EMITTER_MANIP value);
+-  bool SetSeqFormat(EMITTER_MANIP value);
+-  bool SetMapFormat(EMITTER_MANIP value);
++  bool SetOutputCharset(EmitterManip value);
++  bool SetStringFormat(EmitterManip value);
++  bool SetBoolFormat(EmitterManip value);
++  bool SetNullFormat(EmitterManip value);
++  bool SetIntBase(EmitterManip value);
++  bool SetSeqFormat(EmitterManip value);
++  bool SetMapFormat(EmitterManip value);
+   bool SetIndent(std::size_t n);
+   bool SetPreCommentIndent(std::size_t n);
+   bool SetPostCommentIndent(std::size_t n);
+@@ -62,7 +62,7 @@
+   void RestoreGlobalModifiedSettings();
+ 
+   // local setters
+-  Emitter& SetLocalValue(EMITTER_MANIP value);
++  Emitter& SetLocalValue(EmitterManip value);
+   Emitter& SetLocalIndent(const _Indent& indent);
+   Emitter& SetLocalPrecision(const _Precision& precision);
+ 
+@@ -103,24 +103,24 @@
+   void EmitKindTag();
+   void EmitTag(bool verbatim, const _Tag& tag);
+ 
+-  void PrepareNode(EmitterNodeType::value child);
+-  void PrepareTopNode(EmitterNodeType::value child);
+-  void FlowSeqPrepareNode(EmitterNodeType::value child);
+-  void BlockSeqPrepareNode(EmitterNodeType::value child);
++  void PrepareNode(EmitterNodeType child);
++  void PrepareTopNode(EmitterNodeType child);
++  void FlowSeqPrepareNode(EmitterNodeType child);
++  void BlockSeqPrepareNode(EmitterNodeType child);
+ 
+-  void FlowMapPrepareNode(EmitterNodeType::value child);
++  void FlowMapPrepareNode(EmitterNodeType child);
+ 
+-  void FlowMapPrepareLongKey(EmitterNodeType::value child);
+-  void FlowMapPrepareLongKeyValue(EmitterNodeType::value child);
+-  void FlowMapPrepareSimpleKey(EmitterNodeType::value child);
+-  void FlowMapPrepareSimpleKeyValue(EmitterNodeType::value child);
++  void FlowMapPrepareLongKey(EmitterNodeType child);
++  void FlowMapPrepareLongKeyValue(EmitterNodeType child);
++  void FlowMapPrepareSimpleKey(EmitterNodeType child);
++  void FlowMapPrepareSimpleKeyValue(EmitterNodeType child);
+ 
+-  void BlockMapPrepareNode(EmitterNodeType::value child);
++  void BlockMapPrepareNode(EmitterNodeType child);
+ 
+-  void BlockMapPrepareLongKey(EmitterNodeType::value child);
+-  void BlockMapPrepareLongKeyValue(EmitterNodeType::value child);
+-  void BlockMapPrepareSimpleKey(EmitterNodeType::value child);
+-  void BlockMapPrepareSimpleKeyValue(EmitterNodeType::value child);
++  void BlockMapPrepareLongKey(EmitterNodeType child);
++  void BlockMapPrepareLongKeyValue(EmitterNodeType child);
++  void BlockMapPrepareSimpleKey(EmitterNodeType child);
++  void BlockMapPrepareSimpleKeyValue(EmitterNodeType child);
+ 
+   void SpaceOrIndentTo(bool requireSpace, std::size_t indent);
+ 
+@@ -265,7 +265,7 @@
+   return emitter.WriteStreamable(v);
+ }
+ 
+-inline Emitter& operator<<(Emitter& emitter, EMITTER_MANIP value) {
++inline Emitter& operator<<(Emitter& emitter, EmitterManip value) {
+   return emitter.SetLocalValue(value);
+ }
+ 
+Index: Source/UnrealYAML/yaml-cpp/include/emitterdef.h
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Source/UnrealYAML/yaml-cpp/include/emitterdef.h b/Source/UnrealYAML/yaml-cpp/include/emitterdef.h
+--- a/Source/UnrealYAML/yaml-cpp/include/emitterdef.h	(revision f71623dfaa3d15b250dbfa8f9911cb323e49e5d5)
++++ b/Source/UnrealYAML/yaml-cpp/include/emitterdef.h	(date 1636024730059)
+@@ -8,9 +8,7 @@
+ #endif
+ 
+ namespace YAML {
+-struct EmitterNodeType {
+-  enum value { NoType, Property, Scalar, FlowSeq, BlockSeq, FlowMap, BlockMap };
+-};
++	enum class EmitterNodeType {NoType, Property, Scalar, FlowSeq, BlockSeq, FlowMap, BlockMap};
+ }
+ 
+ #endif  // EMITTERDEF_H_62B23520_7C8E_11DE_8A39_0800200C9A66
+Index: Source/UnrealYAML/yaml-cpp/include/node/detail/node_ref.h
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Source/UnrealYAML/yaml-cpp/include/node/detail/node_ref.h b/Source/UnrealYAML/yaml-cpp/include/node/detail/node_ref.h
+--- a/Source/UnrealYAML/yaml-cpp/include/node/detail/node_ref.h	(revision f71623dfaa3d15b250dbfa8f9911cb323e49e5d5)
++++ b/Source/UnrealYAML/yaml-cpp/include/node/detail/node_ref.h	(date 1636024160045)
+@@ -22,20 +22,20 @@
+ 
+   bool is_defined() const { return m_pData->is_defined(); }
+   const Mark& mark() const { return m_pData->mark(); }
+-  NodeType::value type() const { return m_pData->type(); }
++  NodeType type() const { return m_pData->type(); }
+   const std::string& scalar() const { return m_pData->scalar(); }
+   const std::string& tag() const { return m_pData->tag(); }
+-  EmitterStyle::value style() const { return m_pData->style(); }
++  EmitterStyle style() const { return m_pData->style(); }
+ 
+   void mark_defined() { m_pData->mark_defined(); }
+   void set_data(const node_ref& rhs) { m_pData = rhs.m_pData; }
+ 
+   void set_mark(const Mark& mark) { m_pData->set_mark(mark); }
+-  void set_type(NodeType::value type) { m_pData->set_type(type); }
++  void set_type(NodeType type) { m_pData->set_type(type); }
+   void set_tag(const std::string& tag) { m_pData->set_tag(tag); }
+   void set_null() { m_pData->set_null(); }
+   void set_scalar(const std::string& scalar) { m_pData->set_scalar(scalar); }
+-  void set_style(EmitterStyle::value style) { m_pData->set_style(style); }
++  void set_style(EmitterStyle style) { m_pData->set_style(style); }
+ 
+   // size/iterator
+   std::size_t size() const { return m_pData->size(); }
+Index: Source/UnrealYAML/yaml-cpp/include/node/detail/node.h
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Source/UnrealYAML/yaml-cpp/include/node/detail/node.h b/Source/UnrealYAML/yaml-cpp/include/node/detail/node.h
+--- a/Source/UnrealYAML/yaml-cpp/include/node/detail/node.h	(revision f71623dfaa3d15b250dbfa8f9911cb323e49e5d5)
++++ b/Source/UnrealYAML/yaml-cpp/include/node/detail/node.h	(date 1636026579590)
+@@ -33,11 +33,11 @@
+ 
+   bool is_defined() const { return m_pRef->is_defined(); }
+   const Mark& mark() const { return m_pRef->mark(); }
+-  NodeType::value type() const { return m_pRef->type(); }
++  NodeType type() const { return m_pRef->type(); }
+ 
+   const std::string& scalar() const { return m_pRef->scalar(); }
+   const std::string& tag() const { return m_pRef->tag(); }
+-  EmitterStyle::value style() const { return m_pRef->style(); }
++  EmitterStyle style() const { return m_pRef->style(); }
+ 
+   template <typename T>
+   bool equals(const T& rhs, shared_memory_holder pMemory);
+@@ -73,7 +73,7 @@
+ 
+   void set_mark(const Mark& mark) { m_pRef->set_mark(mark); }
+ 
+-  void set_type(NodeType::value type) {
++  void set_type(NodeType type) {
+     if (type != NodeType::Undefined)
+       mark_defined();
+     m_pRef->set_type(type);
+@@ -92,7 +92,7 @@
+   }
+ 
+   // style
+-  void set_style(EmitterStyle::value style) {
++  void set_style(EmitterStyle style) {
+     mark_defined();
+     m_pRef->set_style(style);
+   }
+Index: Source/UnrealYAML/yaml-cpp/include/node/type.h
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Source/UnrealYAML/yaml-cpp/include/node/type.h b/Source/UnrealYAML/yaml-cpp/include/node/type.h
+--- a/Source/UnrealYAML/yaml-cpp/include/node/type.h	(revision f71623dfaa3d15b250dbfa8f9911cb323e49e5d5)
++++ b/Source/UnrealYAML/yaml-cpp/include/node/type.h	(date 1636024001359)
+@@ -8,9 +8,7 @@
+ #endif
+ 
+ namespace YAML {
+-struct NodeType {
+-  enum value { Undefined, Null, Scalar, Sequence, Map };
+-};
++	enum class NodeType {Undefined, Null, Scalar, Sequence, Map};
+ }
+ 
+ #endif  // VALUE_TYPE_H_62B23520_7C8E_11DE_8A39_0800200C9A66
+Index: Source/UnrealYAML/yaml-cpp/include/node/detail/node_iterator.h
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Source/UnrealYAML/yaml-cpp/include/node/detail/node_iterator.h b/Source/UnrealYAML/yaml-cpp/include/node/detail/node_iterator.h
+--- a/Source/UnrealYAML/yaml-cpp/include/node/detail/node_iterator.h	(revision f71623dfaa3d15b250dbfa8f9911cb323e49e5d5)
++++ b/Source/UnrealYAML/yaml-cpp/include/node/detail/node_iterator.h	(date 1636026099272)
+@@ -18,9 +18,7 @@
+ 
+ namespace YAML {
+ namespace detail {
+-struct iterator_type {
+-  enum value { NoneType, Sequence, Map };
+-};
++enum class iterator_type {NoneType, Sequence, Map};
+ 
+ template <typename V>
+ struct node_iterator_value : public std::pair<V*, V*> {
+@@ -167,7 +165,7 @@
+   }
+ 
+  private:
+-  typename iterator_type::value m_type;
++  iterator_type m_type;
+ 
+   SeqIter m_seqIt;
+   MapIter m_mapIt, m_mapEnd;
+Index: Source/UnrealYAML/yaml-cpp/src/emitterstate.cpp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Source/UnrealYAML/yaml-cpp/src/emitterstate.cpp b/Source/UnrealYAML/yaml-cpp/src/emitterstate.cpp
+--- a/Source/UnrealYAML/yaml-cpp/src/emitterstate.cpp	(revision f71623dfaa3d15b250dbfa8f9911cb323e49e5d5)
++++ b/Source/UnrealYAML/yaml-cpp/src/emitterstate.cpp	(date 1636024904543)
+@@ -9,19 +9,19 @@
+     : m_isGood(true),
+       m_lastError{},
+       // default global manipulators
+-      m_charset(EmitNonAscii),
+-      m_strFmt(Auto),
+-      m_boolFmt(TrueFalseBool),
+-      m_boolLengthFmt(LongBool),
+-      m_boolCaseFmt(LowerCase),
+-      m_nullFmt(TildeNull),
+-      m_intFmt(Dec),
++      m_charset(EmitterManip::EmitNonAscii),
++      m_strFmt(EmitterManip::Auto),
++      m_boolFmt(EmitterManip::TrueFalseBool),
++      m_boolLengthFmt(EmitterManip::LongBool),
++      m_boolCaseFmt(EmitterManip::LowerCase),
++      m_nullFmt(EmitterManip::TildeNull),
++      m_intFmt(EmitterManip::Dec),
+       m_indent(2),
+       m_preCommentIndent(2),
+       m_postCommentIndent(1),
+-      m_seqFmt(Block),
+-      m_mapFmt(Block),
+-      m_mapKeyFmt(Auto),
++      m_seqFmt(EmitterManip::Block),
++      m_mapFmt(EmitterManip::Block),
++      m_mapKeyFmt(EmitterManip::Auto),
+       m_floatPrecision(std::numeric_limits<float>::max_digits10),
+       m_doublePrecision(std::numeric_limits<double>::max_digits10),
+       //
+@@ -40,7 +40,7 @@
+ // SetLocalValue
+ // . We blindly tries to set all possible formatters to this value
+ // . Only the ones that make sense will be accepted
+-void EmitterState::SetLocalValue(EMITTER_MANIP value) {
++void EmitterState::SetLocalValue(EmitterManip value) {
+   SetOutputCharset(value, FmtScope::Local);
+   SetStringFormat(value, FmtScope::Local);
+   SetBoolFormat(value, FmtScope::Local);
+@@ -96,15 +96,15 @@
+   m_hasNonContent = false;
+ }
+ 
+-EmitterNodeType::value EmitterState::NextGroupType(
+-    GroupType::value type) const {
++EmitterNodeType EmitterState::NextGroupType(
++    GroupType type) const {
+   if (type == GroupType::Seq) {
+-    if (GetFlowType(type) == Block)
++    if (GetFlowType(type) == EmitterManip::Block)
+       return EmitterNodeType::BlockSeq;
+     return EmitterNodeType::FlowSeq;
+   }
+ 
+-  if (GetFlowType(type) == Block)
++  if (GetFlowType(type) == EmitterManip::Block)
+     return EmitterNodeType::BlockMap;
+   return EmitterNodeType::FlowMap;
+ 
+@@ -130,7 +130,7 @@
+   ClearModifiedSettings();
+ }
+ 
+-void EmitterState::StartedGroup(GroupType::value type) {
++void EmitterState::StartedGroup(GroupType type) {
+   StartedNode();
+ 
+   const std::size_t lastGroupIndent =
+@@ -147,7 +147,7 @@
+   pGroup->modifiedSettings = std::move(m_modifiedSettings);
+ 
+   // set up group
+-  if (GetFlowType(type) == Block) {
++  if (GetFlowType(type) == EmitterManip::Block) {
+     pGroup->flowType = FlowType::Block;
+   } else {
+     pGroup->flowType = FlowType::Flow;
+@@ -157,7 +157,7 @@
+   m_groups.push_back(std::move(pGroup));
+ }
+ 
+-void EmitterState::EndedGroup(GroupType::value type) {
++void EmitterState::EndedGroup(GroupType type) {
+   if (m_groups.empty()) {
+     if (type == GroupType::Seq) {
+       return SetError(ErrorMsg::UNEXPECTED_END_SEQ);
+@@ -196,7 +196,7 @@
+   m_hasNonContent = false;
+ }
+ 
+-EmitterNodeType::value EmitterState::CurGroupNodeType() const {
++EmitterNodeType EmitterState::CurGroupNodeType() const {
+   if (m_groups.empty()) {
+     return EmitterNodeType::NoType;
+   }
+@@ -204,11 +204,11 @@
+   return m_groups.back()->NodeType();
+ }
+ 
+-GroupType::value EmitterState::CurGroupType() const {
++GroupType EmitterState::CurGroupType() const {
+   return m_groups.empty() ? GroupType::NoType : m_groups.back()->type;
+ }
+ 
+-FlowType::value EmitterState::CurGroupFlowType() const {
++FlowType EmitterState::CurGroupFlowType() const {
+   return m_groups.empty() ? FlowType::NoType : m_groups.back()->flowType;
+ }
+ 
+@@ -238,12 +238,12 @@
+   m_globalModifiedSettings.restore();
+ }
+ 
+-bool EmitterState::SetOutputCharset(EMITTER_MANIP value,
+-                                    FmtScope::value scope) {
++bool EmitterState::SetOutputCharset(EmitterManip value,
++                                    FmtScope scope) {
+   switch (value) {
+-    case EmitNonAscii:
+-    case EscapeNonAscii:
+-    case EscapeAsJson:
++    case EmitterManip::EmitNonAscii:
++    case EmitterManip::EscapeNonAscii:
++    case EmitterManip::EscapeAsJson:
+       _Set(m_charset, value, scope);
+       return true;
+     default:
+@@ -251,12 +251,12 @@
+   }
+ }
+ 
+-bool EmitterState::SetStringFormat(EMITTER_MANIP value, FmtScope::value scope) {
++bool EmitterState::SetStringFormat(EmitterManip value, FmtScope scope) {
+   switch (value) {
+-    case Auto:
+-    case SingleQuoted:
+-    case DoubleQuoted:
+-    case Literal:
++    case EmitterManip::Auto:
++    case EmitterManip::SingleQuoted:
++    case EmitterManip::DoubleQuoted:
++    case EmitterManip::Literal:
+       _Set(m_strFmt, value, scope);
+       return true;
+     default:
+@@ -264,11 +264,11 @@
+   }
+ }
+ 
+-bool EmitterState::SetBoolFormat(EMITTER_MANIP value, FmtScope::value scope) {
++bool EmitterState::SetBoolFormat(EmitterManip value, FmtScope scope) {
+   switch (value) {
+-    case OnOffBool:
+-    case TrueFalseBool:
+-    case YesNoBool:
++    case EmitterManip::OnOffBool:
++    case EmitterManip::TrueFalseBool:
++    case EmitterManip::YesNoBool:
+       _Set(m_boolFmt, value, scope);
+       return true;
+     default:
+@@ -276,11 +276,11 @@
+   }
+ }
+ 
+-bool EmitterState::SetBoolLengthFormat(EMITTER_MANIP value,
+-                                       FmtScope::value scope) {
++bool EmitterState::SetBoolLengthFormat(EmitterManip value,
++                                       FmtScope scope) {
+   switch (value) {
+-    case LongBool:
+-    case ShortBool:
++    case EmitterManip::LongBool:
++    case EmitterManip::ShortBool:
+       _Set(m_boolLengthFmt, value, scope);
+       return true;
+     default:
+@@ -288,12 +288,12 @@
+   }
+ }
+ 
+-bool EmitterState::SetBoolCaseFormat(EMITTER_MANIP value,
+-                                     FmtScope::value scope) {
++bool EmitterState::SetBoolCaseFormat(EmitterManip value,
++                                     FmtScope scope) {
+   switch (value) {
+-    case UpperCase:
+-    case LowerCase:
+-    case CamelCase:
++    case EmitterManip::UpperCase:
++    case EmitterManip::LowerCase:
++    case EmitterManip::CamelCase:
+       _Set(m_boolCaseFmt, value, scope);
+       return true;
+     default:
+@@ -301,12 +301,12 @@
+   }
+ }
+ 
+-bool EmitterState::SetNullFormat(EMITTER_MANIP value, FmtScope::value scope) {
++bool EmitterState::SetNullFormat(EmitterManip value, FmtScope scope) {
+   switch (value) {
+-    case LowerNull:
+-    case UpperNull:
+-    case CamelNull:
+-    case TildeNull:
++    case EmitterManip::LowerNull:
++    case EmitterManip::UpperNull:
++    case EmitterManip::CamelNull:
++    case EmitterManip::TildeNull:
+       _Set(m_nullFmt, value, scope);
+       return true;
+     default:
+@@ -314,11 +314,11 @@
+   }
+ }
+ 
+-bool EmitterState::SetIntFormat(EMITTER_MANIP value, FmtScope::value scope) {
++bool EmitterState::SetIntFormat(EmitterManip value, FmtScope scope) {
+   switch (value) {
+-    case Dec:
+-    case Hex:
+-    case Oct:
++    case EmitterManip::Dec:
++    case EmitterManip::Hex:
++    case EmitterManip::Oct:
+       _Set(m_intFmt, value, scope);
+       return true;
+     default:
+@@ -326,7 +326,7 @@
+   }
+ }
+ 
+-bool EmitterState::SetIndent(std::size_t value, FmtScope::value scope) {
++bool EmitterState::SetIndent(std::size_t value, FmtScope scope) {
+   if (value <= 1)
+     return false;
+ 
+@@ -335,7 +335,7 @@
+ }
+ 
+ bool EmitterState::SetPreCommentIndent(std::size_t value,
+-                                       FmtScope::value scope) {
++                                       FmtScope scope) {
+   if (value == 0)
+     return false;
+ 
+@@ -344,7 +344,7 @@
+ }
+ 
+ bool EmitterState::SetPostCommentIndent(std::size_t value,
+-                                        FmtScope::value scope) {
++                                        FmtScope scope) {
+   if (value == 0)
+     return false;
+ 
+@@ -352,11 +352,11 @@
+   return true;
+ }
+ 
+-bool EmitterState::SetFlowType(GroupType::value groupType, EMITTER_MANIP value,
+-                               FmtScope::value scope) {
++bool EmitterState::SetFlowType(GroupType groupType, EmitterManip value,
++                               FmtScope scope) {
+   switch (value) {
+-    case Block:
+-    case Flow:
++    case EmitterManip::Block:
++    case EmitterManip::Flow:
+       _Set(groupType == GroupType::Seq ? m_seqFmt : m_mapFmt, value, scope);
+       return true;
+     default:
+@@ -364,19 +364,19 @@
+   }
+ }
+ 
+-EMITTER_MANIP EmitterState::GetFlowType(GroupType::value groupType) const {
++EmitterManip EmitterState::GetFlowType(GroupType groupType) const {
+   // force flow style if we're currently in a flow
+   if (CurGroupFlowType() == FlowType::Flow)
+-    return Flow;
++    return EmitterManip::Flow;
+ 
+   // otherwise, go with what's asked of us
+   return (groupType == GroupType::Seq ? m_seqFmt.get() : m_mapFmt.get());
+ }
+ 
+-bool EmitterState::SetMapKeyFormat(EMITTER_MANIP value, FmtScope::value scope) {
++bool EmitterState::SetMapKeyFormat(EmitterManip value, FmtScope scope) {
+   switch (value) {
+-    case Auto:
+-    case LongKey:
++    case EmitterManip::Auto:
++    case EmitterManip::LongKey:
+       _Set(m_mapKeyFmt, value, scope);
+       return true;
+     default:
+@@ -384,7 +384,7 @@
+   }
+ }
+ 
+-bool EmitterState::SetFloatPrecision(std::size_t value, FmtScope::value scope) {
++bool EmitterState::SetFloatPrecision(std::size_t value, FmtScope scope) {
+   if (value > std::numeric_limits<float>::max_digits10)
+     return false;
+   _Set(m_floatPrecision, value, scope);
+@@ -392,7 +392,7 @@
+ }
+ 
+ bool EmitterState::SetDoublePrecision(std::size_t value,
+-                                      FmtScope::value scope) {
++                                      FmtScope scope) {
+   if (value > std::numeric_limits<double>::max_digits10)
+     return false;
+   _Set(m_doublePrecision, value, scope);
+Index: Source/UnrealYAML/yaml-cpp/src/nodebuilder.h
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Source/UnrealYAML/yaml-cpp/src/nodebuilder.h b/Source/UnrealYAML/yaml-cpp/src/nodebuilder.h
+--- a/Source/UnrealYAML/yaml-cpp/src/nodebuilder.h	(revision f71623dfaa3d15b250dbfa8f9911cb323e49e5d5)
++++ b/Source/UnrealYAML/yaml-cpp/src/nodebuilder.h	(date 1636024937317)
+@@ -44,11 +44,11 @@
+                         anchor_t anchor, const std::string& value) override;
+ 
+   void OnSequenceStart(const Mark& mark, const std::string& tag,
+-                               anchor_t anchor, EmitterStyle::value style) override;
++                               anchor_t anchor, EmitterStyle style) override;
+   void OnSequenceEnd() override;
+ 
+   void OnMapStart(const Mark& mark, const std::string& tag,
+-                          anchor_t anchor, EmitterStyle::value style) override;
++                          anchor_t anchor, EmitterStyle style) override;
+   void OnMapEnd() override;
+ 
+  private:
+Index: Source/UnrealYAML/yaml-cpp/src/collectionstack.h
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Source/UnrealYAML/yaml-cpp/src/collectionstack.h b/Source/UnrealYAML/yaml-cpp/src/collectionstack.h
+--- a/Source/UnrealYAML/yaml-cpp/src/collectionstack.h	(revision f71623dfaa3d15b250dbfa8f9911cb323e49e5d5)
++++ b/Source/UnrealYAML/yaml-cpp/src/collectionstack.h	(date 1636025177991)
+@@ -11,30 +11,28 @@
+ #include <stack>
+ 
+ namespace YAML {
+-struct CollectionType {
+-  enum value { NoCollection, BlockMap, BlockSeq, FlowMap, FlowSeq, CompactMap };
+-};
++enum class CollectionType {NoCollection, BlockMap, BlockSeq, FlowMap, FlowSeq, CompactMap };
+ 
+ class CollectionStack {
+  public:
+   CollectionStack() : collectionStack{} {}
+-  CollectionType::value GetCurCollectionType() const {
++  CollectionType GetCurCollectionType() const {
+     if (collectionStack.empty())
+       return CollectionType::NoCollection;
+     return collectionStack.top();
+   }
+ 
+-  void PushCollectionType(CollectionType::value type) {
++  void PushCollectionType(CollectionType type) {
+     collectionStack.push(type);
+   }
+-  void PopCollectionType(CollectionType::value type) {
++  void PopCollectionType(CollectionType type) {
+     assert(type == GetCurCollectionType());
+     (void)type;
+     collectionStack.pop();
+   }
+ 
+  private:
+-  std::stack<CollectionType::value> collectionStack;
++  std::stack<CollectionType> collectionStack;
+ };
+ }  // namespace YAML
+ 
+Index: Source/UnrealYAML/yaml-cpp/include/node/impl.h
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Source/UnrealYAML/yaml-cpp/include/node/impl.h b/Source/UnrealYAML/yaml-cpp/include/node/impl.h
+--- a/Source/UnrealYAML/yaml-cpp/include/node/impl.h	(revision f71623dfaa3d15b250dbfa8f9911cb323e49e5d5)
++++ b/Source/UnrealYAML/yaml-cpp/include/node/impl.h	(date 1636024080197)
+@@ -19,7 +19,7 @@
+ inline Node::Node()
+     : m_isValid(true), m_invalidKey{}, m_pMemory(nullptr), m_pNode(nullptr) {}
+ 
+-inline Node::Node(NodeType::value type)
++inline Node::Node(NodeType type)
+     : m_isValid(true),
+       m_invalidKey{},
+       m_pMemory(new detail::memory_holder),
+@@ -79,7 +79,7 @@
+   return m_pNode ? m_pNode->mark() : Mark::null_mark();
+ }
+ 
+-inline NodeType::value Node::Type() const {
++inline NodeType Node::Type() const {
+   if (!m_isValid)
+     throw InvalidNode(m_invalidKey);
+   return m_pNode ? m_pNode->type() : NodeType::Null;
+@@ -180,13 +180,13 @@
+   m_pNode->set_tag(tag);
+ }
+ 
+-inline EmitterStyle::value Node::Style() const {
++inline EmitterStyle Node::Style() const {
+   if (!m_isValid)
+     throw InvalidNode(m_invalidKey);
+   return m_pNode ? m_pNode->style() : EmitterStyle::Default;
+ }
+ 
+-inline void Node::SetStyle(EmitterStyle::value style) {
++inline void Node::SetStyle(EmitterStyle style) {
+   EnsureNodeExists();
+   m_pNode->set_style(style);
+ }
+Index: Source/UnrealYAML/yaml-cpp/include/node/node.h
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Source/UnrealYAML/yaml-cpp/include/node/node.h b/Source/UnrealYAML/yaml-cpp/include/node/node.h
+--- a/Source/UnrealYAML/yaml-cpp/include/node/node.h	(revision f71623dfaa3d15b250dbfa8f9911cb323e49e5d5)
++++ b/Source/UnrealYAML/yaml-cpp/include/node/node.h	(date 1636024127884)
+@@ -42,7 +42,7 @@
+   using const_iterator = YAML::const_iterator;
+ 
+   Node();
+-  explicit Node(NodeType::value type);
++  explicit Node(NodeType type);
+   template <typename T>
+   explicit Node(const T& rhs);
+   explicit Node(const detail::iterator_value& rhs);
+@@ -50,7 +50,7 @@
+   ~Node();
+ 
+   YAML::Mark Mark() const;
+-  NodeType::value Type() const;
++  NodeType Type() const;
+   bool IsDefined() const;
+   bool IsNull() const { return Type() == NodeType::Null; }
+   bool IsScalar() const { return Type() == NodeType::Scalar; }
+@@ -73,8 +73,8 @@
+ 
+   // style
+   // WARNING: This API might change in future releases.
+-  EmitterStyle::value Style() const;
+-  void SetStyle(EmitterStyle::value style);
++  EmitterStyle Style() const;
++  void SetStyle(EmitterStyle style);
+ 
+   // assignment
+   bool is(const Node& rhs) const;
+Index: Source/UnrealYAML/yaml-cpp/src/emitter.cpp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Source/UnrealYAML/yaml-cpp/src/emitter.cpp b/Source/UnrealYAML/yaml-cpp/src/emitter.cpp
+--- a/Source/UnrealYAML/yaml-cpp/src/emitter.cpp	(revision f71623dfaa3d15b250dbfa8f9911cb323e49e5d5)
++++ b/Source/UnrealYAML/yaml-cpp/src/emitter.cpp	(date 1636024845363)
+@@ -31,15 +31,15 @@
+ }
+ 
+ // global setters
+-bool Emitter::SetOutputCharset(EMITTER_MANIP value) {
++bool Emitter::SetOutputCharset(EmitterManip value) {
+   return m_pState->SetOutputCharset(value, FmtScope::Global);
+ }
+ 
+-bool Emitter::SetStringFormat(EMITTER_MANIP value) {
++bool Emitter::SetStringFormat(EmitterManip value) {
+   return m_pState->SetStringFormat(value, FmtScope::Global);
+ }
+ 
+-bool Emitter::SetBoolFormat(EMITTER_MANIP value) {
++bool Emitter::SetBoolFormat(EmitterManip value) {
+   bool ok = false;
+   if (m_pState->SetBoolFormat(value, FmtScope::Global))
+     ok = true;
+@@ -50,19 +50,19 @@
+   return ok;
+ }
+ 
+-bool Emitter::SetNullFormat(EMITTER_MANIP value) {
++bool Emitter::SetNullFormat(EmitterManip value) {
+   return m_pState->SetNullFormat(value, FmtScope::Global);
+ }
+ 
+-bool Emitter::SetIntBase(EMITTER_MANIP value) {
++bool Emitter::SetIntBase(EmitterManip value) {
+   return m_pState->SetIntFormat(value, FmtScope::Global);
+ }
+ 
+-bool Emitter::SetSeqFormat(EMITTER_MANIP value) {
++bool Emitter::SetSeqFormat(EmitterManip value) {
+   return m_pState->SetFlowType(GroupType::Seq, value, FmtScope::Global);
+ }
+ 
+-bool Emitter::SetMapFormat(EMITTER_MANIP value) {
++bool Emitter::SetMapFormat(EmitterManip value) {
+   bool ok = false;
+   if (m_pState->SetFlowType(GroupType::Map, value, FmtScope::Global))
+     ok = true;
+@@ -97,37 +97,37 @@
+ 
+ // SetLocalValue
+ // . Either start/end a group, or set a modifier locally
+-Emitter& Emitter::SetLocalValue(EMITTER_MANIP value) {
++Emitter& Emitter::SetLocalValue(EmitterManip value) {
+   if (!good())
+     return *this;
+ 
+   switch (value) {
+-    case BeginDoc:
++    case EmitterManip::BeginDoc:
+       EmitBeginDoc();
+       break;
+-    case EndDoc:
++    case EmitterManip::EndDoc:
+       EmitEndDoc();
+       break;
+-    case BeginSeq:
++    case EmitterManip::BeginSeq:
+       EmitBeginSeq();
+       break;
+-    case EndSeq:
++    case EmitterManip::EndSeq:
+       EmitEndSeq();
+       break;
+-    case BeginMap:
++    case EmitterManip::BeginMap:
+       EmitBeginMap();
+       break;
+-    case EndMap:
++    case EmitterManip::EndMap:
+       EmitEndMap();
+       break;
+-    case Key:
+-    case Value:
++    case EmitterManip::Key:
++    case EmitterManip::Value:
+       // deprecated (these can be deduced by the parity of nodes in a map)
+       break;
+-    case TagByKind:
++    case EmitterManip::TagByKind:
+       EmitKindTag();
+       break;
+-    case Newline:
++    case EmitterManip::Newline:
+       EmitNewline();
+       break;
+     default:
+@@ -206,7 +206,7 @@
+ void Emitter::EmitEndSeq() {
+   if (!good())
+     return;
+-  FlowType::value originalType = m_pState->CurGroupFlowType();
++  FlowType originalType = m_pState->CurGroupFlowType();
+ 
+   if (m_pState->CurGroupChildCount() == 0)
+     m_pState->ForceFlow();
+@@ -241,7 +241,7 @@
+ void Emitter::EmitEndMap() {
+   if (!good())
+     return;
+-  FlowType::value originalType = m_pState->CurGroupFlowType();
++  FlowType originalType = m_pState->CurGroupFlowType();
+ 
+   if (m_pState->CurGroupChildCount() == 0)
+     m_pState->ForceFlow();
+@@ -276,7 +276,7 @@
+ 
+ // Put the stream in a state so we can simply write the next node
+ // E.g., if we're in a sequence, write the "- "
+-void Emitter::PrepareNode(EmitterNodeType::value child) {
++void Emitter::PrepareNode(EmitterNodeType child) {
+   switch (m_pState->CurGroupNodeType()) {
+     case EmitterNodeType::NoType:
+       PrepareTopNode(child);
+@@ -300,7 +300,7 @@
+   }
+ }
+ 
+-void Emitter::PrepareTopNode(EmitterNodeType::value child) {
++void Emitter::PrepareTopNode(EmitterNodeType child) {
+   if (child == EmitterNodeType::NoType)
+     return;
+ 
+@@ -326,7 +326,7 @@
+   }
+ }
+ 
+-void Emitter::FlowSeqPrepareNode(EmitterNodeType::value child) {
++void Emitter::FlowSeqPrepareNode(EmitterNodeType child) {
+   const std::size_t lastIndent = m_pState->LastIndent();
+ 
+   if (!m_pState->HasBegunNode()) {
+@@ -357,7 +357,7 @@
+   }
+ }
+ 
+-void Emitter::BlockSeqPrepareNode(EmitterNodeType::value child) {
++void Emitter::BlockSeqPrepareNode(EmitterNodeType child) {
+   const std::size_t curIndent = m_pState->CurIndent();
+   const std::size_t nextIndent = curIndent + m_pState->CurGroupIndent();
+ 
+@@ -391,9 +391,9 @@
+   }
+ }
+ 
+-void Emitter::FlowMapPrepareNode(EmitterNodeType::value child) {
++void Emitter::FlowMapPrepareNode(EmitterNodeType child) {
+   if (m_pState->CurGroupChildCount() % 2 == 0) {
+-    if (m_pState->GetMapKeyFormat() == LongKey)
++    if (m_pState->GetMapKeyFormat() == EmitterManip::LongKey)
+       m_pState->SetLongKey();
+ 
+     if (m_pState->CurGroupLongKey())
+@@ -408,7 +408,7 @@
+   }
+ }
+ 
+-void Emitter::FlowMapPrepareLongKey(EmitterNodeType::value child) {
++void Emitter::FlowMapPrepareLongKey(EmitterNodeType child) {
+   const std::size_t lastIndent = m_pState->LastIndent();
+ 
+   if (!m_pState->HasBegunNode()) {
+@@ -439,7 +439,7 @@
+   }
+ }
+ 
+-void Emitter::FlowMapPrepareLongKeyValue(EmitterNodeType::value child) {
++void Emitter::FlowMapPrepareLongKeyValue(EmitterNodeType child) {
+   const std::size_t lastIndent = m_pState->LastIndent();
+ 
+   if (!m_pState->HasBegunNode()) {
+@@ -467,7 +467,7 @@
+   }
+ }
+ 
+-void Emitter::FlowMapPrepareSimpleKey(EmitterNodeType::value child) {
++void Emitter::FlowMapPrepareSimpleKey(EmitterNodeType child) {
+   const std::size_t lastIndent = m_pState->LastIndent();
+ 
+   if (!m_pState->HasBegunNode()) {
+@@ -498,7 +498,7 @@
+   }
+ }
+ 
+-void Emitter::FlowMapPrepareSimpleKeyValue(EmitterNodeType::value child) {
++void Emitter::FlowMapPrepareSimpleKeyValue(EmitterNodeType child) {
+   const std::size_t lastIndent = m_pState->LastIndent();
+ 
+   if (!m_pState->HasBegunNode()) {
+@@ -529,9 +529,9 @@
+   }
+ }
+ 
+-void Emitter::BlockMapPrepareNode(EmitterNodeType::value child) {
++void Emitter::BlockMapPrepareNode(EmitterNodeType child) {
+   if (m_pState->CurGroupChildCount() % 2 == 0) {
+-    if (m_pState->GetMapKeyFormat() == LongKey)
++    if (m_pState->GetMapKeyFormat() == EmitterManip::LongKey)
+       m_pState->SetLongKey();
+     if (child == EmitterNodeType::BlockSeq ||
+         child == EmitterNodeType::BlockMap)
+@@ -549,7 +549,7 @@
+   }
+ }
+ 
+-void Emitter::BlockMapPrepareLongKey(EmitterNodeType::value child) {
++void Emitter::BlockMapPrepareLongKey(EmitterNodeType child) {
+   const std::size_t curIndent = m_pState->CurIndent();
+   const std::size_t childCount = m_pState->CurGroupChildCount();
+ 
+@@ -584,7 +584,7 @@
+   }
+ }
+ 
+-void Emitter::BlockMapPrepareLongKeyValue(EmitterNodeType::value child) {
++void Emitter::BlockMapPrepareLongKeyValue(EmitterNodeType child) {
+   const std::size_t curIndent = m_pState->CurIndent();
+ 
+   if (child == EmitterNodeType::NoType)
+@@ -614,7 +614,7 @@
+   }
+ }
+ 
+-void Emitter::BlockMapPrepareSimpleKey(EmitterNodeType::value child) {
++void Emitter::BlockMapPrepareSimpleKey(EmitterNodeType child) {
+   const std::size_t curIndent = m_pState->CurIndent();
+   const std::size_t childCount = m_pState->CurGroupChildCount();
+ 
+@@ -642,7 +642,7 @@
+   }
+ }
+ 
+-void Emitter::BlockMapPrepareSimpleKeyValue(EmitterNodeType::value child) {
++void Emitter::BlockMapPrepareSimpleKeyValue(EmitterNodeType child) {
+   const std::size_t curIndent = m_pState->CurIndent();
+   const std::size_t nextIndent = curIndent + m_pState->CurGroupIndent();
+ 
+@@ -682,14 +682,14 @@
+ void Emitter::PrepareIntegralStream(std::stringstream& stream) const {
+ 
+   switch (m_pState->GetIntFormat()) {
+-    case Dec:
++    case EmitterManip::Dec:
+       stream << std::dec;
+       break;
+-    case Hex:
++    case EmitterManip::Hex:
+       stream << "0x";
+       stream << std::hex;
+       break;
+-    case Oct:
++    case EmitterManip::Oct:
+       stream << "0";
+       stream << std::oct;
+       break;
+@@ -703,11 +703,11 @@
+ // *******************************************************************************************
+ // overloads of Write
+ 
+-StringEscaping::value GetStringEscapingStyle(const EMITTER_MANIP emitterManip) {
++StringEscaping GetStringEscapingStyle(const EmitterManip emitterManip) {
+   switch (emitterManip) {
+-    case EscapeNonAscii:
++    case EmitterManip::EscapeNonAscii:
+       return StringEscaping::NonAscii;
+-    case EscapeAsJson:
++    case EmitterManip::EscapeAsJson:
+       return StringEscaping::JSON;
+     default:
+       return StringEscaping::None;
+@@ -719,14 +719,14 @@
+   if (!good())
+     return *this;
+ 
+-  StringEscaping::value stringEscaping = GetStringEscapingStyle(m_pState->GetOutputCharset());
++  StringEscaping stringEscaping = GetStringEscapingStyle(m_pState->GetOutputCharset());
+ 
+-  const StringFormat::value strFormat =
++  const StringFormat strFormat =
+       Utils::ComputeStringFormat(str, m_pState->GetStringFormat(),
+                                  m_pState->CurGroupFlowType(), stringEscaping == StringEscaping::NonAscii);
+ 
+   if (strFormat == StringFormat::Literal || str.size() > 1024)
+-    m_pState->SetMapKeyFormat(YAML::LongKey, FmtScope::Local);
++    m_pState->SetMapKeyFormat(EmitterManip::LongKey, FmtScope::Local);
+ 
+   PrepareNode(EmitterNodeType::Scalar);
+ 
+@@ -760,42 +760,42 @@
+ }
+ 
+ const char* Emitter::ComputeFullBoolName(bool b) const {
+-  const EMITTER_MANIP mainFmt = (m_pState->GetBoolLengthFormat() == ShortBool
+-                                     ? YesNoBool
++  const EmitterManip mainFmt = (m_pState->GetBoolLengthFormat() == EmitterManip::ShortBool
++                                     ? EmitterManip::YesNoBool
+                                      : m_pState->GetBoolFormat());
+-  const EMITTER_MANIP caseFmt = m_pState->GetBoolCaseFormat();
++  const EmitterManip caseFmt = m_pState->GetBoolCaseFormat();
+   switch (mainFmt) {
+-    case YesNoBool:
++    case EmitterManip::YesNoBool:
+       switch (caseFmt) {
+-        case UpperCase:
++        case EmitterManip::UpperCase:
+           return b ? "YES" : "NO";
+-        case CamelCase:
++        case EmitterManip::CamelCase:
+           return b ? "Yes" : "No";
+-        case LowerCase:
++        case EmitterManip::LowerCase:
+           return b ? "yes" : "no";
+         default:
+           break;
+       }
+       break;
+-    case OnOffBool:
++    case EmitterManip::OnOffBool:
+       switch (caseFmt) {
+-        case UpperCase:
++        case EmitterManip::UpperCase:
+           return b ? "ON" : "OFF";
+-        case CamelCase:
++        case EmitterManip::CamelCase:
+           return b ? "On" : "Off";
+-        case LowerCase:
++        case EmitterManip::LowerCase:
+           return b ? "on" : "off";
+         default:
+           break;
+       }
+       break;
+-    case TrueFalseBool:
++    case EmitterManip::TrueFalseBool:
+       switch (caseFmt) {
+-        case UpperCase:
++        case EmitterManip::UpperCase:
+           return b ? "TRUE" : "FALSE";
+-        case CamelCase:
++        case EmitterManip::CamelCase:
+           return b ? "True" : "False";
+-        case LowerCase:
++        case EmitterManip::LowerCase:
+           return b ? "true" : "false";
+         default:
+           break;
+@@ -810,13 +810,13 @@
+ 
+ const char* Emitter::ComputeNullName() const {
+   switch (m_pState->GetNullFormat()) {
+-    case LowerNull:
++    case EmitterManip::LowerNull:
+       return "null";
+-    case UpperNull:
++    case EmitterManip::UpperNull:
+       return "NULL";
+-    case CamelNull:
++    case EmitterManip::CamelNull:
+       return "Null";
+-    case TildeNull:
++    case EmitterManip::TildeNull:
+       // fallthrough
+     default:
+       return "~";
+@@ -830,7 +830,7 @@
+   PrepareNode(EmitterNodeType::Scalar);
+ 
+   const char* name = ComputeFullBoolName(b);
+-  if (m_pState->GetBoolLengthFormat() == ShortBool)
++  if (m_pState->GetBoolLengthFormat() == EmitterManip::ShortBool)
+     m_stream << name[0];
+   else
+     m_stream << name;
+Index: Source/UnrealYAML/yaml-cpp/include/node/detail/node_data.h
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Source/UnrealYAML/yaml-cpp/include/node/detail/node_data.h b/Source/UnrealYAML/yaml-cpp/include/node/detail/node_data.h
+--- a/Source/UnrealYAML/yaml-cpp/include/node/detail/node_data.h	(revision f71623dfaa3d15b250dbfa8f9911cb323e49e5d5)
++++ b/Source/UnrealYAML/yaml-cpp/include/node/detail/node_data.h	(date 1636024291099)
+@@ -35,20 +35,20 @@
+ 
+   void mark_defined();
+   void set_mark(const Mark& mark);
+-  void set_type(NodeType::value type);
++  void set_type(NodeType type);
+   void set_tag(const std::string& tag);
+   void set_null();
+   void set_scalar(const std::string& scalar);
+-  void set_style(EmitterStyle::value style);
++  void set_style(EmitterStyle style);
+ 
+   bool is_defined() const { return m_isDefined; }
+   const Mark& mark() const { return m_mark; }
+-  NodeType::value type() const {
++  NodeType type() const {
+     return m_isDefined ? m_type : NodeType::Undefined;
+   }
+   const std::string& scalar() const { return m_scalar; }
+   const std::string& tag() const { return m_tag; }
+-  EmitterStyle::value style() const { return m_style; }
++  EmitterStyle style() const { return m_style; }
+ 
+   // size/iterator
+   std::size_t size() const;
+@@ -100,9 +100,9 @@
+  private:
+   bool m_isDefined;
+   Mark m_mark;
+-  NodeType::value m_type;
++  NodeType m_type;
+   std::string m_tag;
+-  EmitterStyle::value m_style;
++  EmitterStyle m_style;
+ 
+   // scalar
+   std::string m_scalar;
+Index: Source/UnrealYAML/yaml-cpp/src/emitterutils.h
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Source/UnrealYAML/yaml-cpp/src/emitterutils.h b/Source/UnrealYAML/yaml-cpp/src/emitterutils.h
+--- a/Source/UnrealYAML/yaml-cpp/src/emitterutils.h	(revision f71623dfaa3d15b250dbfa8f9911cb323e49e5d5)
++++ b/Source/UnrealYAML/yaml-cpp/src/emitterutils.h	(date 1636024479128)
+@@ -20,27 +20,23 @@
+ namespace YAML {
+ class Binary;
+ 
+-struct StringFormat {
+-  enum value { Plain, SingleQuoted, DoubleQuoted, Literal };
+-};
++enum class StringFormat {Plain, SingleQuoted, DoubleQuoted, Literal};
+ 
+-struct StringEscaping {
+-  enum value { None, NonAscii, JSON };
+-};
++enum class StringEscaping {None, NonAscii, JSON};
+ 
+ namespace Utils {
+-StringFormat::value ComputeStringFormat(const std::string& str,
+-                                        EMITTER_MANIP strFormat,
+-                                        FlowType::value flowType,
++StringFormat ComputeStringFormat(const std::string& str,
++                                        EmitterManip strFormat,
++                                        FlowType flowType,
+                                         bool escapeNonAscii);
+ 
+ bool WriteSingleQuotedString(ostream_wrapper& out, const std::string& str);
+ bool WriteDoubleQuotedString(ostream_wrapper& out, const std::string& str,
+-                             StringEscaping::value stringEscaping);
++                             StringEscaping stringEscaping);
+ bool WriteLiteralString(ostream_wrapper& out, const std::string& str,
+                         std::size_t indent);
+ bool WriteChar(ostream_wrapper& out, char ch,
+-               StringEscaping::value stringEscapingStyle);
++               StringEscaping stringEscapingStyle);
+ bool WriteComment(ostream_wrapper& out, const std::string& str,
+                   std::size_t postCommentIndent);
+ bool WriteAlias(ostream_wrapper& out, const std::string& str);
+Index: Source/UnrealYAML/yaml-cpp/src/emitterutils.cpp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Source/UnrealYAML/yaml-cpp/src/emitterutils.cpp b/Source/UnrealYAML/yaml-cpp/src/emitterutils.cpp
+--- a/Source/UnrealYAML/yaml-cpp/src/emitterutils.cpp	(revision f71623dfaa3d15b250dbfa8f9911cb323e49e5d5)
++++ b/Source/UnrealYAML/yaml-cpp/src/emitterutils.cpp	(date 1636024917907)
+@@ -153,7 +153,7 @@
+   }
+ }
+ 
+-bool IsValidPlainScalar(const std::string& str, FlowType::value flowType,
++bool IsValidPlainScalar(const std::string& str, FlowType flowType,
+                         bool allowOnlyAscii) {
+   // check against null
+   if (IsNullString(str)) {
+@@ -207,7 +207,7 @@
+   });
+ }
+ 
+-bool IsValidLiteralScalar(const std::string& str, FlowType::value flowType,
++bool IsValidLiteralScalar(const std::string& str, FlowType flowType,
+                           bool escapeNonAscii) {
+   if (flowType == FlowType::Flow) {
+     return false;
+@@ -228,7 +228,7 @@
+   };
+ }
+ 
+-void WriteDoubleQuoteEscapeSequence(ostream_wrapper& out, int codePoint, StringEscaping::value stringEscapingStyle) {
++void WriteDoubleQuoteEscapeSequence(ostream_wrapper& out, int codePoint, StringEscaping stringEscapingStyle) {
+   static const char hexDigits[] = "0123456789abcdef";
+ 
+   out << "\\";
+@@ -268,24 +268,24 @@
+ }
+ }  // namespace
+ 
+-StringFormat::value ComputeStringFormat(const std::string& str,
+-                                        EMITTER_MANIP strFormat,
+-                                        FlowType::value flowType,
++StringFormat ComputeStringFormat(const std::string& str,
++                                        EmitterManip strFormat,
++                                        FlowType flowType,
+                                         bool escapeNonAscii) {
+   switch (strFormat) {
+-    case Auto:
++    case EmitterManip::Auto:
+       if (IsValidPlainScalar(str, flowType, escapeNonAscii)) {
+         return StringFormat::Plain;
+       }
+       return StringFormat::DoubleQuoted;
+-    case SingleQuoted:
++    case EmitterManip::SingleQuoted:
+       if (IsValidSingleQuotedScalar(str, escapeNonAscii)) {
+         return StringFormat::SingleQuoted;
+       }
+       return StringFormat::DoubleQuoted;
+-    case DoubleQuoted:
++    case EmitterManip::DoubleQuoted:
+       return StringFormat::DoubleQuoted;
+-    case Literal:
++    case EmitterManip::Literal:
+       if (IsValidLiteralScalar(str, flowType, escapeNonAscii)) {
+         return StringFormat::Literal;
+       }
+@@ -318,7 +318,7 @@
+ }
+ 
+ bool WriteDoubleQuotedString(ostream_wrapper& out, const std::string& str,
+-                             StringEscaping::value stringEscaping) {
++                             StringEscaping stringEscaping) {
+   out << "\"";
+   int codePoint;
+   for (std::string::const_iterator i = str.begin();
+@@ -380,7 +380,7 @@
+   return true;
+ }
+ 
+-bool WriteChar(ostream_wrapper& out, char ch, StringEscaping::value stringEscapingStyle) {
++bool WriteChar(ostream_wrapper& out, char ch, StringEscaping stringEscapingStyle) {
+   if (('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z')) {
+     out << ch;
+   } else if (ch == '\"') {
+Index: Source/UnrealYAML/yaml-cpp/src/emitfromevents.cpp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Source/UnrealYAML/yaml-cpp/src/emitfromevents.cpp b/Source/UnrealYAML/yaml-cpp/src/emitfromevents.cpp
+--- a/Source/UnrealYAML/yaml-cpp/src/emitfromevents.cpp	(revision f71623dfaa3d15b250dbfa8f9911cb323e49e5d5)
++++ b/Source/UnrealYAML/yaml-cpp/src/emitfromevents.cpp	(date 1636024510480)
+@@ -47,53 +47,53 @@
+ 
+ void EmitFromEvents::OnSequenceStart(const Mark&, const std::string& tag,
+                                      anchor_t anchor,
+-                                     EmitterStyle::value style) {
++                                     EmitterStyle style) {
+   BeginNode();
+   EmitProps(tag, anchor);
+   switch (style) {
+     case EmitterStyle::Block:
+-      m_emitter << Block;
++      m_emitter << EmitterManip::Block;
+       break;
+-    case EmitterStyle::Flow:
+-      m_emitter << Flow;
++  case EmitterStyle::Flow:
++      m_emitter << EmitterManip::Flow;
+       break;
+     default:
+       break;
+   }
+   // Restore the global settings to eliminate the override from node style
+   m_emitter.RestoreGlobalModifiedSettings();
+-  m_emitter << BeginSeq;
++  m_emitter << EmitterManip::BeginSeq;
+   m_stateStack.push(State::WaitingForSequenceEntry);
+ }
+ 
+ void EmitFromEvents::OnSequenceEnd() {
+-  m_emitter << EndSeq;
++  m_emitter << EmitterManip::EndSeq;
+   assert(m_stateStack.top() == State::WaitingForSequenceEntry);
+   m_stateStack.pop();
+ }
+ 
+ void EmitFromEvents::OnMapStart(const Mark&, const std::string& tag,
+-                                anchor_t anchor, EmitterStyle::value style) {
++                                anchor_t anchor, EmitterStyle style) {
+   BeginNode();
+   EmitProps(tag, anchor);
+   switch (style) {
+     case EmitterStyle::Block:
+-      m_emitter << Block;
++      m_emitter << EmitterManip::Block;
+       break;
+     case EmitterStyle::Flow:
+-      m_emitter << Flow;
++      m_emitter << EmitterManip::Flow;
+       break;
+     default:
+       break;
+   }
+   // Restore the global settings to eliminate the override from node style
+   m_emitter.RestoreGlobalModifiedSettings();
+-  m_emitter << BeginMap;
++  m_emitter << EmitterManip::BeginMap;
+   m_stateStack.push(State::WaitingForKey);
+ }
+ 
+ void EmitFromEvents::OnMapEnd() {
+-  m_emitter << EndMap;
++  m_emitter << EmitterManip::EndMap;
+   assert(m_stateStack.top() == State::WaitingForKey);
+   m_stateStack.pop();
+ }
+@@ -104,11 +104,11 @@
+ 
+   switch (m_stateStack.top()) {
+     case State::WaitingForKey:
+-      m_emitter << Key;
++      m_emitter << EmitterManip::Key;
+       m_stateStack.top() = State::WaitingForValue;
+       break;
+     case State::WaitingForValue:
+-      m_emitter << Value;
++      m_emitter << EmitterManip::Value;
+       m_stateStack.top() = State::WaitingForKey;
+       break;
+     default:
+Index: Source/UnrealYAML/yaml-cpp/include/emittermanip.h
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Source/UnrealYAML/yaml-cpp/include/emittermanip.h b/Source/UnrealYAML/yaml-cpp/include/emittermanip.h
+--- a/Source/UnrealYAML/yaml-cpp/include/emittermanip.h	(revision f71623dfaa3d15b250dbfa8f9911cb323e49e5d5)
++++ b/Source/UnrealYAML/yaml-cpp/include/emittermanip.h	(date 1636025145574)
+@@ -10,7 +10,7 @@
+ #include <string>
+ 
+ namespace YAML {
+-enum EMITTER_MANIP {
++enum class EmitterManip {
+   // general manipulators
+   Auto,
+   TagByKind,
+@@ -91,16 +91,13 @@
+ inline _Anchor Anchor(const std::string& content) { return _Anchor(content); }
+ 
+ struct _Tag {
+-  struct Type {
+-    enum value { Verbatim, PrimaryHandle, NamedHandle };
+-  };
++  enum class Type {Verbatim, PrimaryHandle, NamedHandle};
+ 
+-  explicit _Tag(const std::string& prefix_, const std::string& content_,
+-                Type::value type_)
++  explicit _Tag(const std::string& prefix_, const std::string& content_, Type type_)
+       : prefix(prefix_), content(content_), type(type_) {}
+   std::string prefix;
+   std::string content;
+-  Type::value type;
++  Type type;
+ };
+ 
+ inline _Tag VerbatimTag(const std::string& content) {

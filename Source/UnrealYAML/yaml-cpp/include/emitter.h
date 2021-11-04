@@ -47,13 +47,13 @@ class YAML_CPP_API Emitter {
   const std::string GetLastError() const;
 
   // global setters
-  bool SetOutputCharset(EMITTER_MANIP value);
-  bool SetStringFormat(EMITTER_MANIP value);
-  bool SetBoolFormat(EMITTER_MANIP value);
-  bool SetNullFormat(EMITTER_MANIP value);
-  bool SetIntBase(EMITTER_MANIP value);
-  bool SetSeqFormat(EMITTER_MANIP value);
-  bool SetMapFormat(EMITTER_MANIP value);
+  bool SetOutputCharset(EmitterManip value);
+  bool SetStringFormat(EmitterManip value);
+  bool SetBoolFormat(EmitterManip value);
+  bool SetNullFormat(EmitterManip value);
+  bool SetIntBase(EmitterManip value);
+  bool SetSeqFormat(EmitterManip value);
+  bool SetMapFormat(EmitterManip value);
   bool SetIndent(std::size_t n);
   bool SetPreCommentIndent(std::size_t n);
   bool SetPostCommentIndent(std::size_t n);
@@ -62,7 +62,7 @@ class YAML_CPP_API Emitter {
   void RestoreGlobalModifiedSettings();
 
   // local setters
-  Emitter& SetLocalValue(EMITTER_MANIP value);
+  Emitter& SetLocalValue(EmitterManip value);
   Emitter& SetLocalIndent(const _Indent& indent);
   Emitter& SetLocalPrecision(const _Precision& precision);
 
@@ -103,24 +103,24 @@ class YAML_CPP_API Emitter {
   void EmitKindTag();
   void EmitTag(bool verbatim, const _Tag& tag);
 
-  void PrepareNode(EmitterNodeType::value child);
-  void PrepareTopNode(EmitterNodeType::value child);
-  void FlowSeqPrepareNode(EmitterNodeType::value child);
-  void BlockSeqPrepareNode(EmitterNodeType::value child);
+  void PrepareNode(EmitterNodeType child);
+  void PrepareTopNode(EmitterNodeType child);
+  void FlowSeqPrepareNode(EmitterNodeType child);
+  void BlockSeqPrepareNode(EmitterNodeType child);
 
-  void FlowMapPrepareNode(EmitterNodeType::value child);
+  void FlowMapPrepareNode(EmitterNodeType child);
 
-  void FlowMapPrepareLongKey(EmitterNodeType::value child);
-  void FlowMapPrepareLongKeyValue(EmitterNodeType::value child);
-  void FlowMapPrepareSimpleKey(EmitterNodeType::value child);
-  void FlowMapPrepareSimpleKeyValue(EmitterNodeType::value child);
+  void FlowMapPrepareLongKey(EmitterNodeType child);
+  void FlowMapPrepareLongKeyValue(EmitterNodeType child);
+  void FlowMapPrepareSimpleKey(EmitterNodeType child);
+  void FlowMapPrepareSimpleKeyValue(EmitterNodeType child);
 
-  void BlockMapPrepareNode(EmitterNodeType::value child);
+  void BlockMapPrepareNode(EmitterNodeType child);
 
-  void BlockMapPrepareLongKey(EmitterNodeType::value child);
-  void BlockMapPrepareLongKeyValue(EmitterNodeType::value child);
-  void BlockMapPrepareSimpleKey(EmitterNodeType::value child);
-  void BlockMapPrepareSimpleKeyValue(EmitterNodeType::value child);
+  void BlockMapPrepareLongKey(EmitterNodeType child);
+  void BlockMapPrepareLongKeyValue(EmitterNodeType child);
+  void BlockMapPrepareSimpleKey(EmitterNodeType child);
+  void BlockMapPrepareSimpleKeyValue(EmitterNodeType child);
 
   void SpaceOrIndentTo(bool requireSpace, std::size_t indent);
 
@@ -265,7 +265,7 @@ inline Emitter& operator<<(Emitter& emitter, double v) {
   return emitter.WriteStreamable(v);
 }
 
-inline Emitter& operator<<(Emitter& emitter, EMITTER_MANIP value) {
+inline Emitter& operator<<(Emitter& emitter, EmitterManip value) {
   return emitter.SetLocalValue(value);
 }
 
