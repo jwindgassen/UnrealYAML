@@ -1,5 +1,6 @@
 #include "contrib/graphbuilder.h"
-#include "contrib/graphbuilderadapter.h"
+#include "graphbuilderadapter.h"
+
 #include "parser.h"
 
 namespace YAML {

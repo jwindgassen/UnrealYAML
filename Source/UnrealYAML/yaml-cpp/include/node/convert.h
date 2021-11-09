@@ -226,16 +226,16 @@ struct convert<bool> {
 };
 
 // std::map
-template <typename K, typename V, typename CP, typename A>
-struct convert<std::map<K, V, CP, A>> {
-  static Node encode(const std::map<K, V, CP, A>& rhs) {
+template <typename K, typename V, typename C, typename A>
+struct convert<std::map<K, V, C, A>> {
+  static Node encode(const std::map<K, V, C, A>& rhs) {
     Node node(NodeType::Map);
     for (const auto& element : rhs)
       node.force_insert(element.first, element.second);
     return node;
   }
 
-  static bool decode(const Node& node, std::map<K, V, CP, A>& rhs) {
+  static bool decode(const Node& node, std::map<K, V, C, A>& rhs) {
     if (!node.IsMap())
       return false;
 

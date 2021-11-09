@@ -10,8 +10,6 @@
 #include <ios>
 #include <memory>
 
-#include "dll.h"
-
 namespace YAML {
 class EventHandler;
 class Node;

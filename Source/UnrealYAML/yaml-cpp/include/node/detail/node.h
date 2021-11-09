@@ -7,7 +7,7 @@
 #pragma once
 #endif
 
-#include "dll.h"
+
 #include "emitterstyle.h"
 #include "node/detail/node_ref.h"
 #include "node/ptr.h"
@@ -18,12 +18,12 @@
 namespace YAML {
 namespace detail {
 class node {
-private:
+ private:
   struct less {
     bool operator ()(const node* l, const node* r) const {return l->m_index < r->m_index;}
   };
 
-public:
+ public:
   node() : m_pRef(new node_ref), m_dependencies{}, m_index{} {}
   node(const node&) = delete;
   node& operator=(const node&) = delete;
@@ -164,16 +164,13 @@ public:
     m_pRef->force_insert(key, value, pMemory);
   }
 
-private:
+ private:
   shared_node_ref m_pRef;
   using nodes = std::set<node*, less>;
   nodes m_dependencies;
   size_t m_index;
   static YAML_CPP_API std::atomic<size_t> m_amount;
 };
-
-std::atomic<size_t> node::m_amount{ 0 };
-  
 }  // namespace detail
 }  // namespace YAML
 

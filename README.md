@@ -2,6 +2,8 @@
 
 Welcome to the UnrealYAML Plugin, a Plugin that allows the parsing and emitting of YAML files, based on the [yaml-cpp Library](https://github.com/jbeder/yaml-cpp)
 
+**Current yaml-cpp base commit:** [328d2d8](https://github.com/jbeder/yaml-cpp/commit/328d2d85e833be7cb5a0ab246cc3f5d7e16fc67a)
+
 **Important Node:** The Plugin is far from finished and needs more testing, bug fixing and features to become fully usable and to work natively in Unreal! Feel free to contribute
 
 ## Tutorial

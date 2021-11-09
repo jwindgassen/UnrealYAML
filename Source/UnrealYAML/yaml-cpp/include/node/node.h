@@ -10,7 +10,7 @@
 #include <stdexcept>
 #include <string>
 
-#include "dll.h"
+
 #include "emitterstyle.h"
 #include "mark.h"
 #include "node/detail/iterator_fwd.h"

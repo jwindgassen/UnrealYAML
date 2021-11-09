@@ -10,11 +10,9 @@ public class UnrealYAML : ModuleRules {
 
 		bEnableExceptions = true;
 		bUseRTTI = true;
-
-		if (Target.Platform == UnrealTargetPlatform.Win32 || Target.Platform == UnrealTargetPlatform.Win64) {
-			PublicDefinitions.Add("YAML_CPP_DLL=1");
-			PublicDefinitions.Add("yaml_cpp_EXPORTS=1");
-		}
+		
+		// Replace the source ExportHeader with our ExportHeader
+		PublicDefinitions.Add("YAML_CPP_API=UNREALYAML_API");
 
 		PublicIncludePaths.Add(Path.Combine(PluginDirectory, "Source", "UnrealYAML", "yaml-cpp", "include"));
 		PrivateIncludePaths.Add(Path.Combine(PluginDirectory, "Source", "UnrealYAML","yaml-cpp", "src"));

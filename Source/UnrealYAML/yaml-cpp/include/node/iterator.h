@@ -7,13 +7,16 @@
 #pragma once
 #endif
 
-#include "dll.h"
+
 #include "node/node.h"
 #include "node/detail/iterator_fwd.h"
 #include "node/detail/iterator.h"
 #include <list>
 #include <utility>
 #include <vector>
+
+// Assert in place so gcc + libc++ combination properly builds
+static_assert(std::is_constructible<YAML::Node, const YAML::Node&>::value, "Node must be copy constructable");
 
 namespace YAML {
 namespace detail {

@@ -5,10 +5,10 @@
 #include "regeximpl.h"
 #include "scanner.h"
 #include "scanscalar.h"
-#include "scantag.h"
-#include "tag.h"
+#include "scantag.h"  // IWYU pragma: keep
+#include "tag.h"      // IWYU pragma: keep
 #include "token.h"
-#include "exceptions.h"
+#include "exceptions.h"  // IWYU pragma: keep
 #include "mark.h"
 
 namespace YAML {

@@ -9,7 +9,7 @@
 
 #include <set>
 
-#include "dll.h"
+
 #include "node/ptr.h"
 
 namespace YAML {
