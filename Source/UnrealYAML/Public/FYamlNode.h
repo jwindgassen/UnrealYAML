@@ -7,7 +7,7 @@
 /** A wrapper for the Yaml Node class. Base YAML class. Stores a YAML-Structure in a Tree-like hierarchy.
  * Can therefore either hold a single value or be a Container for other Nodes.
  * Conversion from one Type to another will be done automatically as needed */
-class FYamlNode {
+class UNREALYAML_API FYamlNode {
 	friend void operator<<(std::ostream& Out, const FYamlNode& Node);
 	friend void operator<<(FYamlEmitter& Out, const FYamlNode& Node);
 
