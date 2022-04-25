@@ -92,8 +92,7 @@ namespace YAML{
 				}
 
 				if (Node.size() == 3) {
-					Out = FVector(Node[0].as<double>(), Node[1].as<double>(), Node[2].as<double>())
-							.ToOrientationRotator().Quaternion();
+					Out = FRotator(Node[0].as<double>(), Node[1].as<double>(), Node[2].as<double>()).Quaternion();
 					return true;
 				}
 			}
