@@ -50,19 +50,25 @@ namespace YAML{
 		}
 
 		static bool decode(const Node& Node, FVector& Out) {
-			if(!Node.IsSequence() || Node.size() != 3) {
-				return false;
+			if (Node.IsSequence() && Node.size() == 3) {
+				Out.X = Node[0].as<double>();
+				Out.Y = Node[1].as<double>();
+				Out.Z = Node[2].as<double>();
+				return true;
 			}
 
-			Out.X = Node[0].as<double>();
-			Out.Y = Node[1].as<double>();
-			Out.Z = Node[2].as<double>();
-			return true;
+			// Constant Vector
+			if (Node.IsScalar()) {
+				Out.X = Out.Y = Out.Z = Node.as<double>();
+			}
+
+			return false;
 		}
 	};
 
 
 	// encode and decode an FQuad
+	// We accept 3-Component and 4-Component Vectors as a Rotation, but we only ever emit Quaternions
 	template <>
 	struct convert<FQuat> {
 		static Node encode(const FQuat& Quad) {
@@ -76,15 +82,23 @@ namespace YAML{
 		}
 
 		static bool decode(const Node& Node, FQuat& Out) {
-			if(!Node.IsSequence() || Node.size() != 4) {
-				return false;
+			if (Node.IsSequence()) {
+				if (Node.size() == 4) {
+					Out.X = Node[0].as<double>();
+					Out.Y = Node[1].as<double>();
+					Out.Z = Node[2].as<double>();
+					Out.W = Node[3].as<double>();
+					return true;
+				}
+
+				if (Node.size() == 3) {
+					Out = FVector(Node[0].as<double>(), Node[1].as<double>(), Node[2].as<double>())
+							.ToOrientationRotator().Quaternion();
+					return true;
+				}
 			}
 
-			Out.X = Node[0].as<double>();
-			Out.Y = Node[1].as<double>();
-			Out.Z = Node[2].as<double>();
-			Out.W = Node[3].as<double>();
-			return true;
+			return false;
 		}
 	};
 
