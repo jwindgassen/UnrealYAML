@@ -1,15 +1,26 @@
 ﻿#pragma once
 
+#include "CoreMinimal.h"
 #include "yaml.h"
-#include "YAMLAliases.h"
 #include "UnrealTypes.h"
+#include "Enums.h"
+#include "Emitter.h"
+
+#include "Node.generated.h"
 
 class FYamlIterator;
 
+
+
 /** A wrapper for the Yaml Node class. Base YAML class. Stores a YAML-Structure in a Tree-like hierarchy.
  * Can therefore either hold a single value or be a Container for other Nodes.
- * Conversion from one Type to another will be done automatically as needed */
-class UNREALYAML_API FYamlNode {
+ * Conversion from one Type to another will be done automatically as needed
+ */
+USTRUCT(BlueprintType)
+struct UNREALYAML_API FYamlNode {
+	GENERATED_BODY()
+
+private:
 	friend void operator<<(std::ostream& Out, const FYamlNode& Node);
 	friend void operator<<(FYamlEmitter& Out, const FYamlNode& Node);
 
@@ -21,7 +32,7 @@ public:
 	FYamlNode() = default;
 
 	/** Generate an Empty YAML Node of a specific Type */
-	explicit FYamlNode(const EYamlNodeType Type) : Node(Type) {}
+	explicit FYamlNode(const EYamlNodeType Type) : Node(static_cast<YAML::NodeType>(Type)) {}
 	
 	/** Generate a YAML Node that contains the given Data, which is implicitly Converted */
 	template<typename T>
@@ -49,7 +60,7 @@ public:
 	/** Equivalent to Type() == Sequence (Multiple Values without Keys) */
 	bool IsSequence() const;
 
-	/** Equivalent to Type() == Map (Multiple Values with Keys) */
+	/** Equivalent to Type() == Map (List of Key-Value Pairs) */
 	bool IsMap() const;
 
 	
@@ -100,11 +111,11 @@ public:
 	 * @return A Pointer to the Converted Value. If the Conversion was unsuccessful, return a nullptr
 	 */
 	template <typename T>
-	T* AsPointer() const {
+	TOptional<T> AsOptional() const {
 		try {
-			return &Node.as<T>();
+			return Node.as<T>();
 		} catch (YAML::Exception) {
-			return nullptr;
+			return {};
 		}
 	}
 

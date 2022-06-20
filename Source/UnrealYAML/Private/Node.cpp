@@ -1,10 +1,10 @@
-﻿#include "FYamlNode.h"
+﻿#include "Node.h"
 
 #include "Iteration.h"
 
 EYamlNodeType FYamlNode::Type() const {
 	try {
-		return Node.Type();
+		return static_cast<EYamlNodeType>(Node.Type());
 	} catch (YAML::InvalidNode) {
 		UE_LOG(LogTemp, Warning, TEXT("Node was Invalid, returning default value for Type()!"))
 		return EYamlNodeType::Undefined;
@@ -41,15 +41,15 @@ bool FYamlNode::operator!() const {
 
 EYamlEmitterStyle FYamlNode::Style() const {
 	try {
-		return Node.Style();
+		return static_cast<EYamlEmitterStyle>(Node.Style());
 	} catch (YAML::InvalidNode) {
 		UE_LOG(LogTemp, Warning, TEXT("Node was Invalid, returning default value for Style()!"))
-		return YAML::EmitterStyle::Default;
+		return EYamlEmitterStyle::Default;
 	}
 }
 
 void FYamlNode::SetStyle(const EYamlEmitterStyle Style) {
-	Node.SetStyle(Style);
+	Node.SetStyle(static_cast<YAML::EmitterStyle>(Style));
 }
 
 bool FYamlNode::Is(const FYamlNode& Other) const {

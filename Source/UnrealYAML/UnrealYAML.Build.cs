@@ -6,7 +6,7 @@ public class UnrealYAML : ModuleRules {
 	public UnrealYAML(ReadOnlyTargetRules Target) : base(Target) {
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		Type = ModuleType.CPlusPlus;
-		PublicDependencyModuleNames.AddRange(new[] {"Core", "Projects"});
+		PublicDependencyModuleNames.AddRange(new[] {"Core", "CoreUObject", "Engine"});
 
 		bEnableExceptions = true;
 		bUseRTTI = true;

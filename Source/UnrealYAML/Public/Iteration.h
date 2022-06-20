@@ -1,10 +1,10 @@
 ﻿#pragma once
 
-#include "FYamlNode.h"
+#include "Node.h"
 
 /** The Iterator Base class. */
 class FYamlIterator {
-	friend class FYamlNode;
+	friend struct FYamlNode;
 	
 	YAML::iterator Iterator;
 	int32 Index;
