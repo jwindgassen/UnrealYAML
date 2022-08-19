@@ -92,23 +92,6 @@ public:
 
 
 	
-	// Parsing of Strings/Files into Nodes -----------------------------------------------------------------------------
-	/** Parses a String into an Yaml-Node.
-	 *
-	 * @returns If the Parsing was successful */
-	static bool ParseYaml(const FString String, FYamlNode& Out);
-
-	/** Opens a Document and Parses the Contents into a Yaml Structure.
-	 *
-	 * @returns If the File Exists and the Parsing was successful */
-	static bool LoadYamlFromFile(const FString Path, FYamlNode& Out);
-
-	/** Writes the Contents of a YAML-Node to an File.
-	 * This will overwrite the existing File if it exists! */
-	static void WriteYamlToFile(const FString Path, FYamlNode Node);
-
-
-	
 	// Create Constructors and Conversion for all Types ----------------------------------------------------------------
 	// Int
 	// DECLARE_YAML_CONVERSION(int32, Int)

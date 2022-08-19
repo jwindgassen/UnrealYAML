@@ -55,27 +55,3 @@ DEFINE_YAML_CONVERSIONS(FTransform, Transform)
 
 #undef DEFINE_YAML_CONVERSIONS
 
-
-
-// Parsing -------------------------------------------------------------------------------------------------------------
-bool UYamlNodeHelpers::ParseYaml(const FString String, FYamlNode& Out) {
-	try {
-		Out = FYamlNode(YAML::Load(TCHAR_TO_UTF8(*String)));
-		return true;
-	} catch (YAML::ParserException) {
-		return false;
-	}
-}
-
-bool UYamlNodeHelpers::LoadYamlFromFile(const FString Path, FYamlNode& Out) {
-	FString Contents;
-	if (FFileHelper::LoadFileToString(Contents, *Path)) {
-		return ParseYaml(Contents, Out);
-	}
-	return false;
-}
-
-void UYamlNodeHelpers::WriteYamlToFile(const FString Path, const FYamlNode Node) {
-	FFileHelper::SaveStringToFile(Node.GetContent(), *Path);
-}
-
