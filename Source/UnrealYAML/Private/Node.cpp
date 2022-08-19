@@ -1,7 +1,5 @@
 ﻿#include "Node.h"
 
-#include "Iteration.h"
-
 EYamlNodeType FYamlNode::Type() const {
 	try {
 		return static_cast<EYamlNodeType>(Node.Type());
