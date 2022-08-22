@@ -29,7 +29,7 @@ void UYamlParsing::WriteYamlToFile(const FString Path, const FYamlNode Node) {
 
 
 // Parsing into Structs ------------------------------------------------------------------------------------------------
-const TArray<FString> UYamlParsing::NativeTypes = {"FString", "FText", "FVector", "FQuat", "FTransform"};
+const TArray<FString> UYamlParsing::NativeTypes = {"FString", "FText", "FVector", "FQuat", "FTransform", "FColor", "FLinearColor"};
 
 bool UYamlParsing::ParseIntoProperty(const FYamlNode& Node, const FProperty& Property, void* PropertyValue) {
 	UE_LOG(LogYamlParsing, Verbose, TEXT("Parsing Node into Property '%s' of type '%s'"), *Property.GetName(), *Property.GetCPPType())
@@ -119,6 +119,10 @@ bool UYamlParsing::ParseIntoNativeType(const FYamlNode& Node, const FStructPrope
 		*static_cast<FQuat*>(PropertyValue) = Node.As<FQuat>();
 	} else if (Type == "FTransform") {
 		*static_cast<FTransform*>(PropertyValue) = Node.As<FTransform>();
+	} else if (Type == "FColor") {
+		*static_cast<FColor*>(PropertyValue) = Node.As<FColor>();
+	} else if (Type == "FLinearColor") {
+		*static_cast<FLinearColor*>(PropertyValue) = Node.As<FLinearColor>();
 	} else {
 		checkf(false, TEXT("No native type conversion for %s"), *Type)
 	}

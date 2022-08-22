@@ -2,6 +2,24 @@
 
 #include "node/convert.h"
 
+static const TMap<FString, FColor> ColorMap = {
+	{"Red", FColor::Red},
+	{"Yellow", FColor::Yellow},
+	{"Green", FColor::Green},
+	{"Blue", FColor::Blue},
+	{"White", FColor::White},
+	{"Black", FColor::Black},
+	{"Transparent", FColor::Transparent},
+	{"Cyan", FColor::Cyan},
+	{"Magenta", FColor::Magenta},
+	{"Orange", FColor::Orange},
+	{"Purple", FColor::Purple},
+	{"Turquoise", FColor::Turquoise},
+	{"Silver", FColor::Silver},
+	{"Emerald", FColor::Emerald}
+};
+
+
 namespace YAML{
 	// encode and decode an FString
 	template <>
@@ -20,6 +38,7 @@ namespace YAML{
 		}
 	};
 
+	
 	// encode and decode an FText
 	template <>
 	struct convert<FText> {
@@ -36,6 +55,54 @@ namespace YAML{
 			return true;
 		}
 	};
+
+	
+	// encode FColor and FLinearColor as Vector or String
+	template<>
+	struct convert<FColor> {
+		static Node encode(const FColor& Color) {
+			for (const auto& Pair : ColorMap) {
+				if (Color == Pair.Value) {
+					return Node(Pair.Key);
+				}
+			}
+
+			return Node(TArray<uint8>({Color.R, Color.G, Color.B, Color.A}));
+		}
+		
+		static bool decode(const Node& Node, FColor& Out) {
+			for (const auto& Pair : ColorMap) {
+				if (Node.as<FString>() == Pair.Key) {
+					Out = Pair.Value;
+					return true;
+				}
+			}
+
+			if (Node.Type() != NodeType::Sequence || (Node.size() != 3 && Node.size() != 4)) {
+				return false;
+			}
+
+			
+			const float A = Node.size() == 4 ? Node[3].as<uint8>() : 1.f;
+			Out = FColor(Node[0].as<uint8>(), Node[1].as<uint8>(), Node[2].as<uint8>(), A);
+			return true;
+		}
+	};
+	
+	template<>
+	struct convert<FLinearColor> {
+		static Node encode(const FLinearColor& Color) {
+			return convert<FColor>::encode(Color.ToFColor(true));
+		}
+		
+		static bool decode(const Node& Node, FLinearColor& Out) {
+			FColor Color;
+			const bool Success = convert<FColor>::decode(Node, Color);
+			Out = Color.ReinterpretAsLinear();
+			return Success;
+		}
+	};
+
 	
 	// encode and decode an FVector
 	template <>
