@@ -13,7 +13,7 @@ class UNREALYAML_API UYamlParsing final : public UBlueprintFunctionLibrary {
 	GENERATED_BODY()
 	
 	template<typename T>
-	friend void ParseNodeIntoStruct(const FYamlNode&, T);
+	friend bool ParseNodeIntoStruct(const FYamlNode&, T&);
 
 	// Some conversion are defined in UnrealTypes.h. But FProperty does not provide a way to retrieve the Type, except as
 	// an FString. This provides a list of all Types (as String) that can be directly converted via those conversion instead
@@ -101,6 +101,6 @@ private:
 
 /** C++ Wrapper for UYamlParsing::ParseIntoStruct */
 template<typename T>
-void ParseNodeIntoStruct(const FYamlNode& Node, T StructIn) {
-	UYamlParsing::ParseIntoStruct(Node, FStructProperty(StructIn.StaticStruct()), &StructIn);
+bool ParseNodeIntoStruct(const FYamlNode& Node, T& StructIn) {
+	return UYamlParsing::ParseIntoStruct(Node, FStructProperty(StructIn.StaticStruct()), &StructIn);
 }
