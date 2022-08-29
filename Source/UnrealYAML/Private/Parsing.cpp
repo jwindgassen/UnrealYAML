@@ -65,22 +65,22 @@ bool UYamlParsing::ParseIntoProperty(const FYamlNode& Node, const FProperty& Pro
 		}
 	}
 	else if (const FObjectProperty* ObjectProperty = CastField<FObjectProperty>(&Property)) {
-		ParseIntoObject(Node, *ObjectProperty, PropertyValue);
+		ParseIntoObject(Node, ObjectProperty->PropertyClass, PropertyValue);
 	}
 	else if (const FStructProperty* StructProperty = CastField<FStructProperty>(&Property)) {
-		ParseIntoStruct(Node, *StructProperty, PropertyValue);
+		ParseIntoStruct(Node, StructProperty->Struct, PropertyValue);
 	}
 	
 	return true;
 }
 
-bool UYamlParsing::ParseIntoObject(const FYamlNode& Node, const FObjectProperty& ObjectProperty, void* PropertyValue) {
-	UE_LOG(LogYamlParsing, Verbose, TEXT("Parsing Node into Object '%s'"), *ObjectProperty.GetName())
+bool UYamlParsing::ParseIntoObject(const FYamlNode& Node, const UClass* Object, void* ObjectValue) {
+	UE_LOG(LogYamlParsing, Verbose, TEXT("Parsing Node into Object '%s'"), *Object->GetName())
 	
 	bool ParsedAllProperties = true;
-	for (TFieldIterator<FProperty> It(ObjectProperty.PropertyClass); It; ++It) {
+	for (TFieldIterator<FProperty> It(Object); It; ++It) {
 		FString Key = It->GetName();
-		const bool Success = ParseIntoProperty(Node[Key], **It, It->ContainerPtrToValuePtr<void>(PropertyValue));
+		const bool Success = ParseIntoProperty(Node[Key], **It, It->ContainerPtrToValuePtr<void>(ObjectValue));
 			
 		if (!Success) ParsedAllProperties = false;
 	}
@@ -88,17 +88,17 @@ bool UYamlParsing::ParseIntoObject(const FYamlNode& Node, const FObjectProperty&
 	return ParsedAllProperties;
 }
 
-bool UYamlParsing::ParseIntoStruct(const FYamlNode& Node, const FStructProperty& StructProperty, void* PropertyValue) {
-	UE_LOG(LogYamlParsing, Verbose, TEXT("Parsing Node into Struct '%s'"), *StructProperty.GetName())
+bool UYamlParsing::ParseIntoStruct(const FYamlNode& Node, const UScriptStruct* Struct, void* StructValue) {
+	UE_LOG(LogYamlParsing, Verbose, TEXT("Parsing Node into Struct '%s'"), *Struct->GetName())
 	
-	if (NativeTypes.Contains(StructProperty.Struct->GetStructCPPName())) {
-		return ParseIntoNativeType(Node, StructProperty, PropertyValue);
+	if (NativeTypes.Contains(Struct->GetStructCPPName())) {
+		return ParseIntoNativeType(Node, Struct, StructValue);
 	}
 	
 	bool ParsedAllProperties = true;
-	for (TFieldIterator<FProperty> It(StructProperty.Struct); It; ++It) {
+	for (TFieldIterator<FProperty> It(Struct); It; ++It) {
 		FString Key = It->GetName();
-		const bool Success = ParseIntoProperty(Node[Key], **It, It->ContainerPtrToValuePtr<void>(PropertyValue));
+		const bool Success = ParseIntoProperty(Node[Key], **It, It->ContainerPtrToValuePtr<void>(StructValue));
 			
 		if (!Success) ParsedAllProperties = false;
 	}
@@ -106,23 +106,23 @@ bool UYamlParsing::ParseIntoStruct(const FYamlNode& Node, const FStructProperty&
 	return ParsedAllProperties;
 }
 
-bool UYamlParsing::ParseIntoNativeType(const FYamlNode& Node, const FStructProperty& StructProperty, void* PropertyValue) {
-	const FString Type = StructProperty.Struct->GetStructCPPName();
+bool UYamlParsing::ParseIntoNativeType(const FYamlNode& Node, const UScriptStruct* Struct, void* StructValue) {
+	const FString Type = Struct->GetStructCPPName();
 
 	if (Type == "FString") {
-		*static_cast<FString*>(PropertyValue) = Node.As<FString>();
+		*static_cast<FString*>(StructValue) = Node.As<FString>();
 	} else if (Type == "FText") {
-		*static_cast<FText*>(PropertyValue) = Node.As<FText>();
+		*static_cast<FText*>(StructValue) = Node.As<FText>();
 	} else if (Type == "FVector") {
-		*static_cast<FVector*>(PropertyValue) = Node.As<FVector>();
+		*static_cast<FVector*>(StructValue) = Node.As<FVector>();
 	} else if (Type == "FQuat") {
-		*static_cast<FQuat*>(PropertyValue) = Node.As<FQuat>();
+		*static_cast<FQuat*>(StructValue) = Node.As<FQuat>();
 	} else if (Type == "FTransform") {
-		*static_cast<FTransform*>(PropertyValue) = Node.As<FTransform>();
+		*static_cast<FTransform*>(StructValue) = Node.As<FTransform>();
 	} else if (Type == "FColor") {
-		*static_cast<FColor*>(PropertyValue) = Node.As<FColor>();
+		*static_cast<FColor*>(StructValue) = Node.As<FColor>();
 	} else if (Type == "FLinearColor") {
-		*static_cast<FLinearColor*>(PropertyValue) = Node.As<FLinearColor>();
+		*static_cast<FLinearColor*>(StructValue) = Node.As<FLinearColor>();
 	} else {
 		checkf(false, TEXT("No native type conversion for %s"), *Type)
 	}

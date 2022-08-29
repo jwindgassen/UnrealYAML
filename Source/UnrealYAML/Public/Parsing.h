@@ -81,7 +81,7 @@ public:
 		P_FINISH
 
 		if (StructProperty)
-			*static_cast<bool*>(RESULT_PARAM) = ParseIntoStruct(Node, *StructProperty, StructPtr);
+			*static_cast<bool*>(RESULT_PARAM) = ParseIntoStruct(Node, StructProperty->Struct, StructPtr);
 	}
 	
 private:
@@ -89,18 +89,18 @@ private:
 	static bool ParseIntoProperty(const FYamlNode& Node, const FProperty& Property, void* PropertyValue);
 
 	// Parses a Node into a Single UObject. Calls ParseIntoProperty on all Fields
-	static bool ParseIntoObject(const FYamlNode& Node, const FObjectProperty& ObjectProperty, void* PropertyValue);
+	static bool ParseIntoObject(const FYamlNode& Node, const UClass* Object, void* ObjectValue);
 
 	// Parses a Node into a Single Struct. Calls ParseIntoProperty on all Fields
-	static bool ParseIntoStruct(const FYamlNode& Node, const FStructProperty& StructProperty, void* PropertyValue);
+	static bool ParseIntoStruct(const FYamlNode& Node, const UScriptStruct* Struct, void* StructValue);
 
 	// Parses a Node via some predefined conversions in UnrealTypes.h via a switch case (see NativeTypes).
-	static bool ParseIntoNativeType(const FYamlNode& Node, const FStructProperty& StructProperty, void* PropertyValue);
+	static bool ParseIntoNativeType(const FYamlNode& Node, const UScriptStruct* Struct, void* StructValue);
 };
 
 
 /** C++ Wrapper for UYamlParsing::ParseIntoStruct */
 template<typename T>
-bool ParseNodeIntoStruct(const FYamlNode& Node, T& StructIn) {
-	return UYamlParsing::ParseIntoStruct(Node, FStructProperty(StructIn.StaticStruct()), &StructIn);
+FORCENOINLINE bool ParseNodeIntoStruct(const FYamlNode& Node, T& StructIn) {
+	return UYamlParsing::ParseIntoStruct(Node, StructIn.StaticStruct(), &StructIn);
 }
