@@ -1,106 +1,106 @@
 ﻿#include "Node.h"
 
 EYamlNodeType FYamlNode::Type() const {
-	try {
-		return static_cast<EYamlNodeType>(Node.Type());
-	} catch (YAML::InvalidNode) {
-		UE_LOG(LogTemp, Warning, TEXT("Node was Invalid, returning default value for Type()!"))
-		return EYamlNodeType::Undefined;
-	}
+    try {
+        return static_cast<EYamlNodeType>(Node.Type());
+    } catch (YAML::InvalidNode) {
+        UE_LOG(LogTemp, Warning, TEXT("Node was Invalid, returning default value for Type()!"))
+        return EYamlNodeType::Undefined;
+    }
 }
 
 bool FYamlNode::IsDefined() const {
-	return Node.IsDefined();
+    return Node.IsDefined();
 }
 
 bool FYamlNode::IsNull() const {
-	return Node.IsNull();
+    return Node.IsNull();
 }
 
 bool FYamlNode::IsScalar() const {
-	return Node.IsScalar();
+    return Node.IsScalar();
 }
 
 bool FYamlNode::IsSequence() const {
-	return Node.IsSequence();
+    return Node.IsSequence();
 }
 
 bool FYamlNode::IsMap() const {
-	return Node.IsMap();
+    return Node.IsMap();
 }
 
 FYamlNode::operator bool() const {
-	return Node.IsDefined();
+    return Node.IsDefined();
 }
 
 bool FYamlNode::operator!() const {
-	return !Node.IsDefined();
+    return !Node.IsDefined();
 }
 
 EYamlEmitterStyle FYamlNode::Style() const {
-	try {
-		return static_cast<EYamlEmitterStyle>(Node.Style());
-	} catch (YAML::InvalidNode) {
-		UE_LOG(LogTemp, Warning, TEXT("Node was Invalid, returning default value for Style()!"))
-		return EYamlEmitterStyle::Default;
-	}
+    try {
+        return static_cast<EYamlEmitterStyle>(Node.Style());
+    } catch (YAML::InvalidNode) {
+        UE_LOG(LogTemp, Warning, TEXT("Node was Invalid, returning default value for Style()!"))
+        return EYamlEmitterStyle::Default;
+    }
 }
 
 void FYamlNode::SetStyle(const EYamlEmitterStyle Style) {
-	Node.SetStyle(static_cast<YAML::EmitterStyle>(Style));
+    Node.SetStyle(static_cast<YAML::EmitterStyle>(Style));
 }
 
 bool FYamlNode::Is(const FYamlNode& Other) const {
-	try {
-		return Node.is(Other.Node);
-	} catch (YAML::InvalidNode) {
-		UE_LOG(LogTemp, Warning, TEXT("Node was Invalid, returning default value for Is() / Equals-Operation!"))
-		return false;
-	}
+    try {
+        return Node.is(Other.Node);
+    } catch (YAML::InvalidNode) {
+        UE_LOG(LogTemp, Warning, TEXT("Node was Invalid, returning default value for Is() / Equals-Operation!"))
+        return false;
+    }
 }
 
 bool FYamlNode::operator==(const FYamlNode Other) const {
-	return this->Is(Other);
+    return this->Is(Other);
 }
 
 bool FYamlNode::Reset(const FYamlNode& Other) {
-	try {
-		Node.reset(Other.Node);
-		return true;
-	} catch (YAML::InvalidNode) {
-		UE_LOG(LogTemp, Warning, TEXT("Node was Invalid and will not be Reset!"))
-		return false;
-	}
+    try {
+        Node.reset(Other.Node);
+        return true;
+    } catch (YAML::InvalidNode) {
+        UE_LOG(LogTemp, Warning, TEXT("Node was Invalid and will not be Reset!"))
+        return false;
+    }
 }
 
 FString FYamlNode::Scalar() const {
-	try {
-		return FString(Node.Scalar().c_str());
-	} catch (YAML::InvalidNode) {
-		UE_LOG(LogTemp, Warning, TEXT("Node was Invalid, returning default value for Scalar()"))
-		return "";
-	}
+    try {
+        return FString(Node.Scalar().c_str());
+    } catch (YAML::InvalidNode) {
+        UE_LOG(LogTemp, Warning, TEXT("Node was Invalid, returning default value for Scalar()"))
+        return "";
+    }
 }
 
 FString FYamlNode::GetContent() const {
-	std::stringstream Stream;
-	Stream << Node;
-	return UTF8_TO_TCHAR(Stream.str().c_str());
+    std::stringstream Stream;
+    Stream << Node;
+    return UTF8_TO_TCHAR(Stream.str().c_str());
 }
 
 int32 FYamlNode::Size() const {
-	try {
-		return Node.size();
-	} catch (YAML::InvalidNode) {
-		UE_LOG(LogTemp, Warning, TEXT("Node was Invalid, returning default value for Size()"))
-		return 0;
-	}
+    try {
+        return Node.size();
+    } catch (YAML::InvalidNode) {
+        UE_LOG(LogTemp, Warning, TEXT("Node was Invalid, returning default value for Size()"))
+        return 0;
+    }
 }
 
 FYamlIterator FYamlNode::begin() {
-	return FYamlIterator(Node.begin());
+    return FYamlIterator(Node.begin());
 }
 
 FYamlIterator FYamlNode::end() {
-	return FYamlIterator(Node.end());
+    return FYamlIterator(Node.end());
 }

@@ -4,7 +4,7 @@
 #include "Modules/ModuleInterface.h"
 
 class FUnrealYAMLModule final : public IModuleInterface {
-	virtual bool IsGameModule() const override {
-		return false;
-	}
+    virtual bool IsGameModule() const override {
+        return false;
+    }
 };
