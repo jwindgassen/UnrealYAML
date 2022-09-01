@@ -9,7 +9,6 @@ public class UnrealYAML : ModuleRules {
 		PublicDependencyModuleNames.AddRange(new[] {"Core", "CoreUObject", "Engine"});
 
 		bEnableExceptions = true;
-		bUseRTTI = true;
 		
 		// Replace the source ExportHeader with our ExportHeader
 		PublicDefinitions.Add("YAML_CPP_API=UNREALYAML_API");
