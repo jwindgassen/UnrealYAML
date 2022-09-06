@@ -55,6 +55,9 @@ bool UYamlParsing::ParseIntoProperty(const FYamlNode& Node, const FProperty& Pro
     } else if (const FTextProperty* TextProperty = CastField<FTextProperty>(&Property)) {
         const auto Value = Node.AsOptional<FText>();
         if (Value.IsSet()) *const_cast<FText*>(&TextProperty->GetPropertyValue(PropertyValue)) = Value.GetValue();
+    } else if (const FEnumProperty* EnumProperty = CastField<FEnumProperty>(&Property)) {
+         const int64 Index = EnumProperty->GetEnum()->GetIndexByNameString(Node.As<FString>());
+         EnumProperty->GetUnderlyingProperty()->SetIntPropertyValue(PropertyValue, Index);
     } else if (const FArrayProperty* ArrayProperty = CastField<FArrayProperty>(&Property)) {
         // We need the helper to get to the items of the array            
         FScriptArrayHelper Helper(ArrayProperty, PropertyValue);
