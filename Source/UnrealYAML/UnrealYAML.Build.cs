@@ -1,5 +1,4 @@
 using System.IO;
-using Tools.DotNETCommon;
 using UnrealBuildTool;
 
 public class UnrealYAML : ModuleRules {
