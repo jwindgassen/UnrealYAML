@@ -6,26 +6,32 @@ Welcome to the UnrealYAML Plugin, a Plugin that allows the parsing and emitting 
 
 **Important Node:** The Plugin is far from finished and needs more testing, bug fixing and features to become fully usable and to work natively in Unreal! Feel free to contribute
 
+## Features
+- Basic Functionality
+	- Assigment
+	- Convers Conversion to and from most frequently used Unreal Types
+	- Iterators
+	- Loading and Saving Files
+- Usable in Blueprint and C++
+- Automatic Parsing to Unreal Struct using the Unreal Reflection System.
+
+### TODO
+- Subscript-Operator equivalent in Blueprints
+- Node into Struct Parsing:
+	- With Blueprint Structs (if possible)
+	- Option to ignore case on key values
+	- Add Map Parsing
+	- Parse Struct into Node (Reverse Direction)
+- Interfacing with Unreal JSON Plugin
+- Wrapper class for the Emitter?
+- Schema Verification?
+
+
 ## Tutorial
-For a Tutorial, please visit the official [yaml-cpp wiki](https://github.com/jbeder/yaml-cpp/wiki/Tutorial). All classes have been adjusted to match the Unreal Naming Convention, but overall stayed the same.
-
-## Implemented Features
-- Basic Functionality of the Node class (Assignment, Creating a YAML structure)
-- Conversion to and from most frequently used Unreal Types
-- Iterators
-
-## Examples
-
-### Blueprint
-
-![image](https://user-images.githubusercontent.com/4656466/215745483-bc751ab4-e08a-4ab5-bd7e-ddfab56ef34a.png)
-![image](https://user-images.githubusercontent.com/4656466/215745441-d23025be-f675-4e20-8d67-7a2b64b6dd85.png)
-
-## TODO
-- Wrapper class for the Emitter
-- Better Stability
-- More conversions
+You can find some examples in the [corresponding wiki page](https://github.com/jwindgassen/UnrealYAML/wiki/Examples).
+Since this is a thin wrapper around the *yaml-cpp* library, many of the things in their [wiki](https://github.com/jbeder/yaml-cpp/wiki/Tutorial) can also be applied to this Plugin too.
 
 
 ## Patches
+I used some patches ontop of the *yaml-cpp* library to ease the integration:
 - **enum-class**: Changed enums to enum classes to remove *-Wshadow* error
