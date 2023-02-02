@@ -16,13 +16,13 @@ Welcome to the UnrealYAML Plugin, a Plugin that allows the parsing and emitting 
 - Automatic Parsing to Unreal Struct using the Unreal Reflection System.
 
 ### TODO
-- Subscript-Operator equivalent in Blueprints
 - Node into Struct Parsing:
 	- With Blueprint Structs (if possible)
-	- Option to ignore case on key values
+	- Option to respect case on key values (currently always case insensitive)
 	- Add Map Parsing
 	- Parse Struct into Node (Reverse Direction)
-- Interfacing with Unreal JSON Plugin
+- Sequences and Maps into TArray\<Node> and TMap\<FString, Node> for Iteration in Blueprints
+- Interfacing with Unreal JSON Plugin?
 - Wrapper class for the Emitter?
 - Schema Verification?
 
