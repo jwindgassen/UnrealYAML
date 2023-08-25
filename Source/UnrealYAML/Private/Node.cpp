@@ -98,9 +98,16 @@ int32 FYamlNode::Size() const {
 }
 
 FYamlIterator FYamlNode::begin() {
-    return FYamlIterator(Node.begin());
+   return FYamlIterator(Node.begin());
+}
+FYamlIteratorConst FYamlNode::begin() const {
+   return FYamlIteratorConst(Node.begin());
 }
 
 FYamlIterator FYamlNode::end() {
-    return FYamlIterator(Node.end());
+   return FYamlIterator(Node.end());
+}
+
+FYamlIteratorConst FYamlNode::end() const {
+   return FYamlIteratorConst(Node.end());
 }
