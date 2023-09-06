@@ -100,6 +100,17 @@ public:
         return Node.Reset();
     }
 
+    /** Get Raw String in Node as a single FString */
+    UFUNCTION(BlueprintPure, Category="YAML")
+    static FString GetContent(const FYamlNode& Node) {
+        return Node.GetContent();
+    }
+
+    /** Get items size in Node if it is a Sequences or Map, 0 otherwise */
+    UFUNCTION(BlueprintPure, Category="YAML")
+    static int32 Size(const FYamlNode& Node) {
+        return Node.Size();
+    }
 
     // Node Accessing --------------------------------------------------------------------------------------------------
 
