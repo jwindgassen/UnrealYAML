@@ -168,6 +168,32 @@ struct convert<FQuat> {
     }
 };
 
+// encode and decode an FRotator
+// We accept 3-Component Pitch, Roll, Yaw Vectors
+template<>
+struct convert<FRotator> {
+    static Node encode(const FRotator& Rotator) {
+        Node Node;
+        Node.SetStyle(EmitterStyle::Flow);
+        Node.push_back(Rotator.Pitch);
+        Node.push_back(Rotator.Roll);
+        Node.push_back(Rotator.Yaw);
+
+        return Node;
+    }
+
+    static bool decode(const Node& Node, FRotator& Out) {
+        if (Node.IsSequence() && Node.size() == 3) {
+            Out.Pitch = Node[0].as<double>();
+            Out.Roll = Node[1].as<double>();
+            Out.Yaw = Node[2].as<double>();
+
+            return true;
+        }
+
+        return false;
+    }
+};
 
 // encode and decode an FTransform
 template<>
