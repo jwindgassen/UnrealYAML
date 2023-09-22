@@ -25,7 +25,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogYamlHelper, Log, All)
 
 
 // A Collection of Functions regarding Nodes, primarily for Blueprint-Interfacing
-UCLASS(CollapseCategories="Make,Convert")
+UCLASS(AutoCollapseCategories="Make,Convert")
 class UNREALYAML_API UYamlNodeHelpers : public UBlueprintFunctionLibrary {
     GENERATED_BODY()
 
