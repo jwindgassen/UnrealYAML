@@ -66,8 +66,9 @@ struct convert<FColor> {
                 return Node(Pair.Key);
             }
         }
-
-        return Node(TArray<uint8>({Color.R, Color.G, Color.B, Color.A}));
+        Node node(TArray<int>({Color.R, Color.G, Color.B, Color.A}));
+        node.SetStyle(EmitterStyle::Flow);
+        return node;
     }
 
     static bool decode(const Node& Node, FColor& Out) {
