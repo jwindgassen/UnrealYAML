@@ -72,11 +72,14 @@ struct convert<FColor> {
     }
 
     static bool decode(const Node& Node, FColor& Out) {
-        for (const auto& Pair : ColorMap) {
-            if (Node.as<FString>() == Pair.Key) {
-                Out = Pair.Value;
-                return true;
+        if (Node.Type() == NodeType::Scalar) {
+            for (const auto& Pair : ColorMap) {
+                if (Node.as<FString>() == Pair.Key) {
+                    Out = Pair.Value;
+                    return true;
+                }
             }
+            return false;
         }
 
         if (Node.Type() != NodeType::Sequence || (Node.size() != 3 && Node.size() != 4)) {
