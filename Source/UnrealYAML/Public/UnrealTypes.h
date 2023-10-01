@@ -107,35 +107,110 @@ struct convert<FLinearColor> {
     }
 };
 
+// base structs for encoding/decoding vectors (2D, 3D, 4D)
+namespace detail
+{
+    template<typename T>
+    struct convertVector2D
+    {
+       static Node encode(const T& Vector) {
+          Node Node;
+          Node.SetStyle(EmitterStyle::Flow);
+          Node.push_back(Vector.X);
+          Node.push_back(Vector.Y);
+          return Node;
+       }
 
-// encode and decode an FVector
-template<>
-struct convert<FVector> {
-    static Node encode(const FVector& Vector) {
-        Node Node;
-        Node.SetStyle(EmitterStyle::Flow);
-        Node.push_back(Vector.X);
-        Node.push_back(Vector.Y);
-        Node.push_back(Vector.Z);
-        return Node;
-    }
+       static bool decode(const Node& Node, T& Out) {
+          using Type = decltype(T::X);
+          if (Node.IsSequence()) {
+             if (Node.size() == 2) {
+                Out.X = Node[0].as<Type>();
+                Out.Y = Node[1].as<Type>();
+                return true;
+             }
+          } else if (Node.IsScalar()) {
+             // Constant Vector
+             Out.X = Out.Y = Node.as<double>();
+          }
 
-    static bool decode(const Node& Node, FVector& Out) {
-        if (Node.IsSequence() && Node.size() == 3) {
-            Out.X = Node[0].as<double>();
-            Out.Y = Node[1].as<double>();
-            Out.Z = Node[2].as<double>();
-            return true;
-        }
 
-        // Constant Vector
-        if (Node.IsScalar()) {
-            Out.X = Out.Y = Out.Z = Node.as<double>();
-        }
+          return false;
+       }
+    };
+    template<typename T>
+    struct convertVector3D
+    {
+       static Node encode(const T& Vector) {
+          Node Node;
+          Node.SetStyle(EmitterStyle::Flow);
+          Node.push_back(Vector.X);
+          Node.push_back(Vector.Y);
+          Node.push_back(Vector.Z);
+          return Node;
+       }
 
-        return false;
-    }
-};
+       static bool decode(const Node& Node, T& Out) {
+          using Type = decltype(T::X);
+          if (Node.IsSequence()) {
+             if (Node.size() == 3) {
+                Out.X = Node[0].as<Type>();
+                Out.Y = Node[1].as<Type>();
+                Out.Z = Node[2].as<Type>();
+                return true;
+             }
+          } else if (Node.IsScalar()) {
+             // Constant Vector
+             Out.X = Out.Y = Out.Z = Node.as<double>();
+          }
+
+
+          return false;
+       }
+    };
+    template<typename T>
+    struct convertVector4D
+    {
+       static Node encode(const T& Vector) {
+          Node Node;
+          Node.SetStyle(EmitterStyle::Flow);
+          Node.push_back(Vector.X);
+          Node.push_back(Vector.Y);
+          Node.push_back(Vector.Z);
+          Node.push_back(Vector.W);
+          return Node;
+       }
+
+       static bool decode(const Node& Node, T& Out) {
+          using Type = decltype(T::X);
+          if (Node.IsSequence()) {
+             if (Node.size() == 4) {
+                Out.X = Node[0].as<Type>();
+                Out.Y = Node[1].as<Type>();
+                Out.Z = Node[2].as<Type>();
+                Out.W = Node[3].as<Type>();
+                return true;
+             }
+          } else if (Node.IsScalar()) {
+             // Constant Vector
+             Out.X = Out.Y = Out.Z = Out.W = Node.as<double>();
+          }
+
+
+          return false;
+       }
+    };
+}
+
+template <> struct convert<FVector2d> : detail::convertVector2D<FVector2d> {};
+template <> struct convert<FVector3d> : detail::convertVector3D<FVector3d> {};
+template <> struct convert<FVector4d> : detail::convertVector4D<FVector4d> {};
+template <typename T> struct convert<UE::Math::TIntVector2<T>>
+    : detail::convertVector2D<UE::Math::TIntVector2<T>> {};
+template <typename T> struct convert<UE::Math::TIntVector3<T>>
+    : detail::convertVector3D<UE::Math::TIntVector3<T>> {};
+template <typename T> struct convert<UE::Math::TIntVector4<T>>
+    : detail::convertVector4D<UE::Math::TIntVector4<T>> {};
 
 
 // encode and decode an FQuad
