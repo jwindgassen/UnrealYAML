@@ -1,3 +1,3 @@
-﻿#include "UnrealYAML.h"
+﻿#include "Modules/ModuleManager.h"
 
-IMPLEMENT_MODULE(FUnrealYAMLModule, UnrealYAML)
+IMPLEMENT_MODULE(FDefaultModuleImpl, UnrealYAML)
