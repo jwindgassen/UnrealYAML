@@ -14,7 +14,7 @@ struct FSimpleStruct {
     UPROPERTY()
     int32 Int{};
 
-    UPROPERTY();
+    UPROPERTY()
     bool Bool{};
 
     UPROPERTY()

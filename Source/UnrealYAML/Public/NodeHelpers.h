@@ -34,9 +34,9 @@ public:
     static FYamlNode MakeYamlNode() {
         return FYamlNode();
     }
-    
+
     // Node Properties -------------------------------------------------------------------------------------------------
-    
+
     /** Returns the Type of the Contained Data */
     UFUNCTION(BlueprintPure, Category="YAML")
     static EYamlNodeType Type(const FYamlNode& Node) {
@@ -158,7 +158,7 @@ public:
             UE_LOG(LogYamlHelper, Warning, TEXT("Could not Set Node Value at Index %d"), Index)
             return false;
         }
-        
+
         Out = Node;
         return true;
     }
@@ -175,12 +175,12 @@ public:
             UE_LOG(LogYamlHelper, Warning, TEXT("Could not Push onto Node"))
             return false;
         }
-        
-        Out =  Node;
+
+        Out = Node;
         return true;
     }
 
-    
+
     // Create Constructors and Conversion for all Types ----------------------------------------------------------------
     // Int
     // DECLARE_YAML_CONVERSION(int32, Int)

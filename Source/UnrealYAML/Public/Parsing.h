@@ -81,8 +81,9 @@ public:
 
         P_FINISH
 
-        if (StructProperty)
+        if (StructProperty) {
             *static_cast<bool*>(RESULT_PARAM) = ParseIntoStruct(Node, StructProperty->Struct, StructPtr);
+        }
     }
 
 private:

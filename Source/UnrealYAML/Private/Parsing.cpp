@@ -36,28 +36,40 @@ bool UYamlParsing::ParseIntoProperty(const FYamlNode& Node, const FProperty& Pro
            *Property.GetCPPType())
 
     // If we access an invalid sequence or map entry, we will get an Zombie Node, which is invalid
-    if (!Node.IsDefined()) return false;
+    if (!Node.IsDefined()) {
+        return false;
+    }
 
     if (const FNumericProperty* NumericProperty = CastField<FNumericProperty>(&Property)) {
         if (NumericProperty->IsInteger()) {
             const auto Value = Node.AsOptional<uint64>();
-            if (Value.IsSet()) NumericProperty->SetIntPropertyValue(PropertyValue, Value.GetValue());
+            if (Value.IsSet()) {
+                NumericProperty->SetIntPropertyValue(PropertyValue, Value.GetValue());
+            }
         } else {
             const auto Value = Node.AsOptional<float>();
-            if (Value.IsSet()) NumericProperty->SetFloatingPointPropertyValue(PropertyValue, Value.GetValue());
+            if (Value.IsSet()) {
+                NumericProperty->SetFloatingPointPropertyValue(PropertyValue, Value.GetValue());
+            }
         }
     } else if (const FBoolProperty* BoolProperty = CastField<FBoolProperty>(&Property)) {
         const auto Value = Node.AsOptional<bool>();
-        if (Value.IsSet()) BoolProperty->SetPropertyValue(PropertyValue, Value.GetValue());
+        if (Value.IsSet()) {
+            BoolProperty->SetPropertyValue(PropertyValue, Value.GetValue());
+        }
     } else if (const FStrProperty* StringProperty = CastField<FStrProperty>(&Property)) {
         const auto Value = Node.AsOptional<FString>();
-        if (Value.IsSet()) *const_cast<FString*>(&StringProperty->GetPropertyValue(PropertyValue)) = Value.GetValue();
+        if (Value.IsSet()) {
+            *const_cast<FString*>(&StringProperty->GetPropertyValue(PropertyValue)) = Value.GetValue();
+        }
     } else if (const FTextProperty* TextProperty = CastField<FTextProperty>(&Property)) {
         const auto Value = Node.AsOptional<FText>();
-        if (Value.IsSet()) *const_cast<FText*>(&TextProperty->GetPropertyValue(PropertyValue)) = Value.GetValue();
+        if (Value.IsSet()) {
+            *const_cast<FText*>(&TextProperty->GetPropertyValue(PropertyValue)) = Value.GetValue();
+        }
     } else if (const FEnumProperty* EnumProperty = CastField<FEnumProperty>(&Property)) {
-         const int64 Index = EnumProperty->GetEnum()->GetIndexByNameString(Node.As<FString>());
-         EnumProperty->GetUnderlyingProperty()->SetIntPropertyValue(PropertyValue, Index);
+        const int64 Index = EnumProperty->GetEnum()->GetIndexByNameString(Node.As<FString>());
+        EnumProperty->GetUnderlyingProperty()->SetIntPropertyValue(PropertyValue, Index);
     } else if (const FArrayProperty* ArrayProperty = CastField<FArrayProperty>(&Property)) {
         // We need the helper to get to the items of the array            
         FScriptArrayHelper Helper(ArrayProperty, PropertyValue);
@@ -65,8 +77,9 @@ bool UYamlParsing::ParseIntoProperty(const FYamlNode& Node, const FProperty& Pro
 
         bool ParsedAllProperties = true;
         for (int32 i = 0; i < Helper.Num(); ++i) {
-            if (!ParseIntoProperty(Node[i], *ArrayProperty->Inner, Helper.GetRawPtr(i)))
+            if (!ParseIntoProperty(Node[i], *ArrayProperty->Inner, Helper.GetRawPtr(i))) {
                 ParsedAllProperties = false;
+            }
         }
 
         return ParsedAllProperties;
@@ -85,8 +98,9 @@ bool UYamlParsing::ParseIntoObject(const FYamlNode& Node, const UClass* Object, 
     bool ParsedAllProperties = true;
     for (TFieldIterator<FProperty> It(Object); It; ++It) {
         FString Key = It->GetName();
-        if (!ParseIntoProperty(Node[Key], **It, It->ContainerPtrToValuePtr<void>(ObjectValue)))
+        if (!ParseIntoProperty(Node[Key], **It, It->ContainerPtrToValuePtr<void>(ObjectValue))) {
             ParsedAllProperties = false;
+        }
     }
 
     return ParsedAllProperties;
@@ -102,8 +116,9 @@ bool UYamlParsing::ParseIntoStruct(const FYamlNode& Node, const UScriptStruct* S
     bool ParsedAllProperties = true;
     for (TFieldIterator<FProperty> It(Struct); It; ++It) {
         FString Key = It->GetName();
-        if (!ParseIntoProperty(Node[Key], **It, It->ContainerPtrToValuePtr<void>(StructValue)))
+        if (!ParseIntoProperty(Node[Key], **It, It->ContainerPtrToValuePtr<void>(StructValue))) {
             ParsedAllProperties = false;
+        }
     }
 
     return ParsedAllProperties;

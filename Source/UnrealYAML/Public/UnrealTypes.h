@@ -21,8 +21,6 @@ static const TMap<FString, FColor> ColorMap = {
 
 
 namespace YAML {
-
-
 // Constant Types
 
 
@@ -117,93 +115,93 @@ struct convert<FLinearColor> {
 #if ENGINE_MAJOR_VERSION >= 5
 
 namespace detail {
-    // encode and decode an 2D Vector
-    template<template<typename> class ContainerType, typename InnerType>
-    struct convert2dBase {
-        static Node encode(const ContainerType<InnerType>& Vector) {
-            Node Node;
-            Node.SetStyle(EmitterStyle::Flow);
-            Node.push_back(Vector.X);
-            Node.push_back(Vector.Y);
-            return Node;
+// encode and decode an 2D Vector
+template<template<typename> class ContainerType, typename InnerType>
+struct convert2dBase {
+    static Node encode(const ContainerType<InnerType>& Vector) {
+        Node Node;
+        Node.SetStyle(EmitterStyle::Flow);
+        Node.push_back(Vector.X);
+        Node.push_back(Vector.Y);
+        return Node;
+    }
+
+    static bool decode(const Node& Node, ContainerType<InnerType>& Out) {
+        if (Node.IsSequence() && Node.size() == 2) {
+            Out.X = Node[0].as<InnerType>();
+            Out.Y = Node[1].as<InnerType>();
+            return true;
         }
 
-        static bool decode(const Node& Node, ContainerType<InnerType>& Out) {
-            if (Node.IsSequence() && Node.size() == 2) {
-                Out.X = Node[0].as<InnerType>();
-                Out.Y = Node[1].as<InnerType>();
-                return true;
-            }
-
-            // Constant Vector
-            if (Node.IsScalar()) {
-                Out.X = Out.Y = Node.as<InnerType>();
-            }
-
-            return false;
-        }
-    };
-        
-
-    // encode and decode an 3D Vector
-    template<template<typename> class ContainerType, typename InnerType>
-    struct convert3dBase {
-        static Node encode(const ContainerType<InnerType>& Vector) {
-            Node Node;
-            Node.SetStyle(EmitterStyle::Flow);
-            Node.push_back(Vector.X);
-            Node.push_back(Vector.Y);
-            Node.push_back(Vector.Z);
-            return Node;
+        // Constant Vector
+        if (Node.IsScalar()) {
+            Out.X = Out.Y = Node.as<InnerType>();
         }
 
-        static bool decode(const Node& Node, ContainerType<InnerType>& Out) {
-            if (Node.IsSequence() && Node.size() == 3) {
-                Out.X = Node[0].as<InnerType>();
-                Out.Y = Node[1].as<InnerType>();
-                Out.Z = Node[2].as<InnerType>();
-                return true;
-            }
+        return false;
+    }
+};
 
-            // Constant Vector
-            if (Node.IsScalar()) {
-                Out.X = Out.Y = Out.Z = Node.as<InnerType>();
-            }
 
-            return false;
-        }
-    };
+// encode and decode an 3D Vector
+template<template<typename> class ContainerType, typename InnerType>
+struct convert3dBase {
+    static Node encode(const ContainerType<InnerType>& Vector) {
+        Node Node;
+        Node.SetStyle(EmitterStyle::Flow);
+        Node.push_back(Vector.X);
+        Node.push_back(Vector.Y);
+        Node.push_back(Vector.Z);
+        return Node;
+    }
 
-    // encode and decode an 4D Vector
-    template<template<typename> class ContainerType, typename InnerType>
-    struct convert4dBase {
-        static Node encode(const ContainerType<InnerType>& Vector) {
-            Node Node;
-            Node.SetStyle(EmitterStyle::Flow);
-            Node.push_back(Vector.X);
-            Node.push_back(Vector.Y);
-            Node.push_back(Vector.Z);
-            Node.push_back(Vector.W);
-            return Node;
+    static bool decode(const Node& Node, ContainerType<InnerType>& Out) {
+        if (Node.IsSequence() && Node.size() == 3) {
+            Out.X = Node[0].as<InnerType>();
+            Out.Y = Node[1].as<InnerType>();
+            Out.Z = Node[2].as<InnerType>();
+            return true;
         }
 
-        static bool decode(const Node& Node, ContainerType<InnerType>& Out) {
-            if (Node.IsSequence() && Node.size() == 4) {
-                Out.X = Node[0].as<InnerType>();
-                Out.Y = Node[1].as<InnerType>();
-                Out.Z = Node[2].as<InnerType>();
-                Out.W = Node[3].as<InnerType>();
-                return true;
-            }
-
-            // Constant Vector
-            if (Node.IsScalar()) {
-                Out.X = Out.Y = Out.Z = Out.W = Node.as<InnerType>();
-            }
-
-            return false;
+        // Constant Vector
+        if (Node.IsScalar()) {
+            Out.X = Out.Y = Out.Z = Node.as<InnerType>();
         }
-    };
+
+        return false;
+    }
+};
+
+// encode and decode an 4D Vector
+template<template<typename> class ContainerType, typename InnerType>
+struct convert4dBase {
+    static Node encode(const ContainerType<InnerType>& Vector) {
+        Node Node;
+        Node.SetStyle(EmitterStyle::Flow);
+        Node.push_back(Vector.X);
+        Node.push_back(Vector.Y);
+        Node.push_back(Vector.Z);
+        Node.push_back(Vector.W);
+        return Node;
+    }
+
+    static bool decode(const Node& Node, ContainerType<InnerType>& Out) {
+        if (Node.IsSequence() && Node.size() == 4) {
+            Out.X = Node[0].as<InnerType>();
+            Out.Y = Node[1].as<InnerType>();
+            Out.Z = Node[2].as<InnerType>();
+            Out.W = Node[3].as<InnerType>();
+            return true;
+        }
+
+        // Constant Vector
+        if (Node.IsScalar()) {
+            Out.X = Out.Y = Out.Z = Out.W = Node.as<InnerType>();
+        }
+
+        return false;
+    }
+};
 }
 
 // encode and decode 2D Float Vector
@@ -213,7 +211,7 @@ struct convert<UE::Math::TVector2<FloatType>> : detail::convert2dBase<UE::Math::
 // encode and decode 2D Int Vector
 template<typename IntType>
 struct convert<UE::Math::TIntVector2<IntType>> : detail::convert2dBase<UE::Math::TIntVector2, IntType> {};
-    
+
 // encode and decode 3D Float Vector
 template<typename FloatType>
 struct convert<UE::Math::TVector<FloatType>> : detail::convert3dBase<UE::Math::TVector, FloatType> {};
@@ -270,13 +268,13 @@ template<typename FloatType>
 struct convert<UE::Math::TMatrix<FloatType>> {
     static Node encode(const UE::Math::TMatrix<FloatType>& Matrix) {
         Node Node;
-        
+
         Node.SetStyle(EmitterStyle::Block);
         for (unsigned i = 0; i < 4; ++i) {
             Node.push_back(Matrix.M[i]);
             Node[i].SetStyle(EmitterStyle::Flow);
         }
-        
+
         return Node;
     }
 
@@ -284,7 +282,9 @@ struct convert<UE::Math::TMatrix<FloatType>> {
         if (Node.IsSequence()) {
             if (Node.size() == 4) {
                 for (unsigned i = 0; i < 4; ++i) {
-                    if (Node[i].size() != 4) return false;
+                    if (Node[i].size() != 4) {
+                        return false;
+                    }
 
                     FloatType Array[4];
                     memcpy(Array, Node[i].begin(), sizeof(FloatType) * 4);
@@ -628,5 +628,4 @@ struct convert<TMap<KeyType, ValueType>> {
         return true;
     }
 };
-
 }

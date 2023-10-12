@@ -17,7 +17,7 @@ bool ConvertToStruct::RunTest(const FString& Parameters) {
         FSimpleStruct SimpleStruct;
         TestTrue("Parse Node into SimpleStruct", ParseNodeIntoStruct(Node, SimpleStruct));
     }
-    
+
     return !HasAnyErrors();
 }
 

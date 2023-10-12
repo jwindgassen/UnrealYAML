@@ -12,7 +12,7 @@ const FString SimpleYaml(
     "map: \n"
     "  a: 1 \n"
     "  b: 2 \n"
-);
+    );
 
 const FString ComplexYaml(
     "nested: [[1, 2, 3], [a, b, c, d], null] \n"
@@ -20,6 +20,6 @@ const FString ComplexYaml(
     "struct: \n"
     "  color: magenta \n"
     "  set: [0, 0, 1, 3, 5, 5, 6] \n"
-);
+    );
 
 const FString ErroneousYaml("err: -");
