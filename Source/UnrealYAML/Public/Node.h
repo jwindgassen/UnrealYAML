@@ -5,11 +5,13 @@
 #include "UnrealTypes.h"
 #include "Enums.h"
 #include "Emitter.h"
+#include "Iterator.h"
 
 #include "Node.generated.h"
 
-class FYamlIterator;
-class FYamlIteratorConst;
+// Define const and non-const iterators
+using FYamlIterator = TYamlIteratorBase<struct FYamlNode>;
+using FYamlIteratorConst = TYamlIteratorBase<const FYamlNode>;
 
 
 /** A wrapper for the Yaml Node class. Base YAML class. Stores a YAML-Structure in a Tree-like hierarchy.
@@ -53,24 +55,39 @@ public:
     EYamlNodeType Type() const;
 
     /** If the Node has been Defined */
-    bool IsDefined() const;
+    bool IsDefined() const {
+        return Node.IsDefined();
+    }
 
     /** Equivalent to Type() == Null (No Value) */
-    bool IsNull() const;
+    bool IsNull() const {
+        return Node.IsNull();
+    }
 
     /** Equivalent to Type() == Scalar (Singular Value) */
-    bool IsScalar() const;
+    bool IsScalar() const {
+        return Node.IsScalar();
+    }
 
     /** Equivalent to Type() == Sequence (Multiple Values without Keys) */
-    bool IsSequence() const;
+    bool IsSequence() const {
+        return Node.IsSequence();
+    }
 
     /** Equivalent to Type() == Map (List of Key-Value Pairs) */
-    bool IsMap() const;
+    bool IsMap() const {
+        return Node.IsMap();
+    }
 
 
     // Conversion to bool and output to a Stream ---------------------------------------
-    explicit operator bool() const;
-    bool operator !() const;
+    explicit operator bool() const {
+        return Node.IsDefined();
+    }
+
+    bool operator!() const {
+        return !Node.IsDefined();
+    }
 
     // Style ---------------------------------------------------------------------------
     /** Returns the Style of the Node, mostly relevant for Sequences */
@@ -83,7 +100,10 @@ public:
     // Assignment ----------------------------------------------------------------------
     /** Test if 2 Nodes are Equal */
     bool Is(const FYamlNode& Other) const;
-    bool operator ==(const FYamlNode Other) const;
+
+    bool operator==(const FYamlNode Other) const {
+        return this->Is(Other);
+    }
 
     /** Assign a Value to this Node. Will automatically converted */
     template<typename T>
@@ -124,13 +144,13 @@ public:
     }
 
     /** Try to Convert the Contents of the Node to the Given Type or return the Default Value
-    * when conversion is not possible.  Serves as a more Secure version of AsPointer()
-    *
-    * The DefaultValue will default to the default Constructor of the Type. If this Constructor is not available,
-    * you must supply a DefaultValue manually
-    * 
-    * @return A Reference to the Converted Value. If the Conversion was unsuccessful, return the DefaultValue
-    */
+     * when conversion is not possible.  Serves as a more Secure version of AsPointer()
+     *
+     * The DefaultValue will default to the default Constructor of the Type. If this Constructor is not available,
+     * you must supply a DefaultValue manually
+     *
+     * @return A Reference to the Converted Value. If the Conversion was unsuccessful, return the DefaultValue
+     */
     template<typename T>
     T As(T DefaultValue = T()) const {
         try {
@@ -162,12 +182,22 @@ public:
     int32 Size() const;
 
     /** Returns the start for an iterator. Use in combination with end() */
-    FYamlIterator begin();
-    FYamlIteratorConst begin() const;
+    FYamlIteratorConst begin() const {
+        return Node.begin();
+    }
+
+    FYamlIterator begin() {
+        return Node.begin();
+    }
 
     /** Returns the end for a iterator. Use in combination with begin() */
-    FYamlIterator end();
-    FYamlIteratorConst end() const;
+    FYamlIteratorConst end() const {
+        return Node.end();
+    }
+
+    FYamlIterator end() {
+        return Node.end();
+    }
 
     // Sequence ------------------------------------------------------------------------
     /** Converts the Node to a Sequence and adds the Element to this list */
@@ -242,191 +272,3 @@ inline void operator<<(std::ostream& Out, const FYamlNode& Node) {
 inline void operator<<(FYamlEmitter& Out, const FYamlNode& Node) {
     Out << Node.Node;
 }
-
-// Iterator ----------------------------------------------------------------------------
-
-/** The Iterator Base class. */
-class FYamlIterator {
-    friend FYamlNode;
-
-    YAML::iterator Iterator;
-    int32 Index;
-
-    explicit FYamlIterator(const YAML::iterator Iter) :
-        Iterator(Iter),
-        Index(0) {}
-
-    // Proxystruct returned by the -> operator
-    struct FProxy {
-        FYamlNode Ref;
-
-        explicit FProxy(FYamlNode& Node) :
-            Ref(Node) {}
-
-        FYamlNode* operator->() {
-            return &Ref;
-        }
-
-        operator FYamlNode*() {
-            return &Ref;
-        }
-    };
-
-public:
-    /** Returns the <b>Key</b> Element of the Key-Value-Pair if the Iterated Node is a <b>Map</b>
-     * or a Node containing the <b>Index</b> of the Value if the Iterated Node is a <b>List</b>!
-     *
-     * The corresponding Value can be retrieved via Value() */
-    FYamlNode Key() {
-        if (Iterator->first.IsDefined()) {
-            return FYamlNode(Iterator->first);
-        }
-
-        return FYamlNode(Index);
-    }
-
-
-    /** Returns the <b>Value</b> Element of the Key-Value-Pair if the Iterated Node is a <b>Map</b>
-    * or a Node containing the <b>Value</b> if the Iterated Node is a <b>List</b>!
-    *
-    * The corresponding Key (for a Map) or Index (for a List) can be retrieved via Key() */
-    FYamlNode Value() {
-        if (Iterator->second.IsDefined()) {
-            return FYamlNode(Iterator->second);
-        }
-
-        return **this;
-    }
-
-
-    /** Dereferencing the Iterator yields the Value */
-    FYamlNode& operator*() const {
-        if (Iterator->second.IsDefined()) {
-            return *new FYamlNode(Iterator->second);
-        }
-
-        return *new FYamlNode(*Iterator);
-    }
-
-
-    /** The Arrow Operator yields a Pointer to the Value */
-    FProxy& operator->() const {
-        return *new FProxy(**this);
-    }
-
-
-    FYamlIterator& operator++() {
-        ++Iterator;
-        Index++;
-        return *this;
-    }
-
-
-    FYamlIterator operator++(int) {
-        FYamlIterator Pre(*this);
-        ++(*this);
-        Index++;
-        return Pre;
-    }
-
-    bool operator ==(const FYamlIterator Other) const {
-        return Iterator == Other.Iterator;
-    }
-
-    bool operator !=(const FYamlIterator Other) const {
-        return Iterator != Other.Iterator;
-    }
-};
-
-/** The Iterator Base class. */
-class FYamlIteratorConst {
-   friend FYamlNode;
-
-   YAML::const_iterator Iterator;
-   int32 Index;
-
-   explicit FYamlIteratorConst(const YAML::const_iterator Iter) :
-      Iterator(Iter),
-      Index(0) {}
-
-   // Proxystruct returned by the -> operator
-   struct FProxy {
-      FYamlNode Ref;
-
-      explicit FProxy(FYamlNode& Node) :
-         Ref(Node) {}
-
-      FYamlNode* operator->() {
-         return &Ref;
-      }
-
-      operator FYamlNode*() {
-         return &Ref;
-      }
-   };
-
-public:
-   /** Returns the <b>Key</b> Element of the Key-Value-Pair if the Iterated Node is a <b>Map</b>
-   * or a Node containing the <b>Index</b> of the Value if the Iterated Node is a <b>List</b>!
-   *
-   * The corresponding Value can be retrieved via Value() */
-   FYamlNode Key() {
-      if (Iterator->first.IsDefined()) {
-         return FYamlNode(Iterator->first);
-      }
-
-      return FYamlNode(Index);
-   }
-
-
-   /** Returns the <b>Value</b> Element of the Key-Value-Pair if the Iterated Node is a <b>Map</b>
-   * or a Node containing the <b>Value</b> if the Iterated Node is a <b>List</b>!
-   *
-   * The corresponding Key (for a Map) or Index (for a List) can be retrieved via Key() */
-   FYamlNode Value() {
-      if (Iterator->second.IsDefined()) {
-         return FYamlNode(Iterator->second);
-      }
-
-      return **this;
-   }
-
-
-   /** Dereferencing the Iterator yields the Value */
-   FYamlNode& operator*() const {
-      if (Iterator->second.IsDefined()) {
-         return *new FYamlNode(Iterator->second);
-      }
-
-      return *new FYamlNode(*Iterator);
-   }
-
-
-   /** The Arrow Operator yields a Pointer to the Value */
-   FProxy& operator->() const {
-      return *new FProxy(**this);
-   }
-
-
-   FYamlIteratorConst& operator++() {
-      ++Iterator;
-      Index++;
-      return *this;
-   }
-
-
-   FYamlIteratorConst operator++(int) {
-      FYamlIteratorConst Pre(*this);
-      ++(*this);
-      Index++;
-      return Pre;
-   }
-
-   bool operator ==(const FYamlIteratorConst Other) const {
-      return Iterator == Other.Iterator;
-   }
-
-   bool operator !=(const FYamlIteratorConst Other) const {
-      return Iterator != Other.Iterator;
-   }
-};

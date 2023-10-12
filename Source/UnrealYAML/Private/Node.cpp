@@ -9,34 +9,6 @@ EYamlNodeType FYamlNode::Type() const {
     }
 }
 
-bool FYamlNode::IsDefined() const {
-    return Node.IsDefined();
-}
-
-bool FYamlNode::IsNull() const {
-    return Node.IsNull();
-}
-
-bool FYamlNode::IsScalar() const {
-    return Node.IsScalar();
-}
-
-bool FYamlNode::IsSequence() const {
-    return Node.IsSequence();
-}
-
-bool FYamlNode::IsMap() const {
-    return Node.IsMap();
-}
-
-FYamlNode::operator bool() const {
-    return Node.IsDefined();
-}
-
-bool FYamlNode::operator!() const {
-    return !Node.IsDefined();
-}
-
 EYamlEmitterStyle FYamlNode::Style() const {
     try {
         return static_cast<EYamlEmitterStyle>(Node.Style());
@@ -57,10 +29,6 @@ bool FYamlNode::Is(const FYamlNode& Other) const {
         UE_LOG(LogTemp, Warning, TEXT("Node was Invalid, returning default value for Is() / Equals-Operation!"))
         return false;
     }
-}
-
-bool FYamlNode::operator==(const FYamlNode Other) const {
-    return this->Is(Other);
 }
 
 bool FYamlNode::Reset(const FYamlNode& Other) {
@@ -95,19 +63,4 @@ int32 FYamlNode::Size() const {
         UE_LOG(LogTemp, Warning, TEXT("Node was Invalid, returning default value for Size()"))
         return 0;
     }
-}
-
-FYamlIterator FYamlNode::begin() {
-   return FYamlIterator(Node.begin());
-}
-FYamlIteratorConst FYamlNode::begin() const {
-   return FYamlIteratorConst(Node.begin());
-}
-
-FYamlIterator FYamlNode::end() {
-   return FYamlIterator(Node.end());
-}
-
-FYamlIteratorConst FYamlNode::end() const {
-   return FYamlIteratorConst(Node.end());
 }
