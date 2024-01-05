@@ -86,15 +86,18 @@ public:
         }
     }
 
+    /** Parse the given YAML in to a struct whose type is not known at compile time. This is useful
+     * when dealing with struct of an unknown types in CPP contexts, such as interacting with Unreal's
+     * data tables.
+     */
+    static bool ParseIntoStruct(const FYamlNode& Node, const UScriptStruct* Struct, void* StructValue);
+
 private:
     // Parses a Node into a Single Property. Can be a FStructProperty itself (recursion!)
     static bool ParseIntoProperty(const FYamlNode& Node, const FProperty& Property, void* PropertyValue);
 
     // Parses a Node into a Single UObject. Calls ParseIntoProperty on all Fields
     static bool ParseIntoObject(const FYamlNode& Node, const UClass* Object, void* ObjectValue);
-
-    // Parses a Node into a Single Struct. Calls ParseIntoProperty on all Fields
-    static bool ParseIntoStruct(const FYamlNode& Node, const UScriptStruct* Struct, void* StructValue);
 
     // Parses a Node via some predefined conversions in UnrealTypes.h via a switch case (see NativeTypes).
     static bool ParseIntoNativeType(const FYamlNode& Node, const UScriptStruct* Struct, void* StructValue);
