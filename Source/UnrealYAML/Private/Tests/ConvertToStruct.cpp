@@ -46,6 +46,11 @@ void AssertSimpleStructValues(ConvertToStruct* TestCase, const FSimpleStruct& Si
     TestCase->TestEqual("SimpleStruct: Array[0]", SimpleStruct.Arr[0], 1);
     TestCase->TestEqual("SimpleStruct: Array[1]", SimpleStruct.Arr[1], 2);
     TestCase->TestEqual("SimpleStruct: Array[2]", SimpleStruct.Arr[2], 3);
+    TestCase->TestEqual("SimpleStruct: Map length", SimpleStruct.Map.Num(), 2);
+    TestCase->TestEqual("SimpleStruct: Map contains a", SimpleStruct.Map.Contains("a"), true);
+    TestCase->TestEqual("SimpleStruct: Map value a", SimpleStruct.Map["a"], 1);
+    TestCase->TestEqual("SimpleStruct: Map contains b", SimpleStruct.Map.Contains("b"), true);
+    TestCase->TestEqual("SimpleStruct: Map value b", SimpleStruct.Map["b"], 2);
 }
 
 #endif

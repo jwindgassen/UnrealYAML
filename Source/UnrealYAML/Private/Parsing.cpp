@@ -87,6 +87,25 @@ bool UYamlParsing::ParseIntoProperty(const FYamlNode& Node, const FProperty& Pro
         return ParseIntoObject(Node, ObjectProperty->PropertyClass, PropertyValue);
     } else if (const FStructProperty* StructProperty = CastField<FStructProperty>(&Property)) {
         return ParseIntoStruct(Node, StructProperty->Struct, PropertyValue);
+    } else if (const FMapProperty* MapProperty = CastField<FMapProperty>(&Property)) {
+        FScriptMapHelper Helper(MapProperty, PropertyValue);
+
+        bool ParsedAllProperties = true;
+        for(auto It=Node.begin(); It != Node.end(); ++It) {
+            const auto i = Helper.AddDefaultValue_Invalid_NeedsRehash();
+
+            if (!ParseIntoProperty((*It).Key, *Helper.KeyProp, Helper.GetKeyPtr(i))) {
+                ParsedAllProperties = false;
+            }
+
+            if (!ParseIntoProperty((*It).Value, *Helper.ValueProp, Helper.GetValuePtr(i))) {
+                ParsedAllProperties = false;
+            }
+        }
+
+        Helper.Rehash();
+
+        return ParsedAllProperties;
     }
 
     return true;
