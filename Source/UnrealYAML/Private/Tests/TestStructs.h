@@ -80,4 +80,12 @@ struct FParentStruct {
     TMap<TEnumAsByte<EAnEnum>, FChildStruct> MappedChildren;
 };
 
+USTRUCT()
+struct FEnumStruct {
+    GENERATED_BODY()
+
+    UPROPERTY()
+    TEnumAsByte<EAnEnum> AnEnum;
+};
+
 // Cannot test for complex yaml, as we can't represent mixed nested types :(

@@ -77,7 +77,15 @@ bool UYamlParsing::ParseIntoProperty(const FYamlNode& Node, const FProperty& Pro
         return false;
     }
 
-    if (const FNumericProperty* NumericProperty = CastField<FNumericProperty>(&Property)) {
+    if (const FEnumProperty* EnumProperty = CastField<FEnumProperty>(&Property)) {
+        // TODO: Validate.
+        const int64 Index = EnumProperty->GetEnum()->GetIndexByNameString(Node.As<FString>());
+        EnumProperty->GetUnderlyingProperty()->SetIntPropertyValue(PropertyValue, Index);
+    } else if (const FByteProperty* ByteProperty = CastField<FByteProperty>(&Property); ByteProperty && ByteProperty->GetIntPropertyEnum()) {
+        // TODO: Validate.
+        const int64 Index = ByteProperty->GetIntPropertyEnum()->GetIndexByNameString(Node.As<FString>());
+        ByteProperty->SetIntPropertyValue(PropertyValue, Index);
+    } else if (const FNumericProperty* NumericProperty = CastField<FNumericProperty>(&Property)) {
         if (NumericProperty->IsInteger()) {
             if (!CheckScalarCanConvert<uint64>(Ctx, TEXT("integer"), Node)) {
                 return false;
@@ -124,10 +132,6 @@ bool UYamlParsing::ParseIntoProperty(const FYamlNode& Node, const FProperty& Pro
         if (Value.IsSet()) {
             *const_cast<FText*>(&TextProperty->GetPropertyValue(PropertyValue)) = Value.GetValue();
         }
-    } else if (const FEnumProperty* EnumProperty = CastField<FEnumProperty>(&Property)) {
-        // TODO: Validate.
-        const int64 Index = EnumProperty->GetEnum()->GetIndexByNameString(Node.As<FString>());
-        EnumProperty->GetUnderlyingProperty()->SetIntPropertyValue(PropertyValue, Index);
     } else if (const FArrayProperty* ArrayProperty = CastField<FArrayProperty>(&Property)) {
         if (!CheckNodeType(Ctx, EYamlNodeType::Sequence, TEXT("sequence"), Node)) {
             return false;
