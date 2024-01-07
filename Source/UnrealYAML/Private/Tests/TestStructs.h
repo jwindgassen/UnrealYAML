@@ -96,4 +96,31 @@ struct FEnumStruct {
     EAnEnum AnEnum;
 };
 
+USTRUCT()
+struct FDefaultStruct {
+    GENERATED_BODY()
+
+    UPROPERTY()
+    int AnInt = 13;
+
+    UPROPERTY()
+    float AFloat = 13.24;
+
+    UPROPERTY()
+    FString AString = "Hello world!";
+
+    UPROPERTY()
+    TEnumAsByte<EAnEnum> AnEnum = EAnEnum::Value3;
+
+    UPROPERTY()
+    TMap<FString, FString> AMap = {
+        {"one", "1"},
+        {"two", "2"},
+        {"three", "3"},
+    };
+
+    UPROPERTY()
+    TArray<EAnEnum> AnArray = {EAnEnum::Value1, EAnEnum::Value2};
+};
+
 // Cannot test for complex yaml, as we can't represent mixed nested types :(

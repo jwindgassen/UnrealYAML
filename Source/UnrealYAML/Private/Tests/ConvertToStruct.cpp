@@ -192,7 +192,7 @@ mappedchildren:
         }
 
         TestEqual("ParentChild.MappedChildren", Struct.MappedChildren.Num(), 3);
-        if (TestTrue("ParentChild.MappedChildren", Struct.MappedChildren.Contains(TEnumAsByte(EAnEnum::Value1)))) {
+        if (TestTrue("ParentChild.MappedChildren[value1]", Struct.MappedChildren.Contains(TEnumAsByte(EAnEnum::Value1)))) {
             TestEqual(
                 "ParentChild.MappedChildren[value1].SomeValues",
                 Struct.MappedChildren[TEnumAsByte(EAnEnum::Value1)].SomeValues,
@@ -209,7 +209,7 @@ mappedchildren:
                 TEnumAsByte(EAnEnum::Value1));
         }
 
-        if (TestTrue("ParentChild.MappedChildren", Struct.MappedChildren.Contains(TEnumAsByte(EAnEnum::Value2)))) {
+        if (TestTrue("ParentChild.MappedChildren[value2]", Struct.MappedChildren.Contains(TEnumAsByte(EAnEnum::Value2)))) {
             TestEqual(
                 "ParentChild.MappedChildren[value2].SomeValues",
                 Struct.MappedChildren[TEnumAsByte(EAnEnum::Value2)].SomeValues,
@@ -226,7 +226,7 @@ mappedchildren:
                 TEnumAsByte(EAnEnum::Value2));
         }
 
-        if (TestTrue("ParentChild.MappedChildren", Struct.MappedChildren.Contains(TEnumAsByte(EAnEnum::Value3)))) {
+        if (TestTrue("ParentChild.MappedChildren[value3]", Struct.MappedChildren.Contains(TEnumAsByte(EAnEnum::Value3)))) {
             TestEqual(
                 "ParentChild.MappedChildren[value3].SomeValues",
                 Struct.MappedChildren[TEnumAsByte(EAnEnum::Value3)].SomeValues,
@@ -242,6 +242,29 @@ mappedchildren:
                 Struct.MappedChildren[TEnumAsByte(EAnEnum::Value3)].AnEnum,
                 TEnumAsByte(EAnEnum::Value3));
         }
+    }
+
+    // Tests default are preserved.
+    {
+        FYamlNode Node;
+        UYamlParsing::ParseYaml("{}", Node);
+
+        FDefaultStruct Struct;
+        FYamlParseIntoCtx Result;
+        TestFalse("Default", ParseNodeIntoStruct(Node, Struct, Result));
+
+        TestTrue("Defaults success", Result.Success());
+
+        TestEqual("Default Int", Struct.AnInt, 13);
+        TestEqual("Default Float", Struct.AFloat, 13.24f);
+        TestEqual("Default String", Struct.AString, "Hello world!");
+        TestEqual("Default Enum", Struct.AnEnum, TEnumAsByte(EAnEnum::Value3));
+        if (TestEqual("Default Map", Struct.AMap.Num(), 3)) {
+            TestEqual("Default Map[one]", Struct.AMap["one"], "1");
+            TestEqual("Default Map[two]", Struct.AMap["two"], "2");
+            TestEqual("Default Map[three]", Struct.AMap["three"], "3");
+        }
+        TestEqual("Default Array", Struct.AnArray, {EAnEnum::Value1, EAnEnum::Value2});
     }
 
     return !HasAnyErrors();
