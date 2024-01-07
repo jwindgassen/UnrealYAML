@@ -123,4 +123,36 @@ struct FDefaultStruct {
     TArray<EAnEnum> AnArray = {EAnEnum::Value1, EAnEnum::Value2};
 };
 
+USTRUCT()
+struct FUnrealTypeStruct {
+    GENERATED_BODY()
+
+    UPROPERTY()
+    FTransform Transform;
+
+    UPROPERTY()
+    FQuat Quat;
+
+    UPROPERTY()
+    FRotator Rotator;
+
+    UPROPERTY()
+    FVector Vector;
+
+    UPROPERTY()
+    FVector2D Vector2D;
+
+    UPROPERTY()
+    TSet<int> Set;
+
+    UPROPERTY()
+    FLinearColor LinearColor;
+
+    UPROPERTY()
+    FColor Color;
+
+    UPROPERTY()
+    FText Text;
+};
+
 // Cannot test for complex yaml, as we can't represent mixed nested types :(

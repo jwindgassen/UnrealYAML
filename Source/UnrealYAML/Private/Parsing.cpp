@@ -66,8 +66,8 @@ void UYamlParsing::WriteYamlToFile(const FString Path, const FYamlNode Node) {
 
 
 // Parsing into Structs ------------------------------------------------------------------------------------------------
-const TArray<FString> UYamlParsing::NativeTypes = {"FString", "FText", "FVector", "FQuat", "FTransform", "FColor",
-                                                   "FLinearColor"};
+const TArray<FString> UYamlParsing::NativeTypes = {"FString", "FText", "FVector", "FVector2D", "FQuat", "FTransform", "FColor",
+                                                   "FLinearColor", "FRotator"};
 
 bool UYamlParsing::ParseIntoProperty(const FYamlNode& Node, const FProperty& Property, void* PropertyValue, FYamlParseIntoCtx& Ctx) {
     UE_LOG(LogYamlParsing, Verbose, TEXT("Parsing Node into Property '%s' of type '%s'"), *Property.GetName(),
@@ -253,12 +253,16 @@ bool UYamlParsing::ParseIntoNativeType(const FYamlNode& Node, const UScriptStruc
         *static_cast<FVector*>(StructValue) = Node.As<FVector>();
     } else if (Type == "FQuat") {
         *static_cast<FQuat*>(StructValue) = Node.As<FQuat>();
+    } else if (Type == "FRotator") {
+        *static_cast<FRotator*>(StructValue) = Node.As<FQuat>().Rotator();
     } else if (Type == "FTransform") {
         *static_cast<FTransform*>(StructValue) = Node.As<FTransform>();
     } else if (Type == "FColor") {
         *static_cast<FColor*>(StructValue) = Node.As<FColor>();
     } else if (Type == "FLinearColor") {
         *static_cast<FLinearColor*>(StructValue) = Node.As<FLinearColor>();
+    } else if (Type == "FVector2D") {
+        *static_cast<FVector2D*>(StructValue) = Node.As<FVector2D>();
     } else {
         checkf(false, TEXT("No native type conversion for %s"), *Type)
         return false;

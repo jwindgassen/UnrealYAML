@@ -291,6 +291,45 @@ amap:
         }
     }
 
+    // Tests support registered with yaml-cpp for Unreal types.
+    {
+        auto Yaml = TEXT(R"yaml(
+transform:
+    - [1, 2, 3]
+    - [0, 90, 0] # rotator form (quat is also supported).
+    - [2, 2, 2]
+quat: [0, 0, 0, 1]
+rotator: [90, 180, 0]
+vector: [13.23, 0, -12.4]
+vector2d: [5, 4]
+set: [0, 1, 2, 3, 4]
+linearcolor: red
+color: [255, 255, 255, 255]
+text: this is some text
+)yaml");
+
+        FYamlNode Node;
+        UYamlParsing::ParseYaml(Yaml, Node);
+
+        FUnrealTypeStruct Struct;
+        FYamlParseIntoCtx Result;
+        TestTrue("UnrealTypes", ParseNodeIntoStruct(Node, Struct, Result));
+
+        TestTrue("UnrealTypes success", Result.Success());
+
+        TestEqual("Transform.Location", Struct.Transform.GetLocation(), FVector(1, 2, 3));
+        TestEqual("Transform.Rotation", Struct.Transform.Rotator(), FRotator(0, 0, 90));
+        TestEqual("Transform.Scale", Struct.Transform.GetScale3D(), FVector(2));
+        TestEqual("Quat", Struct.Quat, FQuat::Identity);
+        TestEqual("Rotator", Struct.Rotator, FRotator(90, 0, 180));
+        TestEqual("Vector", Struct.Vector, FVector(13.23, 0, -12.4));
+        TestEqual("Vector2D", Struct.Vector2D, FVector2D(5, 4));
+        TestEqual("Set", Struct.Set.Difference({0, 1, 2, 3, 4}).Num(), 0);
+        TestEqual("LinearColor", Struct.LinearColor, FColor::Red.ReinterpretAsLinear());
+        TestEqual("Color", Struct.Color, FColor::White);
+        TestEqual("Text", Struct.Text.ToString(), "this is some text");
+    }
+
     return !HasAnyErrors();
 }
 
