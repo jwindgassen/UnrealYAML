@@ -56,6 +56,10 @@ struct FYamlParseIntoCtx {
      */
     bool Success() const;
 
+    friend class UYamlParsing;
+
+private:
+
     // Stack access.
     FYamlParseIntoCtx& PushStack(const TCHAR* Property);
     FYamlParseIntoCtx& PushStack(const FYamlNode& Key);
@@ -64,7 +68,6 @@ struct FYamlParseIntoCtx {
 
     void AddError(const TCHAR* Err);
 
-private:
     TArray<FString> Stack = {TEXT("")};
     FString StackStr() const;
 };
