@@ -141,6 +141,109 @@ mappedchildren:
         });
     }
 
+    // ParseInto parent child. Tests multiple features over a complex nested struct.
+    {
+        const auto Yaml = TEXT(R"yaml(
+embedded:
+    somevalues: [one, two]
+    afloat: 13.124
+    anenum: value1
+children:
+    - somevalues: [three]
+      afloat: 1
+      anenum: value3
+    - somevalues: [four]
+      afloat: 2
+      anenum: value3
+mappedchildren:
+    value1:
+        somevalues: [five, six]
+        afloat: 0
+        anenum: value1
+    value2:
+        somevalues: [seven]
+        afloat: -13
+        anenum: value2
+    value3:
+        somevalues: []
+        afloat: -26
+        anenum: value3
+)yaml");
+
+        FYamlNode Node;
+        UYamlParsing::ParseYaml(Yaml, Node);
+
+        FParentStruct Struct;
+        FYamlParseIntoCtx Result;
+        ParseNodeIntoStruct(Node, Struct, Result);
+
+        TestTrue("ParseInto ParentChild success", Result.Success());
+        TestEqual("ParentChild.Embedded.SomeValues", Struct.Embedded.SomeValues, {"one", "two"});
+        TestEqual("ParentChild.Embedded.AFloat", Struct.Embedded.AFloat, 13.124f);
+        TestEqual("ParentChild.Embedded.AnEnum", Struct.Embedded.AnEnum, TEnumAsByte(EAnEnum::Value1));
+
+        if (TestEqual("ParentChild.Child", Struct.Children.Num(), 2)) {
+            TestEqual("ParentChild.Child[0].SomeValues", Struct.Children[0].SomeValues, {"three"});
+            TestEqual("ParentChild.Child[0].AFloat", Struct.Children[0].AFloat, 1.0f);
+            TestEqual("ParentChild.Child[0].AFloat", Struct.Children[0].AnEnum, TEnumAsByte(EAnEnum::Value3));
+            TestEqual("ParentChild.Child[10].SomeValues", Struct.Children[1].SomeValues, {"four"});
+            TestEqual("ParentChild.Child[10].AFloat", Struct.Children[1].AFloat, 2.0f);
+            TestEqual("ParentChild.Child[10].AFloat", Struct.Children[1].AnEnum, TEnumAsByte(EAnEnum::Value3));
+        }
+
+        TestEqual("ParentChild.MappedChildren", Struct.MappedChildren.Num(), 3);
+        if (TestTrue("ParentChild.MappedChildren", Struct.MappedChildren.Contains(TEnumAsByte(EAnEnum::Value1)))) {
+            TestEqual(
+                "ParentChild.MappedChildren[value1].SomeValues",
+                Struct.MappedChildren[TEnumAsByte(EAnEnum::Value1)].SomeValues,
+                {"five", "six"});
+
+            TestEqual(
+                "ParentChild.MappedChildren[value1].AFloat",
+                Struct.MappedChildren[TEnumAsByte(EAnEnum::Value1)].AFloat,
+                0.0f);
+
+            TestEqual(
+                "ParentChild.MappedChildren[value1].AnEnum",
+                Struct.MappedChildren[TEnumAsByte(EAnEnum::Value1)].AnEnum,
+                TEnumAsByte(EAnEnum::Value1));
+        }
+
+        if (TestTrue("ParentChild.MappedChildren", Struct.MappedChildren.Contains(TEnumAsByte(EAnEnum::Value2)))) {
+            TestEqual(
+                "ParentChild.MappedChildren[value2].SomeValues",
+                Struct.MappedChildren[TEnumAsByte(EAnEnum::Value2)].SomeValues,
+                {"seven"});
+
+            TestEqual(
+                "ParentChild.MappedChildren[value2].AFloat",
+                Struct.MappedChildren[TEnumAsByte(EAnEnum::Value2)].AFloat,
+                -13.0f);
+
+            TestEqual(
+                "ParentChild.MappedChildren[value2].AnEnum",
+                Struct.MappedChildren[TEnumAsByte(EAnEnum::Value2)].AnEnum,
+                TEnumAsByte(EAnEnum::Value2));
+        }
+
+        if (TestTrue("ParentChild.MappedChildren", Struct.MappedChildren.Contains(TEnumAsByte(EAnEnum::Value3)))) {
+            TestEqual(
+                "ParentChild.MappedChildren[value3].SomeValues",
+                Struct.MappedChildren[TEnumAsByte(EAnEnum::Value3)].SomeValues,
+                {});
+
+            TestEqual(
+                "ParentChild.MappedChildren[value3].AFloat",
+                Struct.MappedChildren[TEnumAsByte(EAnEnum::Value3)].AFloat,
+                -26.0f);
+
+            TestEqual(
+                "ParentChild.MappedChildren[value3].AnEnum",
+                Struct.MappedChildren[TEnumAsByte(EAnEnum::Value3)].AnEnum,
+                TEnumAsByte(EAnEnum::Value3));
+        }
+    }
+
     return !HasAnyErrors();
 }
 

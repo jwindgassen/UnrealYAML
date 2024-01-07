@@ -60,7 +60,7 @@ struct FChildStruct {
     TArray<FString> SomeValues;
 
     UPROPERTY()
-    float AFloat = -1;
+    float AFloat;
 
     UPROPERTY()
     TEnumAsByte<EAnEnum> AnEnum = EAnEnum::Value3;
