@@ -9,6 +9,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(ConvertToStruct, "UnrealYAML.ConvertToStruct",
                                  EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::SmokeFilter)
 
 void AssertSimpleStructValues(ConvertToStruct* TestCase, const FSimpleStruct& SimpleStruct);
+template <typename StructType>
+void AssertInvalidParseInto(const TCHAR* Yaml, const TCHAR* What, ConvertToStruct* TestCase, const TArray<FString> Errors);
 
 bool ConvertToStruct::RunTest(const FString& Parameters) {
     // Simple Yaml
@@ -35,9 +37,9 @@ bool ConvertToStruct::RunTest(const FString& Parameters) {
         FSimpleStruct::StaticStruct()->DestroyStruct(StructData);
     }
 
-    // Invalid data.
+    // Invalid simple struct.
     {
-        const FString InvalidYaml(R"yaml(
+        const auto Yaml = TEXT(R"yaml(
 str: A String
 int: "not an int"
 bool: {not: a bool}
@@ -45,20 +47,14 @@ arr: {not: an array}
 map:  [1, 2, 3]
 )yaml");
 
-        FYamlNode Node;
-        UYamlParsing::ParseYaml(InvalidYaml, Node);
+        const auto Test = TEXT("Invalid data");
 
-        FSimpleStruct Struct;
-        FYamlParseIntoCtx Result;
-        ParseNodeIntoStruct(Node, Struct, Result, FYamlParseIntoOptions::StrictParsing());
-
-        TestFalse("Invalid data: failed", Result.Success());
-        if (TestEqual("Invalid data: errors length", Result.Errors.Num(), 4)) {
-            TestEqual("Invalid data: errors[0]", Result.Errors[0], TEXT(".Int: cannot convert \"not an int\" to type integer"));
-            TestEqual("Invalid data: errors[1]", Result.Errors[1], TEXT(".Bool: value is not a scalar"));
-            TestEqual("Invalid data: errors[2]", Result.Errors[2], TEXT(".Arr: value is not a sequence"));
-            TestEqual("Invalid data: errors[3]", Result.Errors[3], TEXT(".Map: value is not a map"));
-        }
+        AssertInvalidParseInto<FSimpleStruct>(Yaml, Test, this, {
+            ".Int: cannot convert \"not an int\" to type integer",
+            ".Bool: value is not a scalar",
+            ".Arr: value is not a sequence",
+            ".Map: value is not a map",
+        });
     }
 
     // Lax parsing of invalid data (default behaviour).
@@ -80,7 +76,7 @@ map: notmap
 
     // Invalid parent child.
     {
-        FString InvalidParentChildYaml(R"yaml(
+        const auto Yaml = TEXT(R"yaml(
 embedded:
     somevalues: {}
     afloat: foobar
@@ -90,35 +86,59 @@ mappedchildren:
     value1: [1, 2, 3]
     value3: 13
 )yaml");
+        const auto Test = TEXT("Invalid parent child");
 
-        FYamlNode Node;
-        UYamlParsing::ParseYaml(InvalidParentChildYaml, Node);
-
-        FParentStruct Struct;
-        FYamlParseIntoCtx Result;
-        ParseNodeIntoStruct(Node, Struct, Result, FYamlParseIntoOptions::StrictParsing());
-
-        TestFalse("Invalid parent child: failed", Result.Success());
-        if (TestEqual("Invalid parent child: errors length", Result.Errors.Num(), 5)) {
-            TestEqual("Invalid parent child: errors[0]", Result.Errors[0], TEXT(".Embedded.SomeValues: value is not a sequence"));
-            TestEqual("Invalid parent child: errors[1]", Result.Errors[1], TEXT(".Embedded.AFloat: cannot convert \"foobar\" to type float"));
-            TestEqual("Invalid parent child: errors[2]", Result.Errors[2], TEXT(".Children.[0]: value is not a map"));
-            TestEqual("Invalid parent child: errors[3]", Result.Errors[3], TEXT(".MappedChildren.value1: value is not a map"));
-            TestEqual("Invalid parent child: errors[4]", Result.Errors[4], TEXT(".MappedChildren.value3: value is not a map"));
-        }
+        AssertInvalidParseInto<FParentStruct>(Yaml, Test, this, {
+            ".Embedded.SomeValues: value is not a sequence",
+            ".Embedded.AFloat: cannot convert \"foobar\" to type float",
+            ".Children.[0]: value is not a map",
+            ".MappedChildren.value1: value is not a map",
+            ".MappedChildren.value3: value is not a map"
+        });
     }
 
     // Test parsing in to an enum.
     {
         FYamlNode Node;
-        UYamlParsing::ParseYaml("anenum: value2", Node);
+        UYamlParsing::ParseYaml("anenum: value3", Node);
 
         FEnumStruct Struct;
         FYamlParseIntoCtx Result;
-        ParseNodeIntoStruct(Node, Struct, Result, FYamlParseIntoOptions::StrictParsing());
+        ParseNodeIntoStruct(Node, Struct, Result, FYamlParseIntoOptions::Strict());
 
         TestTrue("Enum parse", Result.Success());
-        TestEqual("Enum parse value", Struct.AnEnum, EAnEnum::Value2);
+        TestEqual("Enum parse value", Struct.AnEnum, EAnEnum::Value3);
+    }
+
+    // Test parsing in to an TEnumAsByte wrapper.
+    {
+        FYamlNode Node;
+        UYamlParsing::ParseYaml("anenum: VALUE2", Node);
+
+        FEnumAsByteStruct Struct;
+        FYamlParseIntoCtx Result;
+        ParseNodeIntoStruct(Node, Struct, Result, FYamlParseIntoOptions::Strict());
+
+        TestTrue("EnumAsByte parse", Result.Success());
+        TestEqual("EnumAsByte parse value", Struct.AnEnum, TEnumAsByte(EAnEnum::Value2));
+    }
+
+    // Test invalid parsing for enums.
+    {
+        const auto Yaml = TEXT("anenum: notaknownvalue");
+        const auto Test = TEXT("Invalid EnumAsByte");
+        AssertInvalidParseInto<FEnumStruct>(Yaml, Test, this, {
+            ".AnEnum: \"notaknownvalue\" is not an allowed value for enum EAnEnum",
+        });
+    }
+
+    // Test invalid parsing for EnumAsByte wrappers.
+    {
+        const auto Yaml = TEXT("anenum: notaknownvalue");
+        const auto Test = TEXT("Invalid EnumAsByte");
+        AssertInvalidParseInto<FEnumAsByteStruct>(Yaml, Test, this, {
+            ".AnEnum: \"notaknownvalue\" is not an allowed value for enum EAnEnum",
+        });
     }
 
     return !HasAnyErrors();
@@ -137,6 +157,25 @@ void AssertSimpleStructValues(ConvertToStruct* TestCase, const FSimpleStruct& Si
     TestCase->TestEqual("SimpleStruct: Map value a", SimpleStruct.Map["a"], 1);
     TestCase->TestEqual("SimpleStruct: Map contains b", SimpleStruct.Map.Contains("b"), true);
     TestCase->TestEqual("SimpleStruct: Map value b", SimpleStruct.Map["b"], 2);
+}
+
+template <typename StructType>
+void AssertInvalidParseInto(const TCHAR* Yaml, const TCHAR* What, ConvertToStruct* TestCase, const TArray<FString> Errors) {
+    FYamlNode Node;
+    UYamlParsing::ParseYaml(Yaml, Node);
+
+    StructType Struct;
+    FYamlParseIntoCtx Result;
+    ParseNodeIntoStruct(Node, Struct, Result, FYamlParseIntoOptions::Strict());
+
+    TestCase->TestFalse(FString::Printf(TEXT("%ls fails as expected"), What), Result.Success());
+    if (!TestCase->TestEqual(FString::Printf(TEXT("%ls error count"), What), Result.Errors.Num(), Errors.Num())) {
+        return;
+    }
+
+    for (auto I = 0; I < Errors.Num(); ++I) {
+        TestCase->TestEqual(FString::Printf(TEXT("%ls error[%d]"), What, I), Result.Errors[I], Errors[I]);
+    }
 }
 
 #endif

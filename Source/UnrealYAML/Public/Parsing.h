@@ -16,8 +16,8 @@ USTRUCT()
 struct FYamlParseIntoOptions {
     GENERATED_BODY()
 
-    // Static factory for strict parsing.
-    static FYamlParseIntoOptions StrictParsing();
+    // Static factory for a set of options that enforces validity of the incoming YAML.
+    static FYamlParseIntoOptions Strict();
 
     /**
      * Ensures that we check that the type of a YAML node matches that which is in
@@ -28,7 +28,23 @@ struct FYamlParseIntoOptions {
      * the result will be indicated a failure and a suitable error message provided.
      */
     UPROPERTY()
-    bool TypeChecking = false;
+    bool CheckTypes = false;
+
+    /**
+     * Ensures that values encountered in YAML which map onto an enum property in a struct
+     * are one of the allowed values.
+     *
+     * Checking is performed case-insensitively on the enum entry, e.g.
+     *
+     * enum Foo {
+     *     AValue1 = 0,
+     *     AValue2 = 1,
+     * }
+     *
+     * "avalue1", "avalue2" (and case-variations of) would be the accepted values.
+     */
+    UPROPERTY()
+    bool CheckEnums = false;
 };
 
 /**
@@ -174,7 +190,7 @@ private:
             return false;
         }
 
-        if (Ctx.Options.TypeChecking && Node.IsDefined() && !Node.CanConvertTo<T>()) {
+        if (Ctx.Options.CheckTypes && Node.IsDefined() && !Node.CanConvertTo<T>()) {
             Ctx.AddError(*FString::Printf(TEXT("cannot convert \"%s\" to type %s"), *Node.Scalar(), TypeName));
             return false;
         }
@@ -183,6 +199,8 @@ private:
     }
 
     static bool CheckNodeType(FYamlParseIntoCtx& Ctx, const EYamlNodeType Expected, const TCHAR* TypeName, const FYamlNode& Node);
+
+    static bool CheckEnumValue(FYamlParseIntoCtx& Ctx, const FYamlNode& Node, const UEnum* Enum);
 };
 
 

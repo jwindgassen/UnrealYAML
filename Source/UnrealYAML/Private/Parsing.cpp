@@ -4,9 +4,10 @@
 DEFINE_LOG_CATEGORY(LogYamlParsing)
 
 
-FYamlParseIntoOptions FYamlParseIntoOptions::StrictParsing() {
+FYamlParseIntoOptions FYamlParseIntoOptions::Strict() {
     FYamlParseIntoOptions Ret;
-    Ret.TypeChecking = true;
+    Ret.CheckTypes = true;
+    Ret.CheckEnums = true;
     return Ret;
 }
 
@@ -78,13 +79,15 @@ bool UYamlParsing::ParseIntoProperty(const FYamlNode& Node, const FProperty& Pro
     }
 
     if (const FEnumProperty* EnumProperty = CastField<FEnumProperty>(&Property)) {
-        // TODO: Validate.
-        const int64 Index = EnumProperty->GetEnum()->GetIndexByNameString(Node.As<FString>());
-        EnumProperty->GetUnderlyingProperty()->SetIntPropertyValue(PropertyValue, Index);
+        if (CheckEnumValue(Ctx, Node, EnumProperty->GetEnum())) {
+            const int64 Index = EnumProperty->GetEnum()->GetIndexByNameString(Node.As<FString>());
+            EnumProperty->GetUnderlyingProperty()->SetIntPropertyValue(PropertyValue, Index);
+        }
     } else if (const FByteProperty* ByteProperty = CastField<FByteProperty>(&Property); ByteProperty && ByteProperty->GetIntPropertyEnum()) {
-        // TODO: Validate.
-        const int64 Index = ByteProperty->GetIntPropertyEnum()->GetIndexByNameString(Node.As<FString>());
-        ByteProperty->SetIntPropertyValue(PropertyValue, Index);
+        if (CheckEnumValue(Ctx, Node, ByteProperty->GetIntPropertyEnum())) {
+            const int64 Index = ByteProperty->GetIntPropertyEnum()->GetIndexByNameString(Node.As<FString>());
+            ByteProperty->SetIntPropertyValue(PropertyValue, Index);
+        }
     } else if (const FNumericProperty* NumericProperty = CastField<FNumericProperty>(&Property)) {
         if (NumericProperty->IsInteger()) {
             if (!CheckScalarCanConvert<uint64>(Ctx, TEXT("integer"), Node)) {
@@ -137,7 +140,7 @@ bool UYamlParsing::ParseIntoProperty(const FYamlNode& Node, const FProperty& Pro
             return false;
         }
 
-        // We need the helper to get to the items of the array            
+        // We need the helper to get to the items of the array
         FScriptArrayHelper Helper(ArrayProperty, PropertyValue);
         Helper.AddValues(Node.Size());
 
@@ -262,9 +265,29 @@ bool UYamlParsing::ParseIntoNativeType(const FYamlNode& Node, const UScriptStruc
 
 bool UYamlParsing::CheckNodeType(FYamlParseIntoCtx& Ctx, const EYamlNodeType Expected, const TCHAR* TypeName,
     const FYamlNode& Node) {
-    if (Ctx.Options.TypeChecking && Node.IsDefined() && Node.Type() != Expected) {
+    if (Ctx.Options.CheckTypes && Node.IsDefined() && Node.Type() != Expected) {
         Ctx.AddError(*FString::Printf(TEXT("value is not a %s"), TypeName));
         return false;
+    }
+
+    return true;
+}
+
+bool UYamlParsing::CheckEnumValue(FYamlParseIntoCtx& Ctx, const FYamlNode& Node, const UEnum* Enum) {
+    if (!CheckScalarCanConvert<FString>(Ctx, TEXT("string"), Node)) {
+        return false;
+    }
+
+    if (Ctx.Options.CheckEnums && Node.IsDefined()) {
+        const FString Value(Node.As<FString>());
+
+        if (Enum->GetIndexByNameString(Value) == INDEX_NONE) {
+            Ctx.AddError(*FString::Printf(
+                TEXT("\"%s\" is not an allowed value for enum %s"),
+                *Value,
+                *Enum->CppType));
+            return false;
+        }
     }
 
     return true;

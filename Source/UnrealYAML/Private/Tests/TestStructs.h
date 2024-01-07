@@ -46,10 +46,10 @@ struct FDefaultedStruct {
 };
 
 UENUM()
-enum EAnEnum {
-    Value1,
-    Value2,
-    Value3,
+enum class EAnEnum {
+    Value1 = 0,
+    Value2 = 1,
+    Value3 = 2,
 };
 
 USTRUCT()
@@ -63,7 +63,7 @@ struct FChildStruct {
     float AFloat = -1;
 
     UPROPERTY()
-    TEnumAsByte<EAnEnum> AnEnum = Value3;
+    TEnumAsByte<EAnEnum> AnEnum = EAnEnum::Value3;
 };
 
 USTRUCT()
@@ -81,11 +81,19 @@ struct FParentStruct {
 };
 
 USTRUCT()
-struct FEnumStruct {
+struct FEnumAsByteStruct {
     GENERATED_BODY()
 
     UPROPERTY()
     TEnumAsByte<EAnEnum> AnEnum;
+};
+
+USTRUCT()
+struct FEnumStruct {
+    GENERATED_BODY()
+
+    UPROPERTY()
+    EAnEnum AnEnum;
 };
 
 // Cannot test for complex yaml, as we can't represent mixed nested types :(
