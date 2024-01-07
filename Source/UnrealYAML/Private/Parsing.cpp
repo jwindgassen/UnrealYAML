@@ -4,6 +4,43 @@
 DEFINE_LOG_CATEGORY(LogYamlParsing)
 
 
+FYamlParseIntoOptions FYamlParseIntoOptions::StrictParsing() {
+    FYamlParseIntoOptions Ret;
+    Ret.TypeChecking = true;
+    return Ret;
+}
+
+FYamlParseIntoCtx& FYamlParseIntoCtx::PushStack(const TCHAR* Property) {
+    Stack.Add(Property);
+    return *this;
+}
+
+FYamlParseIntoCtx& FYamlParseIntoCtx::PushStack(const FYamlNode& Key) {
+    Stack.Add(Key.Scalar());
+    return *this;
+}
+
+FYamlParseIntoCtx& FYamlParseIntoCtx::PushStack(const int32 Index) {
+    Stack.Add(FString::Printf(TEXT("[%d]"), Index));
+    return *this;
+}
+
+void FYamlParseIntoCtx::PopStack() {
+    Stack.RemoveAt(Stack.Num() - 1);
+}
+
+void FYamlParseIntoCtx::AddError(const TCHAR* Err) {
+    Errors.Add(FString::Printf(TEXT("%s: %s"), *StackStr(), Err));
+}
+
+bool FYamlParseIntoCtx::Success() const {
+    return Errors.Num() == 0;
+}
+
+FString FYamlParseIntoCtx::StackStr() const {
+    return FString::Join(Stack, TEXT("."));
+}
+
 // Parsing into/from Files ---------------------------------------------------------------------------------------------
 bool UYamlParsing::ParseYaml(const FString String, FYamlNode& Out) {
     try {
@@ -31,7 +68,7 @@ void UYamlParsing::WriteYamlToFile(const FString Path, const FYamlNode Node) {
 const TArray<FString> UYamlParsing::NativeTypes = {"FString", "FText", "FVector", "FQuat", "FTransform", "FColor",
                                                    "FLinearColor"};
 
-bool UYamlParsing::ParseIntoProperty(const FYamlNode& Node, const FProperty& Property, void* PropertyValue) {
+bool UYamlParsing::ParseIntoProperty(const FYamlNode& Node, const FProperty& Property, void* PropertyValue, FYamlParseIntoCtx& Ctx) {
     UE_LOG(LogYamlParsing, Verbose, TEXT("Parsing Node into Property '%s' of type '%s'"), *Property.GetName(),
            *Property.GetCPPType())
 
@@ -42,65 +79,102 @@ bool UYamlParsing::ParseIntoProperty(const FYamlNode& Node, const FProperty& Pro
 
     if (const FNumericProperty* NumericProperty = CastField<FNumericProperty>(&Property)) {
         if (NumericProperty->IsInteger()) {
+            if (!CheckScalarCanConvert<uint64>(Ctx, TEXT("integer"), Node)) {
+                return false;
+            }
+
             const auto Value = Node.AsOptional<uint64>();
             if (Value.IsSet()) {
                 NumericProperty->SetIntPropertyValue(PropertyValue, Value.GetValue());
             }
         } else {
+            if (!CheckScalarCanConvert<float>(Ctx, TEXT("float"), Node)) {
+                return false;
+            }
+
             const auto Value = Node.AsOptional<float>();
             if (Value.IsSet()) {
                 NumericProperty->SetFloatingPointPropertyValue(PropertyValue, Value.GetValue());
             }
         }
     } else if (const FBoolProperty* BoolProperty = CastField<FBoolProperty>(&Property)) {
+        if (!CheckScalarCanConvert<bool>(Ctx, TEXT("bool"), Node)) {
+            return false;
+        }
+
         const auto Value = Node.AsOptional<bool>();
         if (Value.IsSet()) {
             BoolProperty->SetPropertyValue(PropertyValue, Value.GetValue());
         }
     } else if (const FStrProperty* StringProperty = CastField<FStrProperty>(&Property)) {
+        if (!CheckScalarCanConvert<FString>(Ctx, TEXT("string"), Node)) {
+            return false;
+        }
+
         const auto Value = Node.AsOptional<FString>();
         if (Value.IsSet()) {
             *const_cast<FString*>(&StringProperty->GetPropertyValue(PropertyValue)) = Value.GetValue();
         }
     } else if (const FTextProperty* TextProperty = CastField<FTextProperty>(&Property)) {
+        if (!CheckScalarCanConvert<FText>(Ctx, TEXT("string"), Node)) {
+            return false;
+        }
+
         const auto Value = Node.AsOptional<FText>();
         if (Value.IsSet()) {
             *const_cast<FText*>(&TextProperty->GetPropertyValue(PropertyValue)) = Value.GetValue();
         }
     } else if (const FEnumProperty* EnumProperty = CastField<FEnumProperty>(&Property)) {
+        // TODO: Validate.
         const int64 Index = EnumProperty->GetEnum()->GetIndexByNameString(Node.As<FString>());
         EnumProperty->GetUnderlyingProperty()->SetIntPropertyValue(PropertyValue, Index);
     } else if (const FArrayProperty* ArrayProperty = CastField<FArrayProperty>(&Property)) {
+        if (!CheckNodeType(Ctx, EYamlNodeType::Sequence, TEXT("sequence"), Node)) {
+            return false;
+        }
+
         // We need the helper to get to the items of the array            
         FScriptArrayHelper Helper(ArrayProperty, PropertyValue);
         Helper.AddValues(Node.Size());
 
         bool ParsedAllProperties = true;
         for (int32 i = 0; i < Helper.Num(); ++i) {
-            if (!ParseIntoProperty(Node[i], *ArrayProperty->Inner, Helper.GetRawPtr(i))) {
+            if (!ParseIntoProperty(Node[i], *ArrayProperty->Inner, Helper.GetRawPtr(i), Ctx.PushStack(i))) {
                 ParsedAllProperties = false;
             }
+
+            Ctx.PopStack();
         }
 
         return ParsedAllProperties;
     } else if (const FObjectProperty* ObjectProperty = CastField<FObjectProperty>(&Property)) {
-        return ParseIntoObject(Node, ObjectProperty->PropertyClass, PropertyValue);
+        auto Ret = ParseIntoObject(Node, ObjectProperty->PropertyClass, PropertyValue, Ctx);
+        return Ret;
     } else if (const FStructProperty* StructProperty = CastField<FStructProperty>(&Property)) {
-        return ParseIntoStruct(Node, StructProperty->Struct, PropertyValue);
+        auto Ret = ParseIntoStruct(Node, StructProperty->Struct, PropertyValue, Ctx);
+        return Ret;
     } else if (const FMapProperty* MapProperty = CastField<FMapProperty>(&Property)) {
+        if (!CheckNodeType(Ctx, EYamlNodeType::Map, TEXT("map"), Node)) {
+            return false;
+        }
+
         FScriptMapHelper Helper(MapProperty, PropertyValue);
 
         bool ParsedAllProperties = true;
         for(auto It=Node.begin(); It != Node.end(); ++It) {
             const auto i = Helper.AddDefaultValue_Invalid_NeedsRehash();
 
-            if (!ParseIntoProperty((*It).Key, *Helper.KeyProp, Helper.GetKeyPtr(i))) {
+            Ctx.PushStack((*It).Key);
+
+            if (!ParseIntoProperty((*It).Key, *Helper.KeyProp, Helper.GetKeyPtr(i), Ctx)) {
                 ParsedAllProperties = false;
             }
 
-            if (!ParseIntoProperty((*It).Value, *Helper.ValueProp, Helper.GetValuePtr(i))) {
+            if (!ParseIntoProperty((*It).Value, *Helper.ValueProp, Helper.GetValuePtr(i), Ctx)) {
                 ParsedAllProperties = false;
             }
+
+            Ctx.PopStack();
         }
 
         Helper.Rehash();
@@ -111,39 +185,53 @@ bool UYamlParsing::ParseIntoProperty(const FYamlNode& Node, const FProperty& Pro
     return true;
 }
 
-bool UYamlParsing::ParseIntoObject(const FYamlNode& Node, const UClass* Object, void* ObjectValue) {
+bool UYamlParsing::ParseIntoObject(const FYamlNode& Node, const UClass* Object, void* ObjectValue, FYamlParseIntoCtx& Ctx) {
     UE_LOG(LogYamlParsing, Verbose, TEXT("Parsing Node into Object '%s'"), *Object->GetName())
+
+    if (!CheckNodeType(Ctx, EYamlNodeType::Map, TEXT("map"), Node)) {
+        return false;
+    }
 
     bool ParsedAllProperties = true;
     for (TFieldIterator<FProperty> It(Object); It; ++It) {
         FString Key = It->GetName();
-        if (!ParseIntoProperty(Node[Key], **It, It->ContainerPtrToValuePtr<void>(ObjectValue))) {
+        if (!ParseIntoProperty(Node[Key], **It, It->ContainerPtrToValuePtr<void>(ObjectValue), Ctx.PushStack(*Key))) {
             ParsedAllProperties = false;
         }
+
+        Ctx.PopStack();
     }
 
     return ParsedAllProperties;
 }
 
-bool UYamlParsing::ParseIntoStruct(const FYamlNode& Node, const UScriptStruct* Struct, void* StructValue) {
+bool UYamlParsing::ParseIntoStruct(const FYamlNode& Node, const UScriptStruct* Struct, void* StructValue, FYamlParseIntoCtx& Ctx) {
     UE_LOG(LogYamlParsing, Verbose, TEXT("Parsing Node into Struct '%s'"), *Struct->GetName())
 
-    if (NativeTypes.Contains(Struct->GetStructCPPName())) {
-        return ParseIntoNativeType(Node, Struct, StructValue);
+    if (!CheckNodeType(Ctx, EYamlNodeType::Map, TEXT("map"), Node)) {
+        return false;
     }
+
+    if (NativeTypes.Contains(Struct->GetStructCPPName())) {
+        return ParseIntoNativeType(Node, Struct, StructValue, Ctx);
+    }
+
+    // TODO: Check all YAML keys are consumed.
 
     bool ParsedAllProperties = true;
     for (TFieldIterator<FProperty> It(Struct); It; ++It) {
         FString Key = It->GetName();
-        if (!ParseIntoProperty(Node[Key], **It, It->ContainerPtrToValuePtr<void>(StructValue))) {
+        if (!ParseIntoProperty(Node[Key], **It, It->ContainerPtrToValuePtr<void>(StructValue), Ctx.PushStack(*Key))) {
             ParsedAllProperties = false;
         }
+
+        Ctx.PopStack();
     }
 
     return ParsedAllProperties;
 }
 
-bool UYamlParsing::ParseIntoNativeType(const FYamlNode& Node, const UScriptStruct* Struct, void* StructValue) {
+bool UYamlParsing::ParseIntoNativeType(const FYamlNode& Node, const UScriptStruct* Struct, void* StructValue, FYamlParseIntoCtx& Ctx) {
     const FString Type = Struct->GetStructCPPName();
 
     if (Type == "FString") {
@@ -162,6 +250,16 @@ bool UYamlParsing::ParseIntoNativeType(const FYamlNode& Node, const UScriptStruc
         *static_cast<FLinearColor*>(StructValue) = Node.As<FLinearColor>();
     } else {
         checkf(false, TEXT("No native type conversion for %s"), *Type)
+        return false;
+    }
+
+    return true;
+}
+
+bool UYamlParsing::CheckNodeType(FYamlParseIntoCtx& Ctx, const EYamlNodeType Expected, const TCHAR* TypeName,
+    const FYamlNode& Node) {
+    if (Ctx.Options.TypeChecking && Node.IsDefined() && Node.Type() != Expected) {
+        Ctx.AddError(*FString::Printf(TEXT("value is not a %s"), TypeName));
         return false;
     }
 

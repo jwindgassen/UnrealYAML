@@ -7,18 +7,83 @@
 
 DECLARE_LOG_CATEGORY_EXTERN(LogYamlParsing, Log, All)
 
+/**
+ * Controls how UnrealYAML's ParseInto operations behave.
+ *
+ * The default values here preserve previous behaviour before Options was introduced.
+ */
+USTRUCT()
+struct FYamlParseIntoOptions {
+    GENERATED_BODY()
+
+    // Static factory for strict parsing.
+    static FYamlParseIntoOptions StrictParsing();
+
+    /**
+     * Ensures that we check that the type of a YAML node matches that which is in
+     * the struct, or can be converted to it.
+     *
+     * For example, without this, if a struct expects a TArray, but the corresponding
+     * YAML has a string value, parsing would still be successful. With this enabled,
+     * the result will be indicated a failure and a suitable error message provided.
+     */
+    UPROPERTY()
+    bool TypeChecking = false;
+};
+
+/**
+ * State for running ParseInto operations. This provides detailed error information
+ * once parsing is complete.
+ */
+USTRUCT()
+struct FYamlParseIntoCtx {
+    GENERATED_BODY()
+
+    /**
+     * The options this ParseInto operation ran with.
+     */
+    UPROPERTY()
+    FYamlParseIntoOptions Options;
+
+    /**
+     * Errors that occurred whilst trying to parse YAML in to a struct.
+     */
+    UPROPERTY()
+    TArray<FString> Errors;
+
+    /**
+     * Returns true if there were no errors encountered in a ParseInto operation.
+     */
+    bool Success() const;
+
+    // Stack access.
+    FYamlParseIntoCtx& PushStack(const TCHAR* Property);
+    FYamlParseIntoCtx& PushStack(const FYamlNode& Key);
+    FYamlParseIntoCtx& PushStack(const int32 Index);
+    void PopStack();
+
+    void AddError(const TCHAR* Err);
+
+private:
+    TArray<FString> Stack = {TEXT("")};
+    FString StackStr() const;
+};
 
 UCLASS(BlueprintType)
 class UNREALYAML_API UYamlParsing final : public UBlueprintFunctionLibrary {
     GENERATED_BODY()
 
     template<typename T>
-    friend bool ParseNodeIntoStruct(const FYamlNode&, T&);
+    friend bool ParseNodeIntoStruct(const FYamlNode&, T&, const FYamlParseIntoOptions&);
+    template<typename T>
+    friend bool ParseNodeIntoStruct(const FYamlNode&, T&, FYamlParseIntoCtx&, const FYamlParseIntoOptions&);
+    friend bool ParseNodeIntoStruct(const FYamlNode&, const UScriptStruct*, void*, const FYamlParseIntoOptions&);
+    friend bool ParseNodeIntoStruct(const FYamlNode&, const UScriptStruct*, void*, FYamlParseIntoCtx&, const FYamlParseIntoOptions&);
 
     // Some conversion are defined in UnrealTypes.h. But FProperty does not provide a way to retrieve the Type, except as
     // an FString. This provides a list of all Types (as String) that can be directly converted via those conversion instead
     // of the Parsing all Fields further (basically a shortcut with neater results). This is only used to determine *if* an
-    // FProperty can be converted directly, the if-else chain to check what type it actually is, is in ParseNativeType itself.
+    // FProperty can be converted directly, the if-else chain to check what type it actually is, is in ParseIntoNativeType itself.
     const static TArray<FString> NativeTypes;
 
 public:
@@ -82,30 +147,70 @@ public:
         P_FINISH
 
         if (StructProperty) {
-            *static_cast<bool*>(RESULT_PARAM) = ParseIntoStruct(Node, StructProperty->Struct, StructPtr);
+            FYamlParseIntoCtx Ctx;
+            *static_cast<bool*>(RESULT_PARAM) = ParseIntoStruct(Node, StructProperty->Struct, StructPtr, Ctx);
         }
     }
 
-    /** Parse the given YAML in to a struct whose type is not known at compile time. This is useful
-     * when dealing with struct of an unknown types in CPP contexts, such as interacting with Unreal's
-     * data tables.
-     */
-    static bool ParseIntoStruct(const FYamlNode& Node, const UScriptStruct* Struct, void* StructValue);
-
 private:
     // Parses a Node into a Single Property. Can be a FStructProperty itself (recursion!)
-    static bool ParseIntoProperty(const FYamlNode& Node, const FProperty& Property, void* PropertyValue);
+    static bool ParseIntoProperty(const FYamlNode& Node, const FProperty& Property, void* PropertyValue, FYamlParseIntoCtx& Ctx);
+
+    // Parses a Node into a Single Struct. Calls ParseIntoProperty on all Fields
+    static bool ParseIntoStruct(const FYamlNode& Node, const UScriptStruct* Struct, void* StructValue, FYamlParseIntoCtx& Ctx);
 
     // Parses a Node into a Single UObject. Calls ParseIntoProperty on all Fields
-    static bool ParseIntoObject(const FYamlNode& Node, const UClass* Object, void* ObjectValue);
+    static bool ParseIntoObject(const FYamlNode& Node, const UClass* Object, void* ObjectValue, FYamlParseIntoCtx& Ctx);
 
     // Parses a Node via some predefined conversions in UnrealTypes.h via a switch case (see NativeTypes).
-    static bool ParseIntoNativeType(const FYamlNode& Node, const UScriptStruct* Struct, void* StructValue);
+    static bool ParseIntoNativeType(const FYamlNode& Node, const UScriptStruct* Struct, void* StructValue, FYamlParseIntoCtx& Ctx);
+
+    template <typename T>
+    static bool CheckScalarCanConvert(FYamlParseIntoCtx& Ctx, const TCHAR* TypeName, const FYamlNode& Node) {
+        if (!CheckNodeType(Ctx, EYamlNodeType::Scalar, TEXT("scalar"), Node)) {
+            return false;
+        }
+
+        if (Ctx.Options.TypeChecking && Node.IsDefined() && !Node.CanConvertTo<T>()) {
+            Ctx.AddError(*FString::Printf(TEXT("cannot convert \"%s\" to type %s"), *Node.Scalar(), TypeName));
+            return false;
+        }
+
+        return true;
+    }
+
+    static bool CheckNodeType(FYamlParseIntoCtx& Ctx, const EYamlNodeType Expected, const TCHAR* TypeName, const FYamlNode& Node);
 };
 
 
 /** C++ Wrapper for UYamlParsing::ParseIntoStruct */
 template<typename T>
-FORCENOINLINE bool ParseNodeIntoStruct(const FYamlNode& Node, T& StructIn) {
-    return UYamlParsing::ParseIntoStruct(Node, StructIn.StaticStruct(), &StructIn);
+FORCENOINLINE bool ParseNodeIntoStruct(const FYamlNode& Node, T& StructIn,
+                                       const FYamlParseIntoOptions& Options = FYamlParseIntoOptions()) {
+    FYamlParseIntoCtx Result;
+    Result.Options = Options;
+    return UYamlParsing::ParseIntoStruct(Node, StructIn.StaticStruct(), &StructIn, Result);
+}
+template<typename T>
+FORCENOINLINE bool ParseNodeIntoStruct(const FYamlNode& Node, T& StructIn, FYamlParseIntoCtx& Result,
+                                       const FYamlParseIntoOptions& Options = FYamlParseIntoOptions()) {
+    Result.Options = Options;
+    return UYamlParsing::ParseIntoStruct(Node, StructIn.StaticStruct(), &StructIn, Result);
+}
+
+/** Parse the given YAML in to a struct whose type is not known at compile time. This is useful
+ * when dealing with struct of an unknown types in C++ contexts, such as interacting with Unreal's
+ * data tables.
+ */
+inline bool ParseNodeIntoStruct(const FYamlNode& Node, const UScriptStruct* Struct, void* StructValue,
+                                const FYamlParseIntoOptions& Options = FYamlParseIntoOptions()) {
+    FYamlParseIntoCtx Ctx;
+    Ctx.Options = Options;
+    return UYamlParsing::ParseIntoStruct(Node, Struct, StructValue, Ctx);
+}
+inline bool ParseNodeIntoStruct(const FYamlNode& Node, const UScriptStruct* Struct, void* StructValue,
+                                FYamlParseIntoCtx& Result,
+                                const FYamlParseIntoOptions& Options = FYamlParseIntoOptions()) {
+    Result.Options = Options;
+    return UYamlParsing::ParseIntoStruct(Node, Struct, StructValue, Result);
 }

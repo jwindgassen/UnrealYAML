@@ -9,7 +9,7 @@ Welcome to the UnrealYAML Plugin, a Plugin that allows the parsing and emitting 
 ## Features
 - Basic Functionality
 	- Assigment
-	- Convers Conversion to and from most frequently used Unreal Types
+	- Conversion to and from most frequently used Unreal Types
 	- Iterators
 	- Loading and Saving Files
 - Usable in Blueprint and C++
@@ -19,7 +19,6 @@ Welcome to the UnrealYAML Plugin, a Plugin that allows the parsing and emitting 
 - Node into Struct Parsing:
 	- With Blueprint Structs (if possible)
 	- Option to respect case on key values (currently always case insensitive)
-	- Add Map Parsing
 	- Parse Struct into Node (Reverse Direction)
 - Sequences and Maps into TArray\<Node> and TMap\<FString, Node> for Iteration in Blueprints
 - Interfacing with Unreal JSON Plugin?
