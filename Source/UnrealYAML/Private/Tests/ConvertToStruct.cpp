@@ -253,7 +253,7 @@ mappedchildren:
         FYamlParseIntoCtx Result;
         TestFalse("Default", ParseNodeIntoStruct(Node, Struct, Result));
 
-        TestTrue("Defaults success", Result.Success());
+        TestTrue("Default success", Result.Success());
 
         TestEqual("Default Int", Struct.AnInt, 13);
         TestEqual("Default Float", Struct.AFloat, 13.24f);
@@ -265,6 +265,30 @@ mappedchildren:
             TestEqual("Default Map[three]", Struct.AMap["three"], "3");
         }
         TestEqual("Default Array", Struct.AnArray, {EAnEnum::Value1, EAnEnum::Value2});
+    }
+
+    // Checks that container default values are correctly lost if specified in YAML.
+    {
+        auto Yaml = TEXT(R"yaml(
+anarray: [value3]
+amap:
+    1: one
+    2: two
+)yaml");
+
+        FYamlNode Node;
+        UYamlParsing::ParseYaml(Yaml, Node);
+
+        FDefaultStruct Struct;
+        FYamlParseIntoCtx Result;
+        TestFalse("DefaultOverwrite", ParseNodeIntoStruct(Node, Struct, Result));
+
+        TestTrue("DefaultOverwrite success", Result.Success());
+        TestEqual("DefaultOverwrite Array", Struct.AnArray, {EAnEnum::Value3});
+        if (TestEqual("DefaultOverwrite Map", Struct.AMap.Num(), 2)) {
+            TestEqual("DefaultOverwrite Map[1]", Struct.AMap["1"], "one");
+            TestEqual("DefaultOverwrite Map[2]", Struct.AMap["2"], "two");
+        }
     }
 
     return !HasAnyErrors();

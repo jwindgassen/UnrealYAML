@@ -142,6 +142,9 @@ bool UYamlParsing::ParseIntoProperty(const FYamlNode& Node, const FProperty& Pro
 
         // We need the helper to get to the items of the array
         FScriptArrayHelper Helper(ArrayProperty, PropertyValue);
+
+        Helper.EmptyValues(); // Remove any values in the array already.
+
         Helper.AddValues(Node.Size());
 
         bool ParsedAllProperties = true;
@@ -166,6 +169,7 @@ bool UYamlParsing::ParseIntoProperty(const FYamlNode& Node, const FProperty& Pro
         }
 
         FScriptMapHelper Helper(MapProperty, PropertyValue);
+        Helper.EmptyValues(); // Remove any values in the map already.
 
         bool ParsedAllProperties = true;
         for(auto It=Node.begin(); It != Node.end(); ++It) {
