@@ -13,7 +13,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogYamlParsing, Log, All)
  * The default values here preserve previous behaviour before Options was introduced.
  */
 USTRUCT()
-struct FYamlParseIntoOptions {
+struct UNREALYAML_API FYamlParseIntoOptions {
     GENERATED_BODY()
 
     // Static factory for a set of options that enforces validity of the incoming YAML.
@@ -52,7 +52,7 @@ struct FYamlParseIntoOptions {
  * once parsing is complete.
  */
 USTRUCT()
-struct FYamlParseIntoCtx {
+struct UNREALYAML_API FYamlParseIntoCtx {
     GENERATED_BODY()
 
     /**
