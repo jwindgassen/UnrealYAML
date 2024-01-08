@@ -175,7 +175,7 @@ mappedchildren:
 
         FParentStruct Struct;
         FYamlParseIntoCtx Result;
-        ParseNodeIntoStruct(Node, Struct, Result);
+        ParseNodeIntoStruct(Node, Struct, Result, FYamlParseIntoOptions::Strict());
 
         TestTrue("ParseInto ParentChild success", Result.Success());
         TestEqual("ParentChild.Embedded.SomeValues", Struct.Embedded.SomeValues, {"one", "two"});
@@ -251,7 +251,7 @@ mappedchildren:
 
         FDefaultStruct Struct;
         FYamlParseIntoCtx Result;
-        TestFalse("Default", ParseNodeIntoStruct(Node, Struct, Result));
+        TestFalse("Default", ParseNodeIntoStruct(Node, Struct, Result, FYamlParseIntoOptions::Strict()));
 
         TestTrue("Default success", Result.Success());
 
@@ -281,7 +281,7 @@ amap:
 
         FDefaultStruct Struct;
         FYamlParseIntoCtx Result;
-        TestFalse("DefaultOverwrite", ParseNodeIntoStruct(Node, Struct, Result));
+        TestFalse("DefaultOverwrite", ParseNodeIntoStruct(Node, Struct, Result, FYamlParseIntoOptions::Strict()));
 
         TestTrue("DefaultOverwrite success", Result.Success());
         TestEqual("DefaultOverwrite Array", Struct.AnArray, {EAnEnum::Value3});
@@ -313,21 +313,21 @@ text: this is some text
 
         FUnrealTypeStruct Struct;
         FYamlParseIntoCtx Result;
-        TestTrue("UnrealTypes", ParseNodeIntoStruct(Node, Struct, Result));
+        TestTrue("UnrealTypes", ParseNodeIntoStruct(Node, Struct, Result, FYamlParseIntoOptions::Strict()));
 
         TestTrue("UnrealTypes success", Result.Success());
 
-        TestEqual("Transform.Location", Struct.Transform.GetLocation(), FVector(1, 2, 3));
-        TestEqual("Transform.Rotation", Struct.Transform.Rotator(), FRotator(0, 0, 90));
-        TestEqual("Transform.Scale", Struct.Transform.GetScale3D(), FVector(2));
-        TestEqual("Quat", Struct.Quat, FQuat::Identity);
-        TestEqual("Rotator", Struct.Rotator, FRotator(90, 0, 180));
-        TestEqual("Vector", Struct.Vector, FVector(13.23, 0, -12.4));
-        TestEqual("Vector2D", Struct.Vector2D, FVector2D(5, 4));
-        TestEqual("Set", Struct.Set.Difference({0, 1, 2, 3, 4}).Num(), 0);
-        TestEqual("LinearColor", Struct.LinearColor, FColor::Red.ReinterpretAsLinear());
-        TestEqual("Color", Struct.Color, FColor::White);
-        TestEqual("Text", Struct.Text.ToString(), "this is some text");
+        TestEqual("UnrealTypes Transform.Location", Struct.Transform.GetLocation(), FVector(1, 2, 3));
+        TestEqual("UnrealTypes Transform.Rotation", Struct.Transform.Rotator(), FRotator(0, 0, 90));
+        TestEqual("UnrealTypes Transform.Scale", Struct.Transform.GetScale3D(), FVector(2));
+        TestEqual("UnrealTypes Quat", Struct.Quat, FQuat::Identity);
+        TestEqual("UnrealTypes Rotator", Struct.Rotator, FRotator(90, 0, 180));
+        TestEqual("UnrealTypes Vector", Struct.Vector, FVector(13.23, 0, -12.4));
+        TestEqual("UnrealTypes Vector2D", Struct.Vector2D, FVector2D(5, 4));
+        TestEqual("UnrealTypes Set", Struct.Set.Difference({0, 1, 2, 3, 4}).Num(), 0);
+        TestEqual("UnrealTypes LinearColor", Struct.LinearColor, FColor::Red.ReinterpretAsLinear());
+        TestEqual("UnrealTypes Color", Struct.Color, FColor::White);
+        TestEqual("UnrealTypes Text", Struct.Text.ToString(), "this is some text");
     }
 
     // Tests negative integers are parsed.

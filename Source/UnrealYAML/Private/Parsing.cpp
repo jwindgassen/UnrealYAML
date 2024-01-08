@@ -219,12 +219,12 @@ bool UYamlParsing::ParseIntoObject(const FYamlNode& Node, const UClass* Object, 
 bool UYamlParsing::ParseIntoStruct(const FYamlNode& Node, const UScriptStruct* Struct, void* StructValue, FYamlParseIntoCtx& Ctx) {
     UE_LOG(LogYamlParsing, Verbose, TEXT("Parsing Node into Struct '%s'"), *Struct->GetName())
 
-    if (!CheckNodeType(Ctx, EYamlNodeType::Map, TEXT("map"), Node)) {
-        return false;
-    }
-
     if (NativeTypes.Contains(Struct->GetStructCPPName())) {
         return ParseIntoNativeType(Node, Struct, StructValue, Ctx);
+    }
+
+    if (!CheckNodeType(Ctx, EYamlNodeType::Map, TEXT("map"), Node)) {
+        return false;
     }
 
     // TODO: Check all YAML keys are consumed.
