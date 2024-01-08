@@ -330,6 +330,20 @@ text: this is some text
         TestEqual("Text", Struct.Text.ToString(), "this is some text");
     }
 
+    // Tests negative integers are parsed.
+    {
+        const auto Yaml = TEXT("int: -1");
+        FYamlNode Node;
+        UYamlParsing::ParseYaml(Yaml, Node);
+
+        FSimpleStruct Struct;
+        FYamlParseIntoCtx Result;
+        ParseNodeIntoStruct(Node, Struct, Result, FYamlParseIntoOptions::Strict());
+
+        TestTrue("NegativeInteger", Result.Success());
+        TestEqual("NegativeInteger Value", Struct.Int, -1);
+    }
+
     return !HasAnyErrors();
 }
 

@@ -90,11 +90,11 @@ bool UYamlParsing::ParseIntoProperty(const FYamlNode& Node, const FProperty& Pro
         }
     } else if (const FNumericProperty* NumericProperty = CastField<FNumericProperty>(&Property)) {
         if (NumericProperty->IsInteger()) {
-            if (!CheckScalarCanConvert<uint64>(Ctx, TEXT("integer"), Node)) {
+            if (!CheckScalarCanConvert<int64>(Ctx, TEXT("integer"), Node)) {
                 return false;
             }
 
-            const auto Value = Node.AsOptional<uint64>();
+            const auto Value = Node.AsOptional<int64>();
             if (Value.IsSet()) {
                 NumericProperty->SetIntPropertyValue(PropertyValue, Value.GetValue());
             }
