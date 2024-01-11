@@ -330,6 +330,44 @@ text: this is some text
         TestEqual("UnrealTypes Text", Struct.Text.ToString(), "this is some text");
     }
 
+    // Unreal types which are references to other things that needs special handling.
+    {
+        auto Yaml = TEXT(R"yaml(
+subclassOf: "/Script/CoreUObject.Class'/Script/Engine.Actor'"
+
+# Note: this requires loading from disk of a .uasset from the engine content. We assume this is available.
+softObjectPtr: "/Script/Engine.StaticMesh'/Engine/BasicShapes/Cube.Cube'"
+)yaml");
+
+        FYamlNode Node;
+        UYamlParsing::ParseYaml(Yaml, Node);
+
+        FUnrealReferenceTypeStruct Struct;
+        FYamlParseIntoCtx Result;
+        TestTrue("UnrealReferenceTypes", ParseNodeIntoStruct(Node, Struct, Result, FYamlParseIntoOptions::Strict()));
+
+        TestTrue("UnrealReferenceTypes success", Result.Success());
+
+        TestEqual("UnrealReferenceTypes TSubclassOf", Struct.SubclassOf.Get()->GetName(), "Actor");
+        if (TestEqual("UnrealReferenceTypes TSoftObjectPtr", Struct.SoftObjectPtr.IsNull(), false)) {
+            // Check it's a valid mesh.
+            TestTrue("UnrealReferenceTypes TSoftObjectPtr Value", Struct.SoftObjectPtr.LoadSynchronous()->GetNumVertices(0) > 0);
+        }
+    }
+
+    // Unreal reference types fail if the referenced entities cannot be found.
+    {
+        auto Yaml = TEXT(R"yaml(
+subclassOf: "not a uclass"
+softObjectPtr: "not a uobject"
+)yaml");
+
+        AssertInvalidParseInto<FUnrealReferenceTypeStruct>(Yaml, TEXT("Invalid UnrealReferenceTypes"), this, {
+            ".SubclassOf: Cannot find class: not a uclass",
+            ".SoftObjectPtr: Cannot find object: not a uobject",
+        });
+    }
+
     // Tests negative integers are parsed.
     {
         const auto Yaml = TEXT("int: -1");

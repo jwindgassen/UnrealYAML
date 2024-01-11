@@ -155,4 +155,15 @@ struct FUnrealTypeStruct {
     FText Text;
 };
 
+USTRUCT()
+struct FUnrealReferenceTypeStruct {
+    GENERATED_BODY()
+
+    UPROPERTY()
+    TSubclassOf<AActor> SubclassOf;
+
+    UPROPERTY()
+    TSoftObjectPtr<UStaticMesh> SoftObjectPtr;
+};
+
 // Cannot test for complex yaml, as we can't represent mixed nested types :(

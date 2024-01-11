@@ -13,7 +13,12 @@ Welcome to the UnrealYAML Plugin, a Plugin that allows the parsing and emitting 
 	- Iterators
 	- Loading and Saving Files
 - Usable in Blueprint and C++
-- Automatic Parsing to Unreal Struct using the Unreal Reflection System.
+- Automatic Parsing to Unreal Struct using the Unreal Reflection System
+	- `UPROPERTY` support:
+		- Simple scalar values, such as int, float, FString and FText
+		- `TMap` and `TArray`, and nested `USTRUCT`s 
+		- Object references: `TSoftObjectPtr` and `TSubclassOf`
+	- Configurable validation and detailed error reporting.
 
 ### TODO
 - Node into Struct Parsing:
