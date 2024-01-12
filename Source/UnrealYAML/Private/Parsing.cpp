@@ -188,11 +188,9 @@ bool UYamlParsing::ParseIntoProperty(const FYamlNode& Node, const FProperty& Pro
             *const_cast<TObjectPtr<UObject>*>(&ClassProperty->GetPropertyValue(PropertyValue)) = FoundClass;
         }
     } else if (const FObjectProperty* ObjectProperty = CastField<FObjectProperty>(&Property)) {
-        auto Ret = ParseIntoObject(Node, ObjectProperty->PropertyClass, PropertyValue, Ctx);
-        return Ret;
+        return ParseIntoObject(Node, ObjectProperty->PropertyClass, PropertyValue, Ctx);
     } else if (const FStructProperty* StructProperty = CastField<FStructProperty>(&Property)) {
-        auto Ret = ParseIntoStruct(Node, StructProperty->Struct, PropertyValue, Ctx);
-        return Ret;
+        return ParseIntoStruct(Node, StructProperty->Struct, PropertyValue, Ctx);
     } else if (const FMapProperty* MapProperty = CastField<FMapProperty>(&Property)) {
         if (!CheckNodeType(Ctx, EYamlNodeType::Map, TEXT("map"), Node)) {
             return false;
