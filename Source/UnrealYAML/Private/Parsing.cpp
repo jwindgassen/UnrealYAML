@@ -164,7 +164,7 @@ bool UYamlParsing::ParseIntoProperty(const FYamlNode& Node, const FProperty& Pro
 
         const auto Value = Node.AsOptional<FString>();
         if (Value.IsSet()) {
-            auto Object = StaticFindObject(UObject::StaticClass(), FSoftObjectPath(Value.GetValue()).GetAssetPath(), false);
+            auto Object = FindObject<UObject>(Value.GetValue());
             if (!IsValid(Object)) {
                 Ctx.AddError(*FString::Printf(TEXT("Cannot find object: %s"), *Value.GetValue()));
                 return false;
@@ -179,8 +179,7 @@ bool UYamlParsing::ParseIntoProperty(const FYamlNode& Node, const FProperty& Pro
 
         const auto Value = Node.AsOptional<FString>();
         if (Value.IsSet()) {
-            auto FoundClass = StaticLoadClass(UObject::StaticClass(), nullptr, *Value.GetValue());
-
+            auto FoundClass = FindClass(Value.GetValue());
             if (!IsValid(FoundClass)) {
                 Ctx.AddError(*FString::Printf(TEXT("Cannot find class: %s"), *Value.GetValue()));
                 return false;

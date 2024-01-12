@@ -335,7 +335,7 @@ text: this is some text
         auto Yaml = TEXT(R"yaml(
 subclassOf: "/Script/CoreUObject.Class'/Script/Engine.Actor'"
 
-# Note: this requires loading from disk of a .uasset from the engine content. We assume this is available.
+# Note: this requires loading from disk of a .uasset from engine content. We assume this is available for this test.
 softObjectPtr: "/Script/Engine.StaticMesh'/Engine/BasicShapes/Cube.Cube'"
 )yaml");
 
@@ -353,6 +353,25 @@ softObjectPtr: "/Script/Engine.StaticMesh'/Engine/BasicShapes/Cube.Cube'"
             // Check it's a valid mesh.
             TestTrue("UnrealReferenceTypes TSoftObjectPtr Value", Struct.SoftObjectPtr.LoadSynchronous()->GetNumVertices(0) > 0);
         }
+    }
+
+    // Tests subclassof resolves blueprint classes.
+    {
+        auto Yaml = TEXT(R"yaml(
+# Note: this requires loading from disk of a .uasset from engine content. We assume this is available for this test.
+subclassOf: "/Script/Engine.Blueprint'/Engine/EngineSky/BP_Sky_Sphere.BP_Sky_Sphere'"
+)yaml");
+
+        FYamlNode Node;
+        UYamlParsing::ParseYaml(Yaml, Node);
+
+        FUnrealReferenceTypeStruct Struct;
+        FYamlParseIntoCtx Result;
+        ParseNodeIntoStruct(Node, Struct, Result, FYamlParseIntoOptions::Strict());
+
+        TestTrue("UnrealReferenceTypes success", Result.Success());
+
+        TestTrue("UnrealReferenceTypes TSubclassOf Blueprint", Struct.SubclassOf.Get() != nullptr);
     }
 
     // Unreal reference types fail if the referenced entities cannot be found.

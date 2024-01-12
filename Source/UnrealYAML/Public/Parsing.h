@@ -201,6 +201,27 @@ private:
     static bool CheckNodeType(FYamlParseIntoCtx& Ctx, const EYamlNodeType Expected, const TCHAR* TypeName, const FYamlNode& Node);
 
     static bool CheckEnumValue(FYamlParseIntoCtx& Ctx, const FYamlNode& Node, const UEnum* Enum);
+
+    // Resolves a UObject by its path, or nullptr if not found.
+    template <typename BaseClass>
+    static UObject* FindObject(const FString& Path) {
+        return StaticLoadObject(BaseClass::StaticClass(), nullptr, *Path);
+    }
+
+    // Resolve a class by its path, including blueprint classes. Nullptr if not found.
+    static UClass* FindClass(const FString& Path) {
+        auto Obj = StaticLoadClass(UObject::StaticClass(), nullptr, *Path);
+        if (IsValid(Obj)) {
+            return Obj;
+        }
+
+        auto Bp = Cast<UBlueprint>(FindObject<UBlueprint>(Path));
+        if (!Bp) {
+            return nullptr;
+        }
+
+        return Cast<UClass>(Bp->GeneratedClass);
+    }
 };
 
 
