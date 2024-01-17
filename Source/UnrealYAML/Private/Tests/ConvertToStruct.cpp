@@ -425,6 +425,22 @@ softObjectPtr: "not a uobject"
         TestEqual("Required: present optional value", Struct.Optional, 13);
     }
 
+    // When the YAML provides additional properties.
+    {
+        const auto Yaml = TEXT(R"yaml(
+str: "foo"
+INT: 13
+bOOl: false
+ArR: [1, 2, 3]
+map: { foo: 1, bar: 2}
+randomprop: [1, 2, 3]
+)yaml");
+
+        AssertInvalidParseInto<FSimpleStruct>(Yaml, TEXT("Additional properties"), this, {
+            ".randomprop: additional property not match a property in USTRUCT"
+        });
+    }
+
     return !HasAnyErrors();
 }
 

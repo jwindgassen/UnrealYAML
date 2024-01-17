@@ -22,6 +22,7 @@ Welcome to the UnrealYAML Plugin, a Plugin that allows the parsing and emitting 
 		- Mark `USTRUCT` fields as being required in YAML when parsing.
 		- Fail if the incoming YAML node cannot be interpreted in to a corresponding Unreal type.
 		- Ensuring that string values in YAML map to a value in the appropriate `UENUM`.
+		- Check for any properties in the YAML that don't map onto a property in a `USTRUCT`.
 
 ### TODO
 - Node into Struct Parsing:

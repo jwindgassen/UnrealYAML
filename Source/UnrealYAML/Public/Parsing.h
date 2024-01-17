@@ -52,6 +52,13 @@ struct UNREALYAML_API FYamlParseIntoOptions {
      */
     UPROPERTY()
     bool CheckRequired = false;
+
+    /**
+     * If true, validation will fail if the YAML contains properties that do not match with
+     * a property in the struct being parsed.
+     */
+    UPROPERTY()
+    bool CheckAdditionalProperties = false;
 };
 
 /**
