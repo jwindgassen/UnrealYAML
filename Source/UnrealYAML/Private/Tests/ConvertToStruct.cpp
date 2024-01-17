@@ -401,6 +401,30 @@ softObjectPtr: "not a uobject"
         TestEqual("NegativeInteger Value", Struct.Int, -1);
     }
 
+    // Tests that the YamlRequired meta flag rejects missing YAML.
+    {
+        const auto Yaml = TEXT("optional: 13");
+
+        AssertInvalidParseInto<FRequiredFieldsStruct>(Yaml, TEXT("Required: missing"), this, {
+            ".Required: yaml does not contain this required field"
+        });
+    }
+
+    // Tests that the YamlRequired meta flag passes if present.
+    {
+        const auto Yaml = TEXT("{ optional: 13, required: -1 }");
+        FYamlNode Node;
+        UYamlParsing::ParseYaml(Yaml, Node);
+
+        FRequiredFieldsStruct Struct;
+        FYamlParseIntoCtx Result;
+        ParseNodeIntoStruct(Node, Struct, Result, FYamlParseIntoOptions::Strict());
+
+        TestTrue("Required: present", Result.Success());
+        TestEqual("Required: present required value", Struct.Required, -1);
+        TestEqual("Required: present optional value", Struct.Optional, 13);
+    }
+
     return !HasAnyErrors();
 }
 

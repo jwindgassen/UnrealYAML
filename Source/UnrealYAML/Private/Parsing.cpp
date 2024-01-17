@@ -8,6 +8,7 @@ FYamlParseIntoOptions FYamlParseIntoOptions::Strict() {
     FYamlParseIntoOptions Ret;
     Ret.CheckTypes = true;
     Ret.CheckEnums = true;
+    Ret.CheckRequired = true;
     return Ret;
 }
 
@@ -260,7 +261,12 @@ bool UYamlParsing::ParseIntoStruct(const FYamlNode& Node, const UScriptStruct* S
     bool ParsedAllProperties = true;
     for (TFieldIterator<FProperty> It(Struct); It; ++It) {
         FString Key = It->GetName();
-        if (!ParseIntoProperty(Node[Key], **It, It->ContainerPtrToValuePtr<void>(StructValue), Ctx.PushStack(*Key))) {
+
+        Ctx.PushStack(*Key);
+
+        if (It->HasMetaData(YamlRequiredSpecifier) && !Node[Key].IsDefined()) {
+            Ctx.AddError(TEXT("yaml does not contain this required field"));
+        } else if (!ParseIntoProperty(Node[Key], **It, It->ContainerPtrToValuePtr<void>(StructValue), Ctx)) {
             ParsedAllProperties = false;
         }
 
