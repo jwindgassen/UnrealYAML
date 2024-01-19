@@ -59,6 +59,21 @@ struct UNREALYAML_API FYamlParseIntoOptions {
      */
     UPROPERTY()
     bool CheckAdditionalProperties = false;
+
+    /**
+     * Define ParseInto handling for your own types here. By default, ParseIntoStruct will handle
+     * some common Unreal types (see ParseIntoNativeType). This allows for defining additional types
+     * that need some special handling.
+     *
+     * The key is the CPP type name, and the associated function is responsible for interpreting the
+     * given node, constructing the custom type, then setting it given in StructValue. Any
+     * errors encountered can be added to Ctx.
+     *
+     * The provided StructValue is a pointer where the new value must be set. See ParseIntoNativeType
+     * for examples of how this ptr is converted to a typed ptr, then the value set.
+     */
+    TMap<FString, TFunction<void (const FYamlNode& Node, const UScriptStruct* Struct, void* StructValue,
+                                  struct FYamlParseIntoCtx& Ctx)>> TypeHandlers;
 };
 
 /**

@@ -249,6 +249,12 @@ bool UYamlParsing::ParseIntoObject(const FYamlNode& Node, const UClass* Object, 
 bool UYamlParsing::ParseIntoStruct(const FYamlNode& Node, const UScriptStruct* Struct, void* StructValue, FYamlParseIntoCtx& Ctx) {
     UE_LOG(LogYamlParsing, Verbose, TEXT("Parsing Node into Struct '%s'"), *Struct->GetName())
 
+    // Check for custom handlers provided in options first.
+    if (const auto CustomHandler = Ctx.Options.TypeHandlers.Find(Struct->GetStructCPPName()); CustomHandler != nullptr) {
+        (*CustomHandler)(Node, Struct, StructValue, Ctx);
+        return true;
+    }
+
     if (NativeTypes.Contains(Struct->GetStructCPPName())) {
         return ParseIntoNativeType(Node, Struct, StructValue, Ctx);
     }

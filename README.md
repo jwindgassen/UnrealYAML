@@ -18,6 +18,7 @@ Welcome to the UnrealYAML Plugin, a Plugin that allows the parsing and emitting 
 		- Simple scalar values, such as int, float, FString and FText
 		- `TMap` and `TArray`, and nested `USTRUCT`s 
 		- Object references: `TSoftObjectPtr` and `TSubclassOf`
+		- Custom conversions for your own additional types. See `FYamlParseIntoOptions.TypeHandlers`.
 	- Configurable validation and detailed error reporting. See `FYamlParseIntoOptions` (only supported in C++ for now).
 		- Mark `USTRUCT` fields as being required in YAML when parsing.
 		- Fail if the incoming YAML node cannot be interpreted in to a corresponding Unreal type.
