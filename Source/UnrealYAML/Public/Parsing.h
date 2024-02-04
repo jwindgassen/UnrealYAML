@@ -67,7 +67,7 @@ struct UNREALYAML_API FYamlParseIntoOptions {
      *
      * The key is the CPP type name, and the associated function is responsible for interpreting the
      * given node, constructing the custom type, then setting it given in StructValue. Any
-     * errors encountered can be added to Ctx.
+     * errors encountered can be added to Ctx with Ctx.AddError.
      *
      * The provided StructValue is a pointer where the new value must be set. See ParseIntoNativeType
      * for examples of how this ptr is converted to a typed ptr, then the value set.
@@ -103,6 +103,8 @@ struct UNREALYAML_API FYamlParseIntoCtx {
 
     friend class UYamlParsing;
 
+    void AddError(const TCHAR* Err);
+
 private:
 
     // Stack access.
@@ -110,8 +112,6 @@ private:
     FYamlParseIntoCtx& PushStack(const FYamlNode& Key);
     FYamlParseIntoCtx& PushStack(const int32 Index);
     void PopStack();
-
-    void AddError(const TCHAR* Err);
 
     TArray<FString> Stack = {TEXT("")};
     FString StackStr() const;
