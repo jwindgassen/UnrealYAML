@@ -5,13 +5,8 @@
 #include "UnrealTypes.h"
 #include "Enums.h"
 #include "Emitter.h"
-#include "Iterator.h"
 
 #include "Node.generated.h"
-
-// Define const and non-const iterators
-using FYamlIterator = TYamlIteratorBase<struct FYamlNode>;
-using FYamlIteratorConst = TYamlIteratorBase<const FYamlNode>;
 
 
 /** A wrapper for the Yaml Node class. Base YAML class. Stores a YAML-Structure in a Tree-like hierarchy.
@@ -26,6 +21,85 @@ private:
     friend void operator<<(std::ostream& Out, const FYamlNode& Node);
     friend void operator<<(FYamlEmitter& Out, const FYamlNode& Node);
 
+    /** Forward Input Iterator Base to iterate over Nodes.
+     *
+     * The native yaml-cpp iterator return either a Node or a Pair of Nodes, depending if the iterated Node is a Sequence
+     * or a Map. We extend this behaviour and always return a Pair of Nodes, the first being the Index in case of a Sequence
+     */
+    template<typename NodeType>
+    class TIteratorBase {
+        friend FYamlNode;
+
+        static_assert(std::is_same_v<std::remove_const_t<NodeType>, FYamlNode>); // Only allow FYamlNodes
+        using IteratorType = std::conditional_t<
+            std::is_const_v<NodeType>,
+            YAML::const_iterator,
+            YAML::iterator
+        >;
+
+        IteratorType Iterator;
+        int32 Index;
+
+        TIteratorBase(IteratorType&& Iter) :
+            Iterator(std::move(Iter)),
+            Index(0) {}
+
+    public:
+        /** Returns the Key Element of the Key-Value-Pair if the Iterated Node is a Map
+        * or a Node containing the <b>Index</b> of the Value if the Iterated Node is a <b>List</b>!
+        *
+        * The corresponding Value can be retrieved via Value() */
+        NodeType Key() const {
+            return Iterator->first.IsDefined() ? FYamlNode(Iterator->first) : FYamlNode(Index);
+        }
+
+
+        /** Returns the <b>Value</b> Element of the Key-Value-Pair if the Iterated Node is a <b>Map</b>
+        * or a Node containing the <b>Value</b> if the Iterated Node is a <b>List</b>!
+        *
+        * The corresponding Key (for a Map) or Index (for a List) can be retrieved via Key() */
+        NodeType Value() const {
+            return Iterator->second.IsDefined() ? FYamlNode(Iterator->second) : FYamlNode(*Iterator);
+        }
+
+        /** Dereferencing the Iterator yields the Key-Value Pair */
+        TPair<NodeType, NodeType> operator*() const {
+            return MakeTuple(Key(), Value());
+        }
+
+
+        /** The Arrow Operator yields a Pointer to the Value */
+        TPair<NodeType, NodeType>* operator->() const {
+            return &MakeTuple(Key(), Value());
+        }
+
+
+        TIteratorBase& operator++() {
+            ++Iterator;
+            Index++;
+            return *this;
+        }
+
+
+        TIteratorBase operator++(int) {
+            TIteratorBase Pre(*this);
+            ++(*this);
+            Index++;
+            return Pre;
+        }
+
+        friend bool operator ==(const TIteratorBase& This, const TIteratorBase Other) {
+            return This.Iterator == Other.Iterator;
+        }
+
+        friend bool operator !=(const TIteratorBase& This, const TIteratorBase Other) {
+            return This.Iterator != Other.Iterator;
+        }
+    };
+
+    using FIterator = TIteratorBase<FYamlNode>;
+    using FIteratorConst = TIteratorBase<const FYamlNode>;
+    
     YAML::Node Node;
 
 public:
@@ -182,20 +256,20 @@ public:
     int32 Size() const;
 
     /** Returns the start for an iterator. Use in combination with end() */
-    FYamlIteratorConst begin() const {
+    FIteratorConst begin() const {
         return Node.begin();
     }
 
-    FYamlIterator begin() {
+    FIterator begin() {
         return Node.begin();
     }
 
     /** Returns the end for a iterator. Use in combination with begin() */
-    FYamlIteratorConst end() const {
+    FIteratorConst end() const {
         return Node.end();
     }
 
-    FYamlIterator end() {
+    FIterator end() {
         return Node.end();
     }
 
