@@ -60,6 +60,9 @@ struct UNREALYAML_API FYamlParseIntoOptions {
     UPROPERTY()
     bool CheckAdditionalProperties = false;
 
+    typedef TFunction<void (const FYamlNode& Node, const UScriptStruct* Struct, void* StructValue,
+                                  struct FYamlParseIntoCtx& Ctx)> FTypeHandler;
+
     /**
      * Define ParseInto handling for your own types here. By default, ParseIntoStruct will handle
      * some common Unreal types (see ParseIntoNativeType). This allows for defining additional types
@@ -72,8 +75,7 @@ struct UNREALYAML_API FYamlParseIntoOptions {
      * The provided StructValue is a pointer where the new value must be set. See ParseIntoNativeType
      * for examples of how this ptr is converted to a typed ptr, then the value set.
      */
-    TMap<FString, TFunction<void (const FYamlNode& Node, const UScriptStruct* Struct, void* StructValue,
-                                  struct FYamlParseIntoCtx& Ctx)>> TypeHandlers;
+    TMap<FString, FTypeHandler> TypeHandlers;
 };
 
 /**
