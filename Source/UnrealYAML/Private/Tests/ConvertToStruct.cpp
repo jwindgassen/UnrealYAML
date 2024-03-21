@@ -437,7 +437,7 @@ randomprop: [1, 2, 3]
 )yaml");
 
         AssertInvalidParseInto<FSimpleStruct>(Yaml, TEXT("Additional properties"), this, {
-            ".randomprop: additional property not match a property in USTRUCT"
+            ".randomprop: additional property does not match a property in USTRUCT"
         });
     }
 
