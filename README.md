@@ -20,7 +20,7 @@ Welcome to the UnrealYAML Plugin, a Plugin that allows the parsing and emitting 
 		- Object references: `TSoftObjectPtr` and `TSubclassOf`
 		- Custom conversions for your own additional types. See `FYamlParseIntoOptions.TypeHandlers`.
 	- Configurable validation and detailed error reporting. See `FYamlParseIntoOptions` (only supported in C++ for now).
-		- Mark `USTRUCT` fields as being required in YAML when parsing.
+		- Mark `USTRUCT` fields as being required in YAML when parsing: `UPROPERTY(meta=YamlRequired)`.
 		- Fail if the incoming YAML node cannot be interpreted in to a corresponding Unreal type.
 		- Ensuring that string values in YAML map to a value in the appropriate `UENUM`.
 		- Check for any properties in the YAML that don't map onto a property in a `USTRUCT`.

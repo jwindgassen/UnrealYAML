@@ -271,7 +271,13 @@ bool UYamlParsing::ParseIntoStruct(const FYamlNode& Node, const UScriptStruct* S
 
         Ctx.PushStack(*Key);
 
-        if (It->HasMetaData(YamlRequiredSpecifier) && !Node[Key].IsDefined()) {
+        bool IsRequired = false;
+#if WITH_EDITORONLY_DATA
+        // UPROPERTY metadata is not available outside of the editor.
+        IsRequired = It->HasMetaData(YamlRequiredSpecifier);
+#endif
+
+        if (IsRequired && !Node[Key].IsDefined()) {
             Ctx.AddError(TEXT("yaml does not contain this required field"));
         } else if (!ParseIntoProperty(Node[Key], **It, It->ContainerPtrToValuePtr<void>(StructValue), Ctx)) {
             ParsedAllProperties = false;
