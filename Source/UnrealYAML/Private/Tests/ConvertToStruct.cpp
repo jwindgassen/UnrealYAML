@@ -107,7 +107,7 @@ mappedchildren:
         ParseNodeIntoStruct(Node, Struct, Result, FYamlParseIntoOptions::Strict());
 
         TestTrue("Enum parse", Result.Success());
-        TestEqual("Enum parse value", Struct.AnEnum, EAnEnum::Value3);
+        TestEqual("Enum parse value", Struct.AnEnum, EAnEnumClass::Value3);
     }
 
     // Test parsing in to an TEnumAsByte wrapper.
@@ -126,9 +126,9 @@ mappedchildren:
     // Test invalid parsing for enums.
     {
         const auto Yaml = TEXT("anenum: notaknownvalue");
-        const auto Test = TEXT("Invalid EnumAsByte");
+        const auto Test = TEXT("Invalid EnumClass");
         AssertInvalidParseInto<FEnumStruct>(Yaml, Test, this, {
-            ".AnEnum: \"notaknownvalue\" is not an allowed value for enum EAnEnum",
+            ".AnEnum: \"notaknownvalue\" is not an allowed value for enum EAnEnumClass",
         });
     }
 
@@ -264,7 +264,7 @@ mappedchildren:
             TestEqual("Default Map[two]", Struct.AMap["two"], "2");
             TestEqual("Default Map[three]", Struct.AMap["three"], "3");
         }
-        TestEqual("Default Array", Struct.AnArray, {EAnEnum::Value1, EAnEnum::Value2});
+        TestEqual("Default Array", Struct.AnArray, {EAnEnumClass::Value1, EAnEnumClass::Value2});
     }
 
     // Checks that container default values are correctly lost if specified in YAML.
@@ -284,7 +284,7 @@ amap:
         TestFalse("DefaultOverwrite", ParseNodeIntoStruct(Node, Struct, Result, FYamlParseIntoOptions::Strict()));
 
         TestTrue("DefaultOverwrite success", Result.Success());
-        TestEqual("DefaultOverwrite Array", Struct.AnArray, {EAnEnum::Value3});
+        TestEqual("DefaultOverwrite Array", Struct.AnArray, {EAnEnumClass::Value3});
         if (TestEqual("DefaultOverwrite Map", Struct.AMap.Num(), 2)) {
             TestEqual("DefaultOverwrite Map[1]", Struct.AMap["1"], "one");
             TestEqual("DefaultOverwrite Map[2]", Struct.AMap["2"], "two");

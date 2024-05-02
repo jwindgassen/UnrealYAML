@@ -46,7 +46,14 @@ struct FDefaultedStruct {
 };
 
 UENUM()
-enum class EAnEnum {
+enum EAnEnum {
+    Value1 = 0,
+    Value2 = 1,
+    Value3 = 2,
+};
+
+UENUM()
+enum class EAnEnumClass : uint8 {
     Value1 = 0,
     Value2 = 1,
     Value3 = 2,
@@ -93,7 +100,7 @@ struct FEnumStruct {
     GENERATED_BODY()
 
     UPROPERTY()
-    EAnEnum AnEnum;
+    EAnEnumClass AnEnum;
 };
 
 USTRUCT()
@@ -120,7 +127,7 @@ struct FDefaultStruct {
     };
 
     UPROPERTY()
-    TArray<EAnEnum> AnArray = {EAnEnum::Value1, EAnEnum::Value2};
+    TArray<EAnEnumClass> AnArray = {EAnEnumClass::Value1, EAnEnumClass::Value2};
 };
 
 USTRUCT()

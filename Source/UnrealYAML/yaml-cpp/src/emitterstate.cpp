@@ -107,10 +107,6 @@ EmitterNodeType EmitterState::NextGroupType(
   if (GetFlowType(type) == EmitterManip::Block)
     return EmitterNodeType::BlockMap;
   return EmitterNodeType::FlowMap;
-
-  // can't happen
-  assert(false);
-  return EmitterNodeType::NoType;
 }
 
 void EmitterState::StartedDoc() {
