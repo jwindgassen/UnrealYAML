@@ -175,10 +175,6 @@ class EmitterState {
         else
           return EmitterNodeType::BlockMap;
       }
-
-      // can't get here
-      assert(false);
-      return EmitterNodeType::NoType;
     }
   };
 

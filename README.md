@@ -9,17 +9,26 @@ Welcome to the UnrealYAML Plugin, a Plugin that allows the parsing and emitting 
 ## Features
 - Basic Functionality
 	- Assigment
-	- Convers Conversion to and from most frequently used Unreal Types
+	- Conversion to and from most frequently used Unreal Types
 	- Iterators
 	- Loading and Saving Files
 - Usable in Blueprint and C++
-- Automatic Parsing to Unreal Struct using the Unreal Reflection System.
+- Automatic Parsing to Unreal Struct using the Unreal Reflection System
+	- `UPROPERTY` support:
+		- Simple scalar values, such as int, float, FString and FText
+		- `TMap` and `TArray`, and nested `USTRUCT`s 
+		- Object references: `TSoftObjectPtr` and `TSubclassOf`
+		- Custom conversions for your own additional types. See `FYamlParseIntoOptions.TypeHandlers`.
+	- Configurable validation and detailed error reporting. See `FYamlParseIntoOptions` (only supported in C++ for now).
+		- Mark `USTRUCT` fields as being required in YAML when parsing: `UPROPERTY(meta=YamlRequired)`.
+		- Fail if the incoming YAML node cannot be interpreted in to a corresponding Unreal type.
+		- Ensuring that string values in YAML map to a value in the appropriate `UENUM`.
+		- Check for any properties in the YAML that don't map onto a property in a `USTRUCT`.
 
 ### TODO
 - Node into Struct Parsing:
 	- With Blueprint Structs (if possible)
 	- Option to respect case on key values (currently always case insensitive)
-	- Add Map Parsing
 	- Parse Struct into Node (Reverse Direction)
 - Sequences and Maps into TArray\<Node> and TMap\<FString, Node> for Iteration in Blueprints
 - Interfacing with Unreal JSON Plugin?
