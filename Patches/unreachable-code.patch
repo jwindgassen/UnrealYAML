@@ -1,0 +1,14 @@
+diff --git a/Source/UnrealYAML/yaml-cpp/src/emitterstate.h b/Source/UnrealYAML/yaml-cpp/src/emitterstate.h
+--- a/Source/UnrealYAML/yaml-cpp/src/emitterstate.h	(revision db2517279ebb21d208e296dff95f423086fa7774)
++++ b/Source/UnrealYAML/yaml-cpp/src/emitterstate.h	(date 1734732999348)
+@@ -175,10 +175,6 @@
+         else
+           return EmitterNodeType::BlockMap;
+       }
+-
+-      // can't get here
+-      assert(false);
+-      return EmitterNodeType::NoType;
+     }
+   };
+ 
