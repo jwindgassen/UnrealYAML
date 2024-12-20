@@ -9,8 +9,13 @@
 #define UE_PI PI
 #endif
 
+#if ENGINE_MAJOR_VERSION >= 5
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(Parsing, "UnrealYAML.Parsing",
+                                 EAutomationTestFlags_ApplicationContextMask | EAutomationTestFlags::SmokeFilter)
+#else
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(Parsing, "UnrealYAML.Parsing",
                                  EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::SmokeFilter)
+#endif
 
 bool Parsing::RunTest(const FString& Parameters) {
     // From String
