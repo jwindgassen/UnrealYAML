@@ -10,7 +10,7 @@
 #endif
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(Parsing, "UnrealYAML.Parsing",
-                                 EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::SmokeFilter)
+                                 EAutomationTestFlags_ApplicationContextMask | EAutomationTestFlags::SmokeFilter)
 
 bool Parsing::RunTest(const FString& Parameters) {
     // From String

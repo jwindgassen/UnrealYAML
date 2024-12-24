@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "Node.h"
+#include "UnrealYAMLNode.h"
 #include "Enums.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 

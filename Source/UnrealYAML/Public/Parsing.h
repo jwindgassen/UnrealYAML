@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "Node.h"
+#include "UnrealYAMLNode.h"
 #include "Parsing.generated.h"
 
 

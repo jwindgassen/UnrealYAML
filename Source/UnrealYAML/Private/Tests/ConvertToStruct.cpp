@@ -6,7 +6,7 @@
 #if WITH_DEV_AUTOMATION_TESTS
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(ConvertToStruct, "UnrealYAML.ConvertToStruct",
-                                 EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::SmokeFilter)
+                                 EAutomationTestFlags_ApplicationContextMask | EAutomationTestFlags::SmokeFilter)
 
 void AssertSimpleStructValues(ConvertToStruct* TestCase, const FSimpleStruct& SimpleStruct);
 template <typename StructType>
