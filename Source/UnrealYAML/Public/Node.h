@@ -300,6 +300,20 @@ public:
         Node.force_insert(Key, Value);
     }
 
+    /** Returns all keys if this node is a map, otherwise an empty set */
+    template<typename T>
+    TSet<T> Keys() const {
+        TSet<T> Ret;
+        if (!IsMap()) return Ret;
+        for (const auto Entry : Node) {
+            T Key;
+            if (YAML::convert<T>::decode(Entry.first, Key)) {
+                Ret.Add(Entry.first.as<T>());
+            }
+        }
+        return Ret;
+    }
+
     // Indexing ------------------------------------------------------------------------
     /** Returns the Value at the given Key or Index */
     template<typename T>
