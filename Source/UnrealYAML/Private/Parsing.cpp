@@ -296,7 +296,7 @@ bool UYamlParsing::ParseIntoStruct(const FYamlNode& Node, const UScriptStruct* S
     }
 
     if (Ctx.Options.CheckAdditionalProperties && RemainingKeys.Num()) {
-        for (const auto Key : RemainingKeys) {
+        for (const auto& Key : RemainingKeys) {
             Ctx.PushStack(*Key);
             Ctx.AddError(TEXT("additional property does not match a property in USTRUCT"));
             Ctx.PopStack();
