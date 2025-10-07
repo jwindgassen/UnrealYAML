@@ -321,7 +321,7 @@ text: this is some text
         TestEqual("UnrealTypes Transform.Rotation", Struct.Transform.Rotator(), FRotator(0, 0, 90));
         TestEqual("UnrealTypes Transform.Scale", Struct.Transform.GetScale3D(), FVector(2));
         TestEqual("UnrealTypes Quat", Struct.Quat, FQuat::Identity);
-        TestEqual("UnrealTypes Rotator", Struct.Rotator, FRotator(90, 0, 180));
+        TestEqual("UnrealTypes Rotator", Struct.Rotator, FRotator(90, 180, 0));
         TestEqual("UnrealTypes Vector", Struct.Vector, FVector(13.23, 0, -12.4));
         TestEqual("UnrealTypes Vector2D", Struct.Vector2D, FVector2D(5, 4));
         TestEqual("UnrealTypes Set", Struct.Set.Difference({0, 1, 2, 3, 4}).Num(), 0);
