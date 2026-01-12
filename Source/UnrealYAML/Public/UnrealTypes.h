@@ -41,6 +41,23 @@ struct convert<FString> {
     }
 };
 
+// encode and decode an FName
+template<>
+struct convert<FName> {
+    static Node encode(const FName& Name) {
+        return Node(Name.ToString());
+    }
+
+    static bool decode(const Node& Node, FName& Out) {
+        if (!Node.IsScalar()) {
+            return false;
+        }
+
+        Out = FName(Node.as<FString>());
+        return true;
+    }
+};
+
 // encode and decode an FText
 template<>
 struct convert<FText> {

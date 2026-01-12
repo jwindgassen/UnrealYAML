@@ -306,6 +306,7 @@ set: [0, 1, 2, 3, 4]
 linearcolor: red
 color: [255, 255, 255, 255]
 text: this is some text
+name: MyTestName
 )yaml");
 
         FYamlNode Node;
@@ -328,6 +329,7 @@ text: this is some text
         TestEqual("UnrealTypes LinearColor", Struct.LinearColor, FColor::Red.ReinterpretAsLinear());
         TestEqual("UnrealTypes Color", Struct.Color, FColor::White);
         TestEqual("UnrealTypes Text", Struct.Text.ToString(), "this is some text");
+        TestEqual("UnrealTypes Name", Struct.Name, FName("MyTestName"));
     }
 
     // Unreal types which are references to other things that needs special handling.

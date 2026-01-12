@@ -128,6 +128,15 @@ bool UYamlParsing::ParseIntoProperty(const FYamlNode& Node, const FProperty& Pro
         if (Value.IsSet()) {
             *const_cast<FString*>(&StringProperty->GetPropertyValue(PropertyValue)) = Value.GetValue();
         }
+    } else if (const FNameProperty* NameProperty = CastField<FNameProperty>(&Property)) {
+        if (!CheckScalarCanConvert<FString>(Ctx, TEXT("string"), Node)) {
+            return false;
+        }
+
+        const auto Value = Node.AsOptional<FName>();
+        if (Value.IsSet()) {
+            NameProperty->SetPropertyValue(PropertyValue, Value.GetValue());
+        }
     } else if (const FTextProperty* TextProperty = CastField<FTextProperty>(&Property)) {
         if (!CheckScalarCanConvert<FText>(Ctx, TEXT("string"), Node)) {
             return false;

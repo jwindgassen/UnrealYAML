@@ -300,6 +300,26 @@ public:
     static bool AsStringStringMap(const FYamlNode& Node, const TMap<FString, FString>& Default,
                                   TMap<FString, FString>& Value);
 
+    // Name
+    // DECLARE_YAML_CONVERSION(FName, Name)
+    UFUNCTION(BlueprintPure, Category="YAML|Make")
+    static FYamlNode MakeFromName(FName Value);
+    UFUNCTION(BlueprintPure, Category="YAML|Make")
+    static FYamlNode MakeFromNameArray(const TArray<FName>& Value);
+    UFUNCTION(BlueprintPure, Category="YAML|Make")
+    static FYamlNode MakeFromIntNameMap(const TMap<int32, FName>& Value);
+    UFUNCTION(BlueprintPure, Category="YAML|Make")
+    static FYamlNode MakeFromStringNameMap(const TMap<FString, FName>& Value);
+    UFUNCTION(BlueprintPure, Category="YAML|Convert")
+    static bool AsName(const FYamlNode& Node, FName Default, FName& Value);
+    UFUNCTION(BlueprintPure, Category="YAML|Convert")
+    static bool AsNameArray(const FYamlNode& Node, const TArray<FName>& Default, TArray<FName>& Value);
+    UFUNCTION(BlueprintPure, Category="YAML|Convert")
+    static bool AsIntNameMap(const FYamlNode& Node, const TMap<int32, FName>& Default, TMap<int32, FName>& Value);
+    UFUNCTION(BlueprintPure, Category="YAML|Convert")
+    static bool AsStringNameMap(const FYamlNode& Node, const TMap<FString, FName>& Default,
+                                TMap<FString, FName>& Value);
+
     // Text
     // DECLARE_YAML_CONVERSION(FText, Text)
     UFUNCTION(BlueprintPure, Category="YAML|Make")

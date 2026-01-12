@@ -35,6 +35,14 @@ bool Parsing::RunTest(const FString& Parameters) {
                                          .OrderIndependentCompareEqual(TMap<FString, int32>{{"a", 1}, {"b", 2}}));
     }
 
+    // FName
+    {
+        FYamlNode Node;
+        UYamlParsing::ParseYaml("name: TestName", Node);
+
+        TestEqual("Parse Name", Node["name"].As<FName>(), FName("TestName"));
+    }
+
     {
         FYamlNode Node;
         UYamlParsing::ParseYaml(ComplexYaml, Node);
