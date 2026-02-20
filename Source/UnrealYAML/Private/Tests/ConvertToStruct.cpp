@@ -14,13 +14,22 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(ConvertToStruct, "UnrealYAML.ConvertToStruct",
 #endif
 
 bool ConvertToStruct::RunTest(const FString& Parameters) {
-    // Simple Yaml
+    // Simple YAML to Struct
     {
         FYamlNode Node;
         UYamlParsing::ParseYaml(SimpleYaml, Node);
 
         FSimpleStruct SimpleStruct;
         TestTrue("Parse Node into SimpleStruct", ParseNodeIntoStruct(Node, SimpleStruct));
+    }
+    
+    // Simple YAML to Object
+    {
+        FYamlNode Node;
+        UYamlParsing::ParseYaml(SimpleYaml, Node);
+
+        USimpleObject* SimpleObject = NewObject<USimpleObject>(GetTransientPackage());
+        TestTrue("Parse Node into SimpleObject", ParseNodeIntoObject(Node, SimpleObject));
     }
 
     return !HasAnyErrors();
