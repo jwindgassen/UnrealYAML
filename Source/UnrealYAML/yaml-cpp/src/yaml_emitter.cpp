@@ -711,7 +711,6 @@ StringEscaping GetStringEscapingStyle(const EmitterManip emitterManip) {
       return StringEscaping::JSON;
     default:
       return StringEscaping::None;
-      break;
   }
 }
 

@@ -11,4 +11,41 @@ diff --git a/Source/UnrealYAML/yaml-cpp/src/emitterstate.h b/Source/UnrealYAML/y
 -      return EmitterNodeType::NoType;
      }
    };
+===================================================================
+diff --git a/Source/UnrealYAML/yaml-cpp/src/emitterstate.cpp b/Source/UnrealYAML/yaml-cpp/src/emitterstate.cpp
+--- a/Source/UnrealYAML/yaml-cpp/src/emitterstate.cpp	(revision db2517279ebb21d208e296dff95f423086fa7774)
++++ b/Source/UnrealYAML/yaml-cpp/src/emitterstate.cpp	(date 1734732999348)
+@@ -107,10 +107,6 @@
+   if (GetFlowType(type) == EmitterManip::Block)
+     return EmitterNodeType::BlockMap;
+   return EmitterNodeType::FlowMap;
+-
+-  // can't happen
+-  assert(false);
+-  return EmitterNodeType::NoType;
+ }
  
+ void EmitterState::StartedDoc() {
+===================================================================
+diff --git a/Source/UnrealYAML/yaml-cpp/src/yaml_emitter.cpp b/Source/UnrealYAML/yaml-cpp/src/yaml_emitter.cpp
+--- a/Source/UnrealYAML/yaml-cpp/src/yaml_emitter.cpp	(revision db2517279ebb21d208e296dff95f423086fa7774)
++++ b/Source/UnrealYAML/yaml-cpp/src/yaml_emitter.cpp	(date 1734732999348)
+@@ -711,7 +711,6 @@
+       return StringEscaping::JSON;
+     default:
+       return StringEscaping::None;
+-      break;
+   }
+ }
+===================================================================
+diff --git a/Source/UnrealYAML/yaml-cpp/src/node_data.cpp b/Source/UnrealYAML/yaml-cpp/src/node_data.cpp
+--- a/Source/UnrealYAML/yaml-cpp/src/node_data.cpp	(revision db2517279ebb21d208e296dff95f423086fa7774)
++++ b/Source/UnrealYAML/yaml-cpp/src/node_data.cpp	(date 1734732999348)
+@@ -102,7 +102,6 @@
+     default:
+       return 0;
+   }
+-  return 0;
+ }
+ 
+ void node_data::compute_seq_size() const {
