@@ -1,5 +1,5 @@
 ﻿#include "Misc/AutomationTest.h"
-#include "Parsing.h"
+#include "YamlParsing.h"
 #include "Inputs.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
@@ -38,6 +38,14 @@ bool Parsing::RunTest(const FString& Parameters) {
         TestEqual("Parse Array", Node["arr"].As<TArray<int>>(), {1, 2, 3});
         TestTrue("Parse Map", Node["map"].As<TMap<FString, int32>>()
                                          .OrderIndependentCompareEqual(TMap<FString, int32>{{"a", 1}, {"b", 2}}));
+    }
+
+    // FName
+    {
+        FYamlNode Node;
+        UYamlParsing::ParseYaml("name: TestName", Node);
+
+        TestEqual("Parse Name", Node["name"].As<FName>(), FName("TestName"));
     }
 
     {

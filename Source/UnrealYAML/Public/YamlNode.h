@@ -6,7 +6,7 @@
 #include "Enums.h"
 #include "Emitter.h"
 
-#include "Node.generated.h"
+#include "YamlNode.generated.h"
 
 
 /** A wrapper for the Yaml Node class. Base YAML class. Stores a YAML-Structure in a Tree-like hierarchy.
@@ -298,6 +298,20 @@ public:
     template<typename K, typename V>
     void ForceInsert(const K& Key, const V& Value) {
         Node.force_insert(Key, Value);
+    }
+
+    /** Returns all keys if this node is a map, otherwise an empty set */
+    template<typename T>
+    TSet<T> Keys() const {
+        TSet<T> Ret;
+        if (!IsMap()) return Ret;
+        for (const auto Entry : Node) {
+            T Key;
+            if (YAML::convert<T>::decode(Entry.first, Key)) {
+                Ret.Add(Entry.first.as<T>());
+            }
+        }
+        return Ret;
     }
 
     // Indexing ------------------------------------------------------------------------

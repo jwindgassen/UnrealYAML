@@ -24,6 +24,8 @@ enum class EYamlNodeType : uint8 {
     Map
 };
 
+DECLARE_ENUM_TO_STRING(EYamlNodeType);
+
 
 // Different ways to align data in a list/map in a file
 UENUM()
