@@ -1,5 +1,6 @@
 #include "Misc/AutomationTest.h"
 #include "YamlParsing.h"
+#include "YamlReflection.h"
 #include "TestStructs.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
@@ -46,7 +47,7 @@ mappedchildren:
         UYamlParsing::ParseYaml(Yaml, Node);
 
         FParentStruct Struct;
-        FYamlParseIntoResult Result = ParseNodeIntoStruct(Node, Struct, FYamlParseIntoOptions::Strict());
+        FYamlParseResult Result = ParseNodeIntoStruct(Node, Struct, FYamlParseIntoOptions::Strict());
         
         It("Embedded child values", [this, Result, Struct]() {
             TestTrue("Success", Result.Success());

@@ -67,7 +67,7 @@ struct FChildStruct {
     TArray<FString> SomeValues;
 
     UPROPERTY()
-    float AFloat;
+    float AFloat{};
 
     UPROPERTY()
     TEnumAsByte<EAnEnum> AnEnum = EAnEnum::Value3;
@@ -92,7 +92,7 @@ struct FEnumAsByteStruct {
     GENERATED_BODY()
 
     UPROPERTY()
-    TEnumAsByte<EAnEnum> AnEnum;
+    TEnumAsByte<EAnEnum> AnEnum = Value1;
 };
 
 USTRUCT()
@@ -100,7 +100,7 @@ struct FEnumStruct {
     GENERATED_BODY()
 
     UPROPERTY()
-    EAnEnumClass AnEnum;
+    EAnEnumClass AnEnum = EAnEnumClass::Value1;
 };
 
 USTRUCT()
@@ -156,28 +156,28 @@ struct FUnrealTypeStruct {
     GENERATED_BODY()
 
     UPROPERTY()
-    FTransform Transform;
+    FTransform Transform{};
 
     UPROPERTY()
-    FQuat Quat;
+    FQuat Quat{};
 
     UPROPERTY()
-    FRotator Rotator;
+    FRotator Rotator{};
 
     UPROPERTY()
-    FVector Vector;
+    FVector Vector{};
 
     UPROPERTY()
-    FVector2D Vector2D;
+    FVector2D Vector2D{};
 
     UPROPERTY()
     TSet<int> Set;
 
     UPROPERTY()
-    FLinearColor LinearColor;
+    FLinearColor LinearColor{};
 
     UPROPERTY()
-    FColor Color;
+    FColor Color{};
 
     UPROPERTY()
     FText Text;
@@ -202,10 +202,10 @@ struct FRequiredFieldsStruct {
     GENERATED_BODY()
 
     UPROPERTY(meta=(YamlRequired))
-    int Required;
+    int Required = -1;
 
     UPROPERTY()
-    int Optional;
+    int Optional = -1;
 };
 
 USTRUCT()
