@@ -1,6 +1,6 @@
 ﻿#include "Misc/AutomationTest.h"
 #include "YamlParsing.h"
-#include "YamlReflection.h"
+#include "YamlSerialization.h"
 #include "Inputs.h"
 #include "TestStructs.h"
 
@@ -16,7 +16,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(ConvertToStruct, "UnrealYAML.ConvertToStruct",
 
 void AssertSimpleStructValues(ConvertToStruct* TestCase, const FSimpleStruct& SimpleStruct);
 template <typename StructType>
-void AssertInvalidParseInto(const TCHAR* Yaml, const TCHAR* What, ConvertToStruct* TestCase, const TArray<FString> Errors);
+void AssertInvalidDeserialization(const TCHAR* Yaml, const TCHAR* What, ConvertToStruct* TestCase, const TArray<FString> Errors);
 
 bool ConvertToStruct::RunTest(const FString& Parameters) {
     
@@ -36,18 +36,18 @@ bool ConvertToStruct::RunTest(const FString& Parameters) {
         UYamlParsing::ParseYaml(SimpleYaml, Node);
 
         FSimpleStruct SimpleStruct;
-        TestTrue("Parse Node into SimpleStruct", !!ParseNodeIntoStruct(Node, SimpleStruct));
+        TestTrue("Deserialize SimpleStruct", !!DeserializeStruct(Node, SimpleStruct));
         AssertSimpleStructValues(this, SimpleStruct);
     }
 
-    // CPP non-template ParseIntoStruct
+    // CPP non-template DeserializeStruct
     {
         FYamlNode Node;
         UYamlParsing::ParseYaml(SimpleYaml, Node);
 
         uint8* StructData = (uint8*)FMemory::Malloc(FSimpleStruct::StaticStruct()->GetStructureSize());
         FSimpleStruct::StaticStruct()->InitializeDefaultValue(StructData);
-        TestTrue("Parse Node into dynamic SimpleStruct", !!ParseNodeIntoStruct(Node, FSimpleStruct::StaticStruct(), StructData));
+        TestTrue("Deserialize dynamic SimpleStruct", !!DeserializeStruct(Node, FSimpleStruct::StaticStruct(), StructData));
 
         FSimpleStruct* Struct = reinterpret_cast<FSimpleStruct*>(StructData);
         AssertSimpleStructValues(this, *Struct);
@@ -60,7 +60,7 @@ bool ConvertToStruct::RunTest(const FString& Parameters) {
         UYamlParsing::ParseYaml(SimpleYaml, Node);
 
         USimpleObject* SimpleObject = NewObject<USimpleObject>(GetTransientPackage());
-        TestTrue("Parse Node into SimpleObject", !!ParseNodeIntoObject(Node, SimpleObject));
+        TestTrue("Deserialize SimpleObject", !!DeserializeObject(Node, SimpleObject));
     }
 
     // Invalid simple struct.
@@ -75,7 +75,7 @@ map:  [1, 2, 3]
 
         const auto Test = TEXT("Invalid data");
 
-        AssertInvalidParseInto<FSimpleStruct>(Yaml, Test, this, {
+        AssertInvalidDeserialization<FSimpleStruct>(Yaml, Test, this, {
             "Int: Cannot convert \"not an int\" to an Integer",
             "Bool: Expected 'Scalar' but found 'Map'",
             "Arr: Expected 'Sequence' but found 'Map'",
@@ -97,7 +97,7 @@ map: notmap
         UYamlParsing::ParseYaml(InvalidYaml, Node);
 
         FSimpleStruct Struct;
-        TestTrue(TEXT("Invalid data: lax parsing ok"), !!ParseNodeIntoStruct(Node, Struct));
+        TestTrue(TEXT("Invalid data: lax parsing ok"), !!DeserializeStruct(Node, Struct));
     }
 
     // Invalid parent child.
@@ -113,7 +113,7 @@ mappedchildren:
     value3: 13
 )yaml");
         
-        AssertInvalidParseInto<FParentStruct>(Yaml, TEXT("Invalid parent child"), this, {
+        AssertInvalidDeserialization<FParentStruct>(Yaml, TEXT("Invalid parent child"), this, {
             "Embedded.SomeValues: Expected 'sequence' but found 'map'",
             "Embedded.AFloat: Cannot convert \"foobar\" to a Float",
             "Children.[0]: Expected 'map' but found 'scalar'",
@@ -128,7 +128,7 @@ mappedchildren:
         UYamlParsing::ParseYaml("anenum: value3", Node);
 
         FEnumStruct EnumStruct;
-        FYamlParseResult Result = ParseNodeIntoStruct(Node, EnumStruct, FYamlParseIntoOptions::Strict());
+        FYamlSerializationResult Result = DeserializeStruct(Node, EnumStruct, FYamlDeserializeOptions::Strict());
 
         TestTrue("Enum parse", Result.Success());
         TestEqual("Enum parse value", EnumStruct.AnEnum, EAnEnumClass::Value3);
@@ -142,7 +142,7 @@ mappedchildren:
         UYamlParsing::ParseYaml("anenum: VALUE2", Node);
 
         FEnumAsByteStruct EnumStruct;
-        FYamlParseResult Result = ParseNodeIntoStruct(Node, EnumStruct, FYamlParseIntoOptions::Strict());
+        FYamlSerializationResult Result = DeserializeStruct(Node, EnumStruct, FYamlDeserializeOptions::Strict());
 
         TestTrue("EnumAsByte parse", Result.Success());
         TestEqual("EnumAsByte parse value", EnumStruct.AnEnum, TEnumAsByte(EAnEnum::Value2));
@@ -154,7 +154,7 @@ mappedchildren:
         UYamlParsing::ParseYaml("anenum: 0", Node);
 
         FEnumStruct EnumStruct;
-        FYamlParseResult Result = ParseNodeIntoStruct(Node, EnumStruct, FYamlParseIntoOptions::Strict());
+        FYamlSerializationResult Result = DeserializeStruct(Node, EnumStruct, FYamlDeserializeOptions::Strict());
 
         TestTrue("Enum(int) parse", Result.Success());
         TestEqual("Enum(int) parse value", EnumStruct.AnEnum, EAnEnumClass::Value1);
@@ -168,7 +168,7 @@ mappedchildren:
         UYamlParsing::ParseYaml("anenum: 1", Node);
 
         FEnumAsByteStruct EnumStruct;
-        FYamlParseResult Result = ParseNodeIntoStruct(Node, EnumStruct, FYamlParseIntoOptions::Strict());
+        FYamlSerializationResult Result = DeserializeStruct(Node, EnumStruct, FYamlDeserializeOptions::Strict());
 
         TestTrue("EnumAsByte(int) parse", Result.Success());
         TestEqual("EnumAsByte(int) parse value", EnumStruct.AnEnum, TEnumAsByte(EAnEnum::Value2));
@@ -178,7 +178,7 @@ mappedchildren:
     {
         const auto Yaml = TEXT("anenum: []");
         const auto Test = TEXT("Invalid EnumClass");
-        AssertInvalidParseInto<FEnumStruct>(Yaml, Test, this, {
+        AssertInvalidDeserialization<FEnumStruct>(Yaml, Test, this, {
             "AnEnum: Value of type \"Sequence\" cannot be parsed as an enum value for EAnEnumClass",
         });
     }
@@ -187,7 +187,7 @@ mappedchildren:
     {
         const auto Yaml = TEXT("anenum: notaknownvalue");
         const auto Test = TEXT("Invalid EnumAsByte");
-        AssertInvalidParseInto<FEnumAsByteStruct>(Yaml, Test, this, {
+        AssertInvalidDeserialization<FEnumAsByteStruct>(Yaml, Test, this, {
             "AnEnum: \"notaknownvalue\" is not an valid enum value of EAnEnum",
         });
     }
@@ -198,7 +198,7 @@ mappedchildren:
         UYamlParsing::ParseYaml("{}", Node);
 
         FDefaultStruct Struct;
-        FYamlParseResult Result = ParseNodeIntoStruct(Node, Struct, FYamlParseIntoOptions::Strict());
+        FYamlSerializationResult Result = DeserializeStruct(Node, Struct, FYamlDeserializeOptions::Strict());
 
         TestTrue("Default success", Result.Success());
 
@@ -227,7 +227,7 @@ amap:
         UYamlParsing::ParseYaml(Yaml, Node);
 
         FDefaultStruct Struct;
-        FYamlParseResult Result = ParseNodeIntoStruct(Node, Struct, FYamlParseIntoOptions::Strict());
+        FYamlSerializationResult Result = DeserializeStruct(Node, Struct, FYamlDeserializeOptions::Strict());
 
         TestTrue("DefaultOverwrite success", Result.Success());
         TestEqual("DefaultOverwrite Array", Struct.AnArray, {EAnEnumClass::Value3});
@@ -259,7 +259,7 @@ name: MyTestName
         UYamlParsing::ParseYaml(Yaml, Node);
 
         FUnrealTypeStruct Struct;
-        FYamlParseResult Result = ParseNodeIntoStruct(Node, Struct, FYamlParseIntoOptions::Strict());
+        FYamlSerializationResult Result = DeserializeStruct(Node, Struct, FYamlDeserializeOptions::Strict());
         TestTrue("UnrealTypes", !!Result);
 
         TestTrue("UnrealTypes success", Result.Success());
@@ -291,7 +291,7 @@ softObjectPtr: "/Script/Engine.StaticMesh'/Engine/BasicShapes/Cube.Cube'"
         UYamlParsing::ParseYaml(Yaml, Node);
 
         FUnrealReferenceTypeStruct Struct;
-        FYamlParseResult Result = ParseNodeIntoStruct(Node, Struct, FYamlParseIntoOptions::Strict());
+        FYamlSerializationResult Result = DeserializeStruct(Node, Struct, FYamlDeserializeOptions::Strict());
         TestTrue("UnrealReferenceTypes", !!Result);
 
         TestTrue("UnrealReferenceTypes success", Result.Success());
@@ -314,7 +314,7 @@ subclassOf: "/Script/Engine.Blueprint'/Engine/EngineSky/BP_Sky_Sphere.BP_Sky_Sph
         UYamlParsing::ParseYaml(Yaml, Node);
 
         FUnrealReferenceTypeStruct Struct;
-        FYamlParseResult Result = ParseNodeIntoStruct(Node, Struct, FYamlParseIntoOptions::Strict());
+        FYamlSerializationResult Result = DeserializeStruct(Node, Struct, FYamlDeserializeOptions::Strict());
 
         TestTrue("UnrealReferenceTypes success", Result.Success());
 
@@ -328,7 +328,7 @@ subclassOf: "not a uclass"
 softObjectPtr: "not a uobject"
 )yaml");
 
-        AssertInvalidParseInto<FUnrealReferenceTypeStruct>(Yaml, TEXT("Invalid UnrealReferenceTypes"), this, {
+        AssertInvalidDeserialization<FUnrealReferenceTypeStruct>(Yaml, TEXT("Invalid UnrealReferenceTypes"), this, {
             "SubclassOf: Cannot find class: not a uclass",
             "SoftObjectPtr: Cannot find object: not a uobject",
         });
@@ -341,7 +341,7 @@ softObjectPtr: "not a uobject"
         UYamlParsing::ParseYaml(Yaml, Node);
 
         FSimpleStruct Struct;
-        FYamlParseResult Result = ParseNodeIntoStruct(Node, Struct, FYamlParseIntoOptions::Strict());
+        FYamlSerializationResult Result = DeserializeStruct(Node, Struct, FYamlDeserializeOptions::Strict());
 
         TestTrue("NegativeInteger", Result.Success());
         TestEqual("NegativeInteger Value", Struct.Int, -1);
@@ -351,7 +351,7 @@ softObjectPtr: "not a uobject"
     {
         const auto Yaml = TEXT("optional: 13");
 
-        AssertInvalidParseInto<FRequiredFieldsStruct>(Yaml, TEXT("Required: missing"), this, {
+        AssertInvalidDeserialization<FRequiredFieldsStruct>(Yaml, TEXT("Required: missing"), this, {
             "Required: Missing Required Key: Required"
         });
     }
@@ -363,7 +363,7 @@ softObjectPtr: "not a uobject"
         UYamlParsing::ParseYaml(Yaml, Node);
 
         FRequiredFieldsStruct Struct;
-        FYamlParseResult Result = ParseNodeIntoStruct(Node, Struct, FYamlParseIntoOptions::Strict());
+        FYamlSerializationResult Result = DeserializeStruct(Node, Struct, FYamlDeserializeOptions::Strict());
 
         TestTrue("Required: present", Result.Success());
         TestEqual("Required: present required value", Struct.Required, -1);
@@ -381,7 +381,7 @@ map: { foo: 1, bar: 2}
 randomprop: [1, 2, 3]
 )yaml");
 
-        AssertInvalidParseInto<FSimpleStruct>(Yaml, TEXT("Additional properties"), this, {
+        AssertInvalidDeserialization<FSimpleStruct>(Yaml, TEXT("Additional properties"), this, {
             ": Struct has additional unused Keys: randomprop"
         });
     }
@@ -393,10 +393,10 @@ randomprop: [1, 2, 3]
         UYamlParsing::ParseYaml(Yaml, Node);
 
         FWithCustomType Struct;
-        auto Options = FYamlParseIntoOptions::Strict();
+        auto Options = FYamlDeserializeOptions::Strict();
         Options.TypeHandlers.Emplace(
             TEXT("FCustomType"),
-            FCustomTypeHandler::CreateLambda([](const FYamlNode& Node, const UScriptStruct* Struct, void* StructValue, FYamlParseResult& Result) {
+            FCustomTypeDeserializer::CreateLambda([](const FYamlNode& Node, const UScriptStruct* Struct, void* StructValue, FYamlSerializationResult& Result) {
                 auto AsNumber = Node.As<int>();
                 FCustomType Ct;
                 Ct.Value = FString::FromInt(AsNumber);
@@ -404,7 +404,7 @@ randomprop: [1, 2, 3]
             })
         );
 
-        FYamlParseResult Result = ParseNodeIntoStruct(Node, Struct, Options);
+        FYamlSerializationResult Result = DeserializeStruct(Node, Struct, Options);
 
         TestTrue("CustomType: success", Result.Success());
         TestEqual("CustomType: value", Struct.CustomType.Value, "13");
@@ -429,12 +429,12 @@ void AssertSimpleStructValues(ConvertToStruct* TestCase, const FSimpleStruct& Si
 }
 
 template <typename StructType>
-void AssertInvalidParseInto(const TCHAR* Yaml, const TCHAR* What, ConvertToStruct* TestCase, const TArray<FString> Errors) {
+void AssertInvalidDeserialization(const TCHAR* Yaml, const TCHAR* What, ConvertToStruct* TestCase, const TArray<FString> Errors) {
     FYamlNode Node;
     UYamlParsing::ParseYaml(Yaml, Node);
 
     StructType Struct;
-    FYamlParseResult Result = ParseNodeIntoStruct(Node, Struct, FYamlParseIntoOptions::Strict());
+    FYamlSerializationResult Result = DeserializeStruct(Node, Struct, FYamlDeserializeOptions::Strict());
 
     TestCase->TestFalse(FString::Printf(TEXT("%ls fails as expected"), What), Result.Success());
     if (!TestCase->TestEqual(FString::Printf(TEXT("%ls error count"), What), Result.Errors.Num(), Errors.Num())) {
