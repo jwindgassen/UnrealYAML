@@ -15,7 +15,7 @@ FYamlDeserializeOptions FYamlDeserializeOptions::Strict() {
 
 
 FString FYamlSerializationResult::ScopeName() const {
-    return FString::Join(ScopesStack, TEXT("."));
+    return ScopesStack.Num() > 0 ? FString::Join(ScopesStack, TEXT(".")) : "<root>";
 }
 
 void FYamlSerializationResult::PushStack(const FString& Property) {
@@ -87,7 +87,7 @@ DEFINE_FUNCTION(UYamlSerialization::execDeserializeStruct_BP) {
 
 void UYamlSerialization::DeserializeProperty(const FYamlNode& Node, const FProperty& Property, void* PropertyValue,
                                              const FYamlDeserializeOptions& Options, FYamlSerializationResult& Result) {
-    UE_LOG(LogYamlParsing, Verbose, TEXT("ParsingNodeIntoProperty: %s %s"), *Property.GetCPPType(), *Property.GetName())
+    UE_LOG(LogYamlParsing, Verbose, TEXT("DeserializeProperty: %s %s"), *Property.GetCPPType(), *Property.GetName())
 
     // If we access an invalid sequence or map entry, we will get a Zombie Node, which is invalid
     if (!Node.IsDefined()) {
@@ -113,7 +113,7 @@ void UYamlSerialization::DeserializeProperty(const FYamlNode& Node, const FPrope
         // Try conversion to biggest int/float type => any smaller type should also work
         const bool CanConvert = NumericProperty->IsInteger() ? Node.CanConvertTo<int64>() : Node.CanConvertTo<double>();
         if (Options.StrictTypes && Node.IsDefined() && !CanConvert) {
-            Result.AddError(TEXT("Cannot convert \"%s\" to %s"), *Node.Scalar(),
+            Result.AddError(TEXT("Cannot convert '%s' to %s"), *Node.Scalar(),
                             NumericProperty->IsInteger() ? TEXT("an Integer") : TEXT("a Float"));
             return;
         }
@@ -141,7 +141,7 @@ void UYamlSerialization::DeserializeProperty(const FYamlNode& Node, const FPrope
             const auto Object = StaticLoadObject(UObject::StaticClass(), nullptr, **Value);
 
             if (!IsValid(Object)) {
-                Result.AddError(TEXT("Cannot find Object: %s"), *Value.GetValue());
+                Result.AddError(TEXT("Cannot find Object '%s'"), *Value.GetValue());
                 return;
             }
 
@@ -163,7 +163,7 @@ void UYamlSerialization::DeserializeProperty(const FYamlNode& Node, const FPrope
             }
 
             if (!Class) {
-                Result.AddError(TEXT("Cannot find Class: %s"), **Value);
+                Result.AddError(TEXT("Cannot find Class '%s'"), **Value);
                 return;
             }
 
@@ -334,7 +334,7 @@ int64 UYamlSerialization::DeserializeEnumValue(const FYamlNode& Node, const UEnu
         const int64 Value = Enum->GetValueByNameString(Name);
 
         if (CheckEnums && Value == INDEX_NONE) {
-            Result.AddError(TEXT("\"%s\" is not an valid enum value of %s"), *Name, *Enum->CppType);
+            Result.AddError(TEXT("'%s' is not an valid enum value of %s"), *Name, *Enum->CppType);
 
             return INDEX_NONE;
         }
@@ -344,7 +344,7 @@ int64 UYamlSerialization::DeserializeEnumValue(const FYamlNode& Node, const UEnu
 
     // If we arrive here and still have not been able to resolve to an enum, this must be a bad type.
     if (CheckEnums) {
-        Result.AddError(TEXT("Value of type \"%s\" cannot be parsed as an enum value for %s"),
+        Result.AddError(TEXT("Value of type '%s' cannot be parsed as an enum value for %s"),
                         *EnumToString(Node.Type()), *Enum->CppType);
     }
 

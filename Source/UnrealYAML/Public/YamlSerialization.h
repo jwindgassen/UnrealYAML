@@ -14,6 +14,8 @@ struct FYamlSerializationResult;
  * native Unreal Types, which can be further extended by a custom type handler.
  *
  * See the documentation for `FYamlDeserializeOptions.TypeHandlers` and `FYamlSerializeOptions.TypeHandlers`.
+ *
+ * ToDo: Should this be an FProperty and checked in `(De)SerializeNativeType` instead?
  */
 DECLARE_DELEGATE_FourParams(FCustomTypeDeserializer, const FYamlNode& /* Node */, const UScriptStruct* /* Struct */,
                             void* /* StructValue */, FYamlSerializationResult& /* Result */);
