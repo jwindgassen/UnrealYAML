@@ -1,3 +1,6 @@
+// Copyright (c) 2021-2026, Forschungszentrum Jülich GmbH. All rights reserved.
+// Licensed under the MIT License. See LICENSE file for details.
+
 #include "Inputs.h"
 #include "TestStructs.h"
 #include "Misc/AutomationTest.h"
