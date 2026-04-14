@@ -1,4 +1,7 @@
-﻿#pragma once
+﻿// Copyright (c) 2021-2026, Forschungszentrum Jülich GmbH. All rights reserved.
+// Licensed under the MIT License. See LICENSE file for details.
+
+#pragma once
 
 #include "CoreMinimal.h"
 #include "yaml.h"
@@ -170,6 +173,13 @@ public:
     /** Sets the Style of the Node, mostly relevant for Sequences */
     void SetStyle(const EYamlEmitterStyle Style);
 
+    // Tags ----------------------------------------------------------------------------
+    /** Returns the tags of the Node, empty if there are none */
+    FString Tag() const;
+    
+    /** Sets a tag on this Node */
+    void SetTag(const FString& Tag);
+    
 
     // Assignment ----------------------------------------------------------------------
     /** Test if 2 Nodes are Equal */

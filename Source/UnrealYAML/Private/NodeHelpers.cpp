@@ -1,4 +1,7 @@
-﻿#include "NodeHelpers.h"
+﻿// Copyright (c) 2021-2026, Forschungszentrum Jülich GmbH. All rights reserved.
+// Licensed under the MIT License. See LICENSE file for details.
+
+#include "NodeHelpers.h"
 
 #include "node/parse.h"
 #include "HAL/FileManagerGeneric.h"

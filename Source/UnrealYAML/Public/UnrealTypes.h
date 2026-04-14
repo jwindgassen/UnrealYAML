@@ -1,4 +1,7 @@
-﻿#pragma once
+﻿// Copyright (c) 2021-2026, Forschungszentrum Jülich GmbH. All rights reserved.
+// Licensed under the MIT License. See LICENSE file for details.
+
+#pragma once
 
 #include "node/convert.h"
 
@@ -353,8 +356,8 @@ struct convert<UE::Math::TRotator<FloatType>> {
         Node Node;
         Node.SetStyle(EmitterStyle::Flow);
         Node.push_back(Rotator.Pitch);
-        Node.push_back(Rotator.Roll);
         Node.push_back(Rotator.Yaw);
+        Node.push_back(Rotator.Roll);
 
         return Node;
     }
@@ -362,8 +365,8 @@ struct convert<UE::Math::TRotator<FloatType>> {
     static bool decode(const Node& Node, UE::Math::TRotator<FloatType>& Out) {
         if (Node.IsSequence() && Node.size() == 3) {
             Out.Pitch = Node[0].as<FloatType>();
-            Out.Roll = Node[1].as<FloatType>();
-            Out.Yaw = Node[2].as<FloatType>();
+            Out.Yaw = Node[1].as<FloatType>();
+            Out.Roll = Node[2].as<FloatType>();
 
             return true;
         }

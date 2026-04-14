@@ -1,183 +1,162 @@
-﻿#pragma once
+﻿// Copyright (c) 2021-2026, Forschungszentrum Jülich GmbH. All rights reserved.
+// Licensed under the MIT License. See LICENSE file for details.
+
+#pragma once
 
 #include "TestStructs.generated.h"
 
+// Simple:
 
-// SimpleYaml
 USTRUCT()
 struct FSimpleStruct {
     GENERATED_BODY()
 
     UPROPERTY()
-    FString Str;
+    FString Str = "Hello, World";
 
     UPROPERTY()
-    int32 Int{};
-
-    UPROPERTY()
-    bool Bool{};
-
-    UPROPERTY()
-    TArray<int32> Arr;
-
-    UPROPERTY()
-    TMap<FString, int32> Map;
-};
-
-// SimpleYaml
-USTRUCT()
-struct FDefaultedStruct {
-    GENERATED_BODY()
-
-    UPROPERTY()
-    FString Str = TEXT("a string");
-
-    UPROPERTY()
-    int32 Int = 1;
+    int32 Int = 42;
 
     UPROPERTY()
     bool Bool = true;
 
     UPROPERTY()
-    TArray<int32> Arr = {1, 2, 3};
+    TArray<int32> Arr = {3, 4, 5};
 
     UPROPERTY()
-    TMap<FString, int32> Map = {{"foo", 13}};
+    TMap<FString, int32> Map = {{"A", 1}, {"B", 2}};
 };
 
-UENUM()
-enum EAnEnum {
-    Value1 = 0,
-    Value2 = 1,
-    Value3 = 2,
+
+UCLASS()
+class USimpleObject : public UObject {
+    GENERATED_BODY()
+
+public:
+    UPROPERTY()
+    FString Str = "Hello, World";
+
+    UPROPERTY()
+    int32 Int = 42;
+
+    UPROPERTY()
+    bool Bool = true;
+
+    UPROPERTY()
+    TArray<int32> Arr = {3, 4, 5};
+
+    UPROPERTY()
+    TMap<FString, int32> Map = {{"A", 1}, {"B", 2}};
 };
 
-UENUM()
-enum class EAnEnumClass : uint8 {
-    Value1 = 0,
-    Value2 = 1,
-    Value3 = 2,
-};
+// Nested:
 
 USTRUCT()
 struct FChildStruct {
     GENERATED_BODY()
 
     UPROPERTY()
-    TArray<FString> SomeValues;
+    TArray<FString> Strings;
 
     UPROPERTY()
-    float AFloat;
-
-    UPROPERTY()
-    TEnumAsByte<EAnEnum> AnEnum = EAnEnum::Value3;
+    float Float{};
 };
 
 USTRUCT()
-struct FParentStruct {
+struct FNestedStruct {
     GENERATED_BODY()
 
     UPROPERTY()
-    FChildStruct Embedded;
+    FChildStruct Inner;
 
     UPROPERTY()
-    TArray<FChildStruct> Children;
+    TArray<FChildStruct> ChildArray;
 
     UPROPERTY()
-    TMap<TEnumAsByte<EAnEnum>, FChildStruct> MappedChildren;
+    TMap<FString, FChildStruct> ChildMap;
 };
 
-USTRUCT()
-struct FEnumAsByteStruct {
-    GENERATED_BODY()
+// Enums:
 
-    UPROPERTY()
-    TEnumAsByte<EAnEnum> AnEnum;
+UENUM()
+enum class EEnumClass : uint8 {
+    Value1 = 42,
+    Value2 = 43,
+    Value3 = 44,
 };
+
+UENUM()
+namespace ENamespaceEnum {
+enum Type {
+    Value1 = 45,
+    Value2 = 46,
+    Value3 = 47,
+};
+}
 
 USTRUCT()
 struct FEnumStruct {
     GENERATED_BODY()
 
     UPROPERTY()
-    EAnEnumClass AnEnum;
+    EEnumClass EnumValue = EEnumClass::Value1;
+
+    UPROPERTY()
+    TEnumAsByte<ENamespaceEnum::Type> EnumAsByte = ENamespaceEnum::Value1;
 };
+
 
 USTRUCT()
-struct FDefaultStruct {
+struct FStructWithVariousKeyNames {
     GENERATED_BODY()
 
     UPROPERTY()
-    int AnInt = 13;
+    int32 AnInteger = 42;
 
     UPROPERTY()
-    float AFloat = 13.24;
+    FString AnFString = "Foo";
 
     UPROPERTY()
-    FString AString = "Hello world!";
+    int32 notCamelCase = -1;
 
     UPROPERTY()
-    TEnumAsByte<EAnEnum> AnEnum = EAnEnum::Value3;
+    int32 AnIntegerPlus2 = 44;
 
     UPROPERTY()
-    TMap<FString, FString> AMap = {
-        {"one", "1"},
-        {"two", "2"},
-        {"three", "3"},
-    };
+    int32 AnIntegerPlus42 = 84;
 
     UPROPERTY()
-    TArray<EAnEnumClass> AnArray = {EAnEnumClass::Value1, EAnEnumClass::Value2};
+    FString CapitalA = "A";
 };
 
-UCLASS()
-class USimpleObject : public UObject{
-    GENERATED_BODY()
-
-public:
-    UPROPERTY()
-    FString Str;
-
-    UPROPERTY()
-    int32 Int{};
-
-    UPROPERTY()
-    bool Bool{};
-
-    UPROPERTY()
-    TArray<int32> Arr;
-
-    UPROPERTY()
-    TMap<FString, int32> Map;
-};
 
 USTRUCT()
-struct FUnrealTypeStruct {
+struct FNativeTypesStruct {
     GENERATED_BODY()
 
     UPROPERTY()
-    FTransform Transform;
+    FTransform Transform{};
 
     UPROPERTY()
-    FQuat Quat;
+    FQuat Quat{};
 
     UPROPERTY()
-    FRotator Rotator;
+    FRotator Rotator{};
 
     UPROPERTY()
-    FVector Vector;
+    FVector Vector{};
 
     UPROPERTY()
-    FVector2D Vector2D;
+    FVector2D Vector2D{};
 
     UPROPERTY()
     TSet<int> Set;
 
     UPROPERTY()
-    FLinearColor LinearColor;
+    FLinearColor LinearColor{};
 
     UPROPERTY()
-    FColor Color;
+    FColor Color{};
 
     UPROPERTY()
     FText Text;
@@ -186,41 +165,70 @@ struct FUnrealTypeStruct {
     FName Name;
 };
 
+
 USTRUCT()
-struct FUnrealReferenceTypeStruct {
+struct FReferencesStruct {
     GENERATED_BODY()
 
     UPROPERTY()
-    TSubclassOf<AActor> SubclassOf;
+    TSubclassOf<AActor> Class;
 
     UPROPERTY()
-    TSoftObjectPtr<UStaticMesh> SoftObjectPtr;
+    TSoftObjectPtr<UStaticMesh> MeshObject;
 };
+
+
+UCLASS()
+class UChildObject : public UObject {
+    GENERATED_BODY()
+
+public:
+    UPROPERTY()
+    TArray<FString> Strings;
+
+    UPROPERTY()
+    float Float{};
+};
+
+
+USTRUCT()
+struct FObjectTypes {
+    GENERATED_BODY()
+
+    UPROPERTY()
+    TMap<FString, int32> Values;
+
+    UPROPERTY()
+    FChildStruct ChildStruct;
+
+    UPROPERTY()
+    UChildObject* ChildObject;
+};
+
 
 USTRUCT()
 struct FRequiredFieldsStruct {
     GENERATED_BODY()
 
-    UPROPERTY(meta=(YamlRequired))
-    int Required;
+    UPROPERTY(meta = (YamlRequired))
+    int Required = 42;
 
     UPROPERTY()
-    int Optional;
+    int Optional = 43;
 };
+
 
 USTRUCT()
 struct FCustomType {
     GENERATED_BODY()
 
-    FString Value;
+    FString InnerValue;
 };
 
 USTRUCT()
-struct FWithCustomType {
+struct FCustomTypeStruct {
     GENERATED_BODY()
 
     UPROPERTY()
-    FCustomType CustomType;
+    FCustomType CustomValue;
 };
-
-// Cannot test for complex yaml, as we can't represent mixed nested types :(
