@@ -17,8 +17,89 @@ struct FYamlSerializationResult;
  *
  * ToDo: Should this be an FProperty and checked in `(De)SerializeNativeType` instead?
  */
+DECLARE_DELEGATE_RetVal_ThreeParams(FYamlNode, FCustomTypeSerializer, const UScriptStruct* /* Struct */,
+                                    const void* /* StructValue */, FYamlSerializationResult& /* Result */);
+
 DECLARE_DELEGATE_FourParams(FCustomTypeDeserializer, const FYamlNode& /* Node */, const UScriptStruct* /* Struct */,
                             void* /* StructValue */, FYamlSerializationResult& /* Result */);
+
+
+UENUM()
+enum class EYamlKeyCapitalization : uint8 {
+    /// MyValue
+    PascalCase,
+
+    /// myValue
+    CamelCase,
+
+    /// my_value
+    SnakeCase
+};
+
+
+/// Controls how the `SerializeStruct` and `SerializeObject` operations behave.
+USTRUCT(Blueprintable)
+struct UNREALYAML_API FYamlSerializeOptions {
+    GENERATED_BODY()
+
+    /**
+     * How the keys of map-like objects (classes, structs, TMaps) should be capitalized.
+     */
+    UPROPERTY(BlueprintReadWrite, EditAnywhere)
+    EYamlKeyCapitalization Capitalization = EYamlKeyCapitalization::CamelCase;
+
+    /**
+     * Whether to include type information in the form of YAML tags when serializing. This can
+     * be useful when you need to decide whether a YAML Object used to be a Struct, a Class or a TMap.
+     *
+     * Example:
+     * ```
+     * mapValue: !<TMap>
+     *   a: 1
+     *   b: 2
+     * childStruct: !<FChildStruct>
+     *   intValue: 42
+     * childObject: !<UMyObject>
+     *   stringValue: anotherValue
+     * ```
+     */
+    UPROPERTY(BlueprintReadWrite, EditAnywhere)
+    bool IncludeTypeInformation = false;
+
+    /**
+     * How enum values should be serialized. When false (default), enums will be serialized as
+     * a string with the name of the option. When true, enum values will instead be represented
+     * by the integer of the underlying type.
+     *
+     * Bitfield integer will always be serialized as integers!
+     */
+    UPROPERTY(BlueprintReadWrite, EditAnywhere)
+    bool EnumAsNumber = false;
+
+    /**
+     * Define Serialization for your own types here. By default, SerializeStruct will handle
+     * some common Unreal types (see SerializeNativeType). Adding a Handler here allows defining
+     * additional types that require some special handling.
+     *
+     * The key is the C++ type name, and the associated function is responsible for getting a value
+     * out of the provided field and writing it into the Node. Any errors encountered can
+     * be added to the Result with `FYamlSerializationResult::AddError`.
+     *
+     * Example:
+     * ```
+     * SerializeOptions.TypeHandlers.Add(
+     *     "FBox",
+     *     [](FYamlNode& Node, const UScriptStruct*, const void* Value, FYamlSerializationResult& Result) {
+     *         FBox& Box = *static_cast<FBox*>(Value);
+     *
+     *         Node[0] = Box.Min;
+     *         Node[1] = Box.Max;
+     *     }
+     * );
+     * ```
+     */
+    TMap<FString, FCustomTypeSerializer> TypeHandlers;
+};
 
 
 /**
@@ -93,7 +174,7 @@ struct UNREALYAML_API FYamlDeserializeOptions {
      * ```
      * DeserializeOptions.TypeHandlers.Add(
      *     "FBox",
-     *     [](const FYamlNode& Node, const UScriptStruct*, void* Value, struct FYamlSerializationResult& Result) {
+     *     [](const FYamlNode& Node, const UScriptStruct*, void* Value, FYamlSerializationResult& Result) {
      *         if (!Node.IsSequence() || Node.Size() != 2) {
      *             Result.AddError(TEXT("FBox must be a sequence of 2 Vectors"));
      *             return;
@@ -107,21 +188,6 @@ struct UNREALYAML_API FYamlDeserializeOptions {
      * ```
      */
     TMap<FString, FCustomTypeDeserializer> TypeHandlers;
-};
-
-
-/**
- * Controls how the `SerializeStruct` and `SerializeObject` operations behave.
- *
- * Default options:
- *   - No strict type checking
- *   - Do not ensure matching enum values
- *   - Ignore `YamlRequired` metadata on a UPROPERTY
- *   - Ignore unparsed values in the YAML
- */
-USTRUCT(Blueprintable)
-struct UNREALYAML_API FYamlSerializeOptions {
-    GENERATED_BODY()
 };
 
 
@@ -283,6 +349,25 @@ public:
     DECLARE_FUNCTION(execDeserializeStruct_BP);
 
 private:
+#pragma region Serialization
+    // Serializes a Property into a Node. Can be a FStructProperty itself (recursion!)
+    static FYamlNode SerializeProperty(const FProperty& Property, const void* PropertyValue,
+                                       const FYamlSerializeOptions& Options, FYamlSerializationResult& Result);
+
+    // Serializes a Struct into a Node. Calls DeserializeProperty on all Fields
+    static FYamlNode SerializeStruct(const UScriptStruct* Struct, const void* StructValue,
+                                     const FYamlSerializeOptions& Options, FYamlSerializationResult& Result);
+
+    // Serializes an UObject into a Node. Calls DeserializeProperty on all Fields
+    static FYamlNode SerializeObject(const UClass* Object, const void* ObjectValue,
+                                     const FYamlSerializeOptions& Options, FYamlSerializationResult& Result);
+
+    // Serializes some predefined conversions in UnrealTypes.h into a Node (see NativeTypes).
+    static FYamlNode SerializeNativeType(const UScriptStruct* Struct, const void* StructValue);
+
+    static void CapitalizePropertyName(FString& Name, EYamlKeyCapitalization Capitalization);
+#pragma endregion
+
 #pragma region Deserialization
 
     // Deserializes a Property from a Node. Can be a FStructProperty itself (recursion!)
@@ -345,22 +430,6 @@ private:
                                       FYamlSerializationResult& Result);
 
 #pragma endregion
-
-    // Serializes a Property into a Node. Can be a FStructProperty itself (recursion!)
-    static void SerializeProperty(FYamlNode& Node, const FProperty& Property, const void* PropertyValue,
-                                  const FYamlSerializeOptions& Options, FYamlSerializationResult& Result);
-
-    // Serializes a Struct into a Node. Calls DeserializeProperty on all Fields
-    static void SerializeStruct(FYamlNode& Node, const UScriptStruct* Struct, const void* StructValue,
-                                const FYamlSerializeOptions& Options, FYamlSerializationResult& Result);
-
-    // Serializes an UObject into a Node. Calls DeserializeProperty on all Fields
-    static void SerializeObject(FYamlNode& Node, const UClass* Object, const void* ObjectValue,
-                                const FYamlSerializeOptions& Options, FYamlSerializationResult& Result);
-
-    // Serializes some predefined conversions in UnrealTypes.h into a Node (see NativeTypes).
-    static void SerializeNativeType(FYamlNode& Node, const UScriptStruct* Struct, const void* StructValue,
-                                    const FYamlSerializeOptions& Options, FYamlSerializationResult& Result);
 };
 
 
@@ -437,7 +506,7 @@ FORCEINLINE FYamlSerializationResult SerializeObject(FYamlNode& Node, const Obje
     static_assert(TIsDerivedFrom<ObjectType, UObject>::Value);
 
     FYamlSerializationResult Result;
-    UYamlSerialization::SerializeObject(Node, ObjectType::StaticClass(), Object, Options, Result);
+    Node = UYamlSerialization::SerializeObject(ObjectType::StaticClass(), Object, Options, Result);
     return Result;
 }
 
@@ -455,7 +524,7 @@ template<typename StructType>
 FORCEINLINE FYamlSerializationResult SerializeStruct(FYamlNode& Node, const StructType& Struct,
                                                      const FYamlSerializeOptions& Options = {}) {
     FYamlSerializationResult Result;
-    UYamlSerialization::SerializeStruct(Node, Struct.StaticStruct(), &Struct, Options, Result);
+    Node = UYamlSerialization::SerializeStruct(Struct.StaticStruct(), &Struct, Options, Result);
     return Result;
 }
 
@@ -473,6 +542,6 @@ FORCEINLINE FYamlSerializationResult SerializeStruct(FYamlNode& Node, const UScr
                                                      const void* StructValue,
                                                      const FYamlSerializeOptions& Options = {}) {
     FYamlSerializationResult Result;
-    UYamlSerialization::SerializeStruct(Node, Struct, StructValue, Options, Result);
+    Node = UYamlSerialization::SerializeStruct(Struct, StructValue, Options, Result);
     return Result;
 }

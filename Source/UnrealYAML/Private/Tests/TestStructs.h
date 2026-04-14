@@ -26,7 +26,7 @@ struct FSimpleStruct {
 
 
 UCLASS()
-class USimpleObject : public UObject{
+class USimpleObject : public UObject {
     GENERATED_BODY()
 
 public:
@@ -73,7 +73,7 @@ struct FNestedStruct {
     TMap<FString, FChildStruct> ChildMap;
 };
 
-// Enums: 
+// Enums:
 
 UENUM()
 enum class EEnumClass : uint8 {
@@ -84,11 +84,11 @@ enum class EEnumClass : uint8 {
 
 UENUM()
 namespace ENamespaceEnum {
-    enum Type {
-        Value1 = 45,
-        Value2 = 46,
-        Value3 = 47,
-    };
+enum Type {
+    Value1 = 45,
+    Value2 = 46,
+    Value3 = 47,
+};
 }
 
 USTRUCT()
@@ -100,6 +100,30 @@ struct FEnumStruct {
 
     UPROPERTY()
     TEnumAsByte<ENamespaceEnum::Type> EnumAsByte = ENamespaceEnum::Value1;
+};
+
+
+USTRUCT()
+struct FStructWithVariousKeyNames {
+    GENERATED_BODY()
+
+    UPROPERTY()
+    int32 AnInteger = 42;
+
+    UPROPERTY()
+    FString AnFString = "Foo";
+
+    UPROPERTY()
+    int32 notCamelCase = -1;
+
+    UPROPERTY()
+    int32 AnIntegerPlus2 = 44;
+
+    UPROPERTY()
+    int32 AnIntegerPlus42 = 84;
+
+    UPROPERTY()
+    FString CapitalA = "A";
 };
 
 
@@ -151,11 +175,39 @@ struct FReferencesStruct {
 };
 
 
+UCLASS()
+class UChildObject : public UObject {
+    GENERATED_BODY()
+
+public:
+    UPROPERTY()
+    TArray<FString> Strings;
+
+    UPROPERTY()
+    float Float{};
+};
+
+
+USTRUCT()
+struct FObjectTypes {
+    GENERATED_BODY()
+
+    UPROPERTY()
+    TMap<FString, int32> Values;
+
+    UPROPERTY()
+    FChildStruct ChildStruct;
+
+    UPROPERTY()
+    UChildObject* ChildObject;
+};
+
+
 USTRUCT()
 struct FRequiredFieldsStruct {
     GENERATED_BODY()
 
-    UPROPERTY(meta=(YamlRequired))
+    UPROPERTY(meta = (YamlRequired))
     int Required = 42;
 
     UPROPERTY()

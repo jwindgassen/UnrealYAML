@@ -22,6 +22,15 @@ void FYamlNode::SetStyle(const EYamlEmitterStyle Style) {
     Node.SetStyle(static_cast<YAML::EmitterStyle>(Style));
 }
 
+FString FYamlNode::Tag() const {
+    return UTF8_TO_TCHAR(Node.Tag().c_str());
+}
+
+void FYamlNode::SetTag(const FString& Tag) {
+    Node.SetTag(TCHAR_TO_UTF8(*Tag));
+}
+
+
 bool FYamlNode::Is(const FYamlNode& Other) const {
     try {
         return Node.is(Other.Node);

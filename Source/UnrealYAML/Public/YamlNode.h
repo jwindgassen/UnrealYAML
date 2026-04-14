@@ -170,6 +170,13 @@ public:
     /** Sets the Style of the Node, mostly relevant for Sequences */
     void SetStyle(const EYamlEmitterStyle Style);
 
+    // Tags ----------------------------------------------------------------------------
+    /** Returns the tags of the Node, empty if there are none */
+    FString Tag() const;
+    
+    /** Sets a tag on this Node */
+    void SetTag(const FString& Tag);
+    
 
     // Assignment ----------------------------------------------------------------------
     /** Test if 2 Nodes are Equal */

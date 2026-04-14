@@ -83,6 +83,253 @@ DEFINE_FUNCTION(UYamlSerialization::execDeserializeStruct_BP) {
     P_NATIVE_END;
 }
 
+FYamlNode UYamlSerialization::SerializeProperty(const FProperty& Property, const void* PropertyValue,
+                                                const FYamlSerializeOptions& Options,
+                                                FYamlSerializationResult& Result) {
+    UE_LOG(LogYamlParsing, Verbose, TEXT("SerializeProperty: %s %s"), *Property.GetCPPType(), *Property.GetName())
+
+    if (const FEnumProperty* EnumProperty = CastField<FEnumProperty>(&Property)) {
+        const int64 Value = EnumProperty->GetUnderlyingProperty()->GetSignedIntPropertyValue(PropertyValue);
+        return EnumProperty->GetEnum()->HasAnyEnumFlags(EEnumFlags::Flags) || Options.EnumAsNumber
+            ? FYamlNode{Value}
+            : FYamlNode{EnumProperty->GetEnum()->GetNameStringByValue(Value)};
+    }
+
+    if (const FByteProperty* ByteProperty = CastField<FByteProperty>(&Property);
+        ByteProperty && ByteProperty->IsEnum()) {
+        const int64 Value = ByteProperty->GetSignedIntPropertyValue(PropertyValue);
+        return ByteProperty->GetIntPropertyEnum()->HasAnyEnumFlags(EEnumFlags::Flags) || Options.EnumAsNumber
+            ? FYamlNode{Value}
+            : FYamlNode{ByteProperty->GetIntPropertyEnum()->GetNameStringByValue(Value)};
+    }
+
+    if (const FNumericProperty* NumericProperty = CastField<FNumericProperty>(&Property)) {
+        return FYamlNode{NumericProperty->GetNumericPropertyValueToString(PropertyValue)};
+    }
+
+    if (const FBoolProperty* BoolProperty = CastField<FBoolProperty>(&Property)) {
+        return FYamlNode{BoolProperty->GetPropertyValue(PropertyValue)};
+    }
+
+    if (const FStrProperty* StringProperty = CastField<FStrProperty>(&Property)) {
+        return FYamlNode{StringProperty->GetPropertyValue(PropertyValue)};
+    }
+
+    if (const FNameProperty* NameProperty = CastField<FNameProperty>(&Property)) {
+        return FYamlNode{NameProperty->GetPropertyValue(PropertyValue).ToString()};
+    }
+
+    if (const FTextProperty* TextProperty = CastField<FTextProperty>(&Property)) {
+        return FYamlNode{TextProperty->GetPropertyValue(PropertyValue).ToString()};
+    }
+
+    if (const FSoftObjectProperty* SoftObjProperty = CastField<FSoftObjectProperty>(&Property)) {
+        const UObject* Object = SoftObjProperty->GetObjectPropertyValue(PropertyValue);
+        if (!Object) {
+            return FYamlNode{};
+        }
+
+        // Recreate FAssetData::GetExportTextName
+        // ToDo: Maybe there is a better way to do this?
+        FStringBuilderBase Name;
+        Object->GetClass()->GetPathName(nullptr, Name);
+        Name += "'";
+        Object->GetPathName(nullptr, Name);
+        Name += "'";
+
+        return FYamlNode{FString{Name.ToString()}};
+    }
+
+    if (const FClassProperty* ClassProperty = CastField<FClassProperty>(&Property)) {
+        UClass* Class = Cast<UClass>(ClassProperty->GetObjectPropertyValue(PropertyValue));
+        if (!Class) {
+            return FYamlNode{};
+        }
+
+        // Recreate FAssetData::GetExportTextName (but for classes)
+        // ToDo: Maybe there is a better way to do this?
+        FStringBuilderBase Name;
+        Name.Append("/Script/CoreUObject.Class'");
+        Class->GetPathName(nullptr, Name);
+        Name += "'";
+
+        return FYamlNode{FString{Name.ToString()}};
+    }
+
+    if (const FArrayProperty* ArrayProperty = CastField<FArrayProperty>(&Property)) {
+        FYamlNode Sequence{EYamlNodeType::Sequence};
+
+        // We need the helper to get to the items of the array
+        FScriptArrayHelper Helper(ArrayProperty, PropertyValue);
+        for (int32 i = 0; i < Helper.Num(); ++i) {
+            Result.PushStack(i);
+            Sequence.Push(SerializeProperty(*ArrayProperty->Inner, Helper.GetRawPtr(i), Options, Result));
+            Result.PopStack();
+        }
+
+        return Sequence;
+    }
+
+    if (const FMapProperty* MapProperty = CastField<FMapProperty>(&Property)) {
+        FYamlNode Map{EYamlNodeType::Map};
+
+        if (Options.IncludeTypeInformation) {
+            Map.SetTag("TMap");
+        }
+
+        FScriptMapHelper Helper(MapProperty, PropertyValue);
+        for (int32 i = 0; i < Helper.Num(); ++i) {
+            Result.PushStack(i);  // ToDo: Find a better representation
+
+            FYamlNode Key = SerializeProperty(*Helper.KeyProp, Helper.GetKeyPtr(i), Options, Result);
+            FYamlNode Value = SerializeProperty(*Helper.ValueProp, Helper.GetValuePtr(i), Options, Result);
+
+            Map[Key] = Value;
+
+            Result.PopStack();
+        }
+
+        return Map;
+    }
+
+    if (const FObjectProperty* ObjectProperty = CastField<FObjectProperty>(&Property)) {
+        return SerializeObject(ObjectProperty->PropertyClass, PropertyValue, Options, Result);
+    }
+
+    if (const FStructProperty* StructProperty = CastField<FStructProperty>(&Property)) {
+        return SerializeStruct(StructProperty->Struct, PropertyValue, Options, Result);
+    }
+
+    return FYamlNode{};
+}
+
+FYamlNode UYamlSerialization::SerializeStruct(const UScriptStruct* Struct, const void* StructValue,
+                                              const FYamlSerializeOptions& Options, FYamlSerializationResult& Result) {
+    UE_LOG(LogYamlParsing, Verbose, TEXT("SerializeStruct: %s"), *Struct->GetName())
+
+    // Custom type handlers provided in options have priority.
+    if (const FCustomTypeSerializer* Handler = Options.TypeHandlers.Find(Struct->GetStructCPPName())) {
+        return Handler->Execute(Struct, StructValue, Result);
+    }
+
+    if (NativeTypes.Contains(Struct->GetStructCPPName())) {
+        return SerializeNativeType(Struct, StructValue);
+    }
+
+    FYamlNode Node{EYamlNodeType::Map};
+
+    // Set the name of the Struct as a Tag
+    if (Options.IncludeTypeInformation) {
+        Node.SetTag(FString::Printf(TEXT("F%s"), *Struct->GetName()));
+    }
+
+    for (TFieldIterator<FProperty> It(Struct); It; ++It) {
+        FString Key = It->GetName();
+        CapitalizePropertyName(Key, Options.Capitalization);
+
+        Result.PushStack(Key);
+        Node[Key] = SerializeProperty(**It, It->ContainerPtrToValuePtr<void>(StructValue), Options, Result);
+        Result.PopStack();
+    }
+
+    return Node;
+}
+
+FYamlNode UYamlSerialization::SerializeObject(const UClass* Object, const void* ObjectValue,
+                                              const FYamlSerializeOptions& Options, FYamlSerializationResult& Result) {
+    UE_LOG(LogYamlParsing, Verbose, TEXT("SerializeObject: %s"), *Object->GetName())
+
+    FYamlNode Node{EYamlNodeType::Map};
+
+    // Set the name of the Struct as a Tag
+    if (Options.IncludeTypeInformation) {
+        Node.SetTag(FString::Printf(TEXT("U%s"), *Object->GetName()));
+    }
+
+
+    for (TFieldIterator<FProperty> It(Object); It; ++It) {
+        FString Key = It->GetName();
+        CapitalizePropertyName(Key, Options.Capitalization);
+
+        Result.PushStack(Key);
+        Node[Key] = SerializeProperty(**It, It->ContainerPtrToValuePtr<void>(ObjectValue), Options, Result);
+        Result.PopStack();
+    }
+
+    return Node;
+}
+
+FYamlNode UYamlSerialization::SerializeNativeType(const UScriptStruct* Struct, const void* StructValue) {
+    const FString Type = Struct->GetStructCPPName();
+
+    if (Type == "FString") {
+        return FYamlNode{*static_cast<const FString*>(StructValue)};
+    }
+
+    if (Type == "FText") {
+        return FYamlNode{*static_cast<const FText*>(StructValue)};
+    }
+
+    if (Type == "FVector") {
+        return FYamlNode{*static_cast<const FVector*>(StructValue)};
+    }
+
+    if (Type == "FQuat") {
+        return FYamlNode{*static_cast<const FQuat*>(StructValue)};
+    }
+
+    if (Type == "FRotator") {
+        return FYamlNode{*static_cast<const FRotator*>(StructValue)};
+    }
+
+    if (Type == "FTransform") {
+        return FYamlNode{*static_cast<const FTransform*>(StructValue)};
+    }
+
+    if (Type == "FColor") {
+        return FYamlNode{*static_cast<const FColor*>(StructValue)};
+    }
+
+    if (Type == "FLinearColor") {
+        return FYamlNode{*static_cast<const FLinearColor*>(StructValue)};
+    }
+
+    if (Type == "FVector2D") {
+        return FYamlNode{*static_cast<const FVector2D*>(StructValue)};
+    }
+
+    checkf(false, TEXT("No native type conversion for %s"), *Type);
+    return FYamlNode{};
+}
+
+void UYamlSerialization::CapitalizePropertyName(FString& Name, EYamlKeyCapitalization Capitalization) {
+    // By default, the property name will be generated in PascalCase
+    switch (Capitalization) {
+        case EYamlKeyCapitalization::PascalCase: break;
+        case EYamlKeyCapitalization::CamelCase: {
+            Name[0] = FChar::ToLower(Name[0]);
+            break;
+        }
+        case EYamlKeyCapitalization::SnakeCase: {
+            // Insert an underscore before each capital letter and digit, except when there was a capital letter
+            // before that. Also, no underscore before the first letter.
+            TArray Chars = Name.GetCharArray();
+            for (int32 i = 1; i < Chars.Num(); i++) {
+                if ((FChar::IsUpper(Chars[i]) && FChar::IsLower(Chars[i - 1])) ||
+                    (FChar::IsDigit(Chars[i]) && !FChar::IsDigit(Chars[i - 1]))) {
+                    Chars.Insert('_', i);
+                    i++;
+                }
+            }
+            Name = Chars;
+
+            // Then make the whole string lowercase
+            Name.ToLowerInline();
+
+            break;
+        }
+    }
+}
 
 
 void UYamlSerialization::DeserializeProperty(const FYamlNode& Node, const FProperty& Property, void* PropertyValue,
@@ -350,16 +597,3 @@ int64 UYamlSerialization::DeserializeEnumValue(const FYamlNode& Node, const UEnu
 
     return INDEX_NONE;
 }
-
-
-void UYamlSerialization::SerializeProperty(FYamlNode& Node, const FProperty& Property, const void* PropertyValue,
-                                           const FYamlSerializeOptions& Options, FYamlSerializationResult& Result) {}
-
-void UYamlSerialization::SerializeStruct(FYamlNode& Node, const UScriptStruct* Struct, const void* StructValue,
-                                         const FYamlSerializeOptions& Options, FYamlSerializationResult& Result) {}
-
-void UYamlSerialization::SerializeObject(FYamlNode& Node, const UClass* Object, const void* ObjectValue,
-                                         const FYamlSerializeOptions& Options, FYamlSerializationResult& Result) {}
-
-void UYamlSerialization::SerializeNativeType(FYamlNode& Node, const UScriptStruct* Struct, const void* StructValue,
-                                             const FYamlSerializeOptions& Options, FYamlSerializationResult& Result) {}
