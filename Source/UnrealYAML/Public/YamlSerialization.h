@@ -256,16 +256,6 @@ class UNREALYAML_API UYamlSerialization : public UBlueprintFunctionLibrary {
 #pragma region C++ Wrapper
 
     template<typename ObjectType>
-    friend FYamlSerializationResult DeserializeObject(const FYamlNode&, ObjectType*, const FYamlDeserializeOptions&);
-
-    template<typename StructType>
-    friend FYamlSerializationResult DeserializeStruct(const FYamlNode&, StructType&, const FYamlDeserializeOptions&);
-
-    friend FYamlSerializationResult DeserializeStruct(const FYamlNode&, const UScriptStruct*, void*,
-                                                      const FYamlDeserializeOptions&);
-
-
-    template<typename ObjectType>
     friend FYamlSerializationResult SerializeObject(FYamlNode&, const ObjectType*, const FYamlSerializeOptions&);
 
     template<typename StructType>
@@ -273,6 +263,16 @@ class UNREALYAML_API UYamlSerialization : public UBlueprintFunctionLibrary {
 
     friend FYamlSerializationResult SerializeStruct(FYamlNode&, const UScriptStruct*, const void*,
                                                     const FYamlSerializeOptions&);
+
+
+    template<typename ObjectType>
+    friend FYamlSerializationResult DeserializeObject(const FYamlNode&, ObjectType*, const FYamlDeserializeOptions&);
+
+    template<typename StructType>
+    friend FYamlSerializationResult DeserializeStruct(const FYamlNode&, StructType&, const FYamlDeserializeOptions&);
+
+    friend FYamlSerializationResult DeserializeStruct(const FYamlNode&, const UScriptStruct*, void*,
+                                                      const FYamlDeserializeOptions&);
 
 #pragma endregion
 
@@ -305,6 +305,47 @@ public:
     static bool SerializationSuccessful(const FYamlSerializationResult& Result) {
         return Result.Success();
     }
+
+
+    /**
+     * Serializes the data from the given Object into a Node. The function will recursively iterate over all Properties
+     * in the Object and try to parse the contents in the fields of the Object into an entry in the Node.
+     *
+     * If you use a C++ UCLASS, all Properties that you want deserialized must be a UPROPERTY for the UHT
+     * to register them. For easier C++ access, use the global `SerializeObject` function.
+     *
+     * @param Node The Node that will receive the Data from the Object
+     * @param Object The Object that should be serialized
+     * @param Options
+     * @return The Result of the serialization
+     */
+    UFUNCTION(BlueprintCallable, DisplayName = "Serialize Object", Category = "YAML")
+    static FYamlSerializationResult SerializeObject_BP(FYamlNode& Node, const UObject* Object,
+                                                       const FYamlSerializeOptions& Options);
+
+
+    /**
+     * Serializes the data from the given Struct into a Node. The function will recursively iterate over all Properties
+     * in the Struct and try to parse the contents in the fields of the Struct into an entry in the Node.
+     *
+     * If you use a C++ USTRUCT, all Properties that you want deserialized must be a UPROPERTY for the UHT
+     * to register them. For easier C++ access, use the global `SerializeStruct` function.
+     *
+     * @param Node The Node that will receive the Data from the Object
+     * @param Struct The Struct that should be serialized
+     * @param Options
+     * @return The Result of the serialization
+     */
+    UFUNCTION(BlueprintCallable, CustomThunk, DisplayName = "Serialize Struct", Category = "YAML",
+              meta = (CustomStructureParam = "Struct"))
+    static FYamlSerializationResult SerializeStruct_BP(FYamlNode& Node, const int32& Struct,
+                                                       const FYamlSerializeOptions& Options) {
+        checkNoEntry();
+        return {};
+    }
+
+    // Custom Thunk for SerializeStruct_BP
+    DECLARE_FUNCTION(execSerializeStruct_BP);
 
 
     /**
@@ -433,63 +474,6 @@ private:
 };
 
 
-
-/**
- * Deserializes the given Node into the instance of the given Object. The function will recursively iterate over all
- * Properties in the Object and try to parse the contents of the corresponding Node entry into the field of the Object.
- *
- * @tparam ObjectType The Type of Object we are parsing. Must be a UObject
- * @param Node The Node that contains the Data
- * @param Object The Object that should receive the data from the Node
- * @param Options Controls the behavior of the deserialization
- * @return The Result of the parsing operation
- */
-template<typename ObjectType>
-FORCEINLINE FYamlSerializationResult DeserializeObject(const FYamlNode& Node, ObjectType* Object,
-                                                       const FYamlDeserializeOptions& Options = {}) {
-    static_assert(TIsDerivedFrom<ObjectType, UObject>::Value);
-
-    FYamlSerializationResult Result;
-    UYamlSerialization::DeserializeObject(Node, ObjectType::StaticClass(), Object, Options, Result);
-    return Result;
-}
-
-/**
- * Deserializes the given Node into the instance of the given Struct. The function will recursively iterate over all
- * Properties in the Struct and try to parse the contents of the corresponding Node entry into the field of the Struct.
- *
- * @tparam StructType The Type of Struct we are parsing. Must be a UStruct
- * @param Node The Node that contains the Data
- * @param Struct The Struct that should receive the data from the Node
- * @param Options Controls the behavior of the deserialization
- * @return The Result of the parsing operation
- */
-template<typename StructType>
-FORCEINLINE FYamlSerializationResult DeserializeStruct(const FYamlNode& Node, StructType& Struct,
-                                                       const FYamlDeserializeOptions& Options = {}) {
-    FYamlSerializationResult Result;
-    UYamlSerialization::DeserializeStruct(Node, Struct.StaticStruct(), &Struct, Options, Result);
-    return Result;
-}
-
-/**
- * Deserializes the given Node into the instance of the given Struct. The function will recursively iterate over all
- * Properties in the Struct and try to parse the contents of the corresponding Node entry into the field of the Struct.
- *
- * @param Node The Node that contains the Data
- * @param Struct The Struct class that describes the Struct
- * @param StructValue The pointer to the actual memory location of the Struct
- * @param Options Controls the behavior of the deserialization
- * @return The Result of the parsing operation
- */
-FORCEINLINE FYamlSerializationResult DeserializeStruct(const FYamlNode& Node, const UScriptStruct* Struct,
-                                                       void* StructValue, const FYamlDeserializeOptions& Options = {}) {
-    FYamlSerializationResult Result;
-    UYamlSerialization::DeserializeStruct(Node, Struct, StructValue, Options, Result);
-    return Result;
-}
-
-
 /**
  * Serializes the data from the given Object into a Node. The function will recursively iterate over all Properties
  * in the Object and try to parse the contents in the fields of the Object into an entry in the Node.
@@ -543,5 +527,61 @@ FORCEINLINE FYamlSerializationResult SerializeStruct(FYamlNode& Node, const UScr
                                                      const FYamlSerializeOptions& Options = {}) {
     FYamlSerializationResult Result;
     Node = UYamlSerialization::SerializeStruct(Struct, StructValue, Options, Result);
+    return Result;
+}
+
+
+/**
+ * Deserializes the given Node into the instance of the given Object. The function will recursively iterate over all
+ * Properties in the Object and try to parse the contents of the corresponding Node entry into the field of the Object.
+ *
+ * @tparam ObjectType The Type of Object we are parsing. Must be a UObject
+ * @param Node The Node that contains the Data
+ * @param Object The Object that should receive the data from the Node
+ * @param Options Controls the behavior of the deserialization
+ * @return The Result of the parsing operation
+ */
+template<typename ObjectType>
+FORCEINLINE FYamlSerializationResult DeserializeObject(const FYamlNode& Node, ObjectType* Object,
+                                                       const FYamlDeserializeOptions& Options = {}) {
+    static_assert(TIsDerivedFrom<ObjectType, UObject>::Value);
+
+    FYamlSerializationResult Result;
+    UYamlSerialization::DeserializeObject(Node, ObjectType::StaticClass(), Object, Options, Result);
+    return Result;
+}
+
+/**
+ * Deserializes the given Node into the instance of the given Struct. The function will recursively iterate over all
+ * Properties in the Struct and try to parse the contents of the corresponding Node entry into the field of the Struct.
+ *
+ * @tparam StructType The Type of Struct we are parsing. Must be a UStruct
+ * @param Node The Node that contains the Data
+ * @param Struct The Struct that should receive the data from the Node
+ * @param Options Controls the behavior of the deserialization
+ * @return The Result of the parsing operation
+ */
+template<typename StructType>
+FORCEINLINE FYamlSerializationResult DeserializeStruct(const FYamlNode& Node, StructType& Struct,
+                                                       const FYamlDeserializeOptions& Options = {}) {
+    FYamlSerializationResult Result;
+    UYamlSerialization::DeserializeStruct(Node, Struct.StaticStruct(), &Struct, Options, Result);
+    return Result;
+}
+
+/**
+ * Deserializes the given Node into the instance of the given Struct. The function will recursively iterate over all
+ * Properties in the Struct and try to parse the contents of the corresponding Node entry into the field of the Struct.
+ *
+ * @param Node The Node that contains the Data
+ * @param Struct The Struct class that describes the Struct
+ * @param StructValue The pointer to the actual memory location of the Struct
+ * @param Options Controls the behavior of the deserialization
+ * @return The Result of the parsing operation
+ */
+FORCEINLINE FYamlSerializationResult DeserializeStruct(const FYamlNode& Node, const UScriptStruct* Struct,
+                                                       void* StructValue, const FYamlDeserializeOptions& Options = {}) {
+    FYamlSerializationResult Result;
+    UYamlSerialization::DeserializeStruct(Node, Struct, StructValue, Options, Result);
     return Result;
 }

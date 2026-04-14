@@ -39,9 +39,58 @@ const TArray<FString> UYamlSerialization::NativeTypes = {"FString",    "FText", 
                                                          "FTransform", "FColor", "FLinearColor", "FRotator"};
 
 
+FYamlSerializationResult UYamlSerialization::SerializeObject_BP(FYamlNode& Node, const UObject* Object,
+                                                                const FYamlSerializeOptions& Options) {
+    FYamlSerializationResult Result;
+    Node = SerializeObject(Object->GetClass(), Object, Options, Result);
+    return Result;
+}
+
+
+DEFINE_FUNCTION(UYamlSerialization::execSerializeStruct_BP) {
+    P_GET_STRUCT_REF(FYamlNode, Node);
+
+    // Steps into the stack, walking to the next Object in it
+    Stack.MostRecentProperty = nullptr;
+    Stack.MostRecentPropertyAddress = nullptr;
+    Stack.StepCompiledIn<FStructProperty>(nullptr);
+
+    // Grab the last property found when we walked the stack and its address.
+    // The former does not contain the property value, only its type information.
+    // The latter where the property value is truly stored
+    const FStructProperty* StructProperty = CastField<FStructProperty>(Stack.MostRecentProperty);
+    void* StructValue = Stack.MostRecentPropertyAddress;
+
+    P_GET_STRUCT_REF(FYamlSerializeOptions, Options);
+
+    P_FINISH;
+
+    if (!StructProperty || !StructValue) {
+        const FString ErrorMessage = FString::Printf(TEXT("SerializeStruct did not receive an Struct Property: '%s'"),
+                                                     *Stack.MostRecentProperty->GetName());
+
+        const FBlueprintExceptionInfo ExceptionInfo{EBlueprintExceptionType::AccessViolation,
+                                                    FText::FromString(ErrorMessage)};
+        FBlueprintCoreDelegates::ThrowScriptException(P_THIS, Stack, ExceptionInfo);
+
+        UE_LOG(LogYamlParsing, Error, TEXT("%s"), *ErrorMessage)
+    }
+
+    P_NATIVE_BEGIN;
+
+    FYamlSerializationResult Result;
+    Node = SerializeStruct(StructProperty->Struct, StructValue, Options, Result);
+    *static_cast<FYamlSerializationResult*>(RESULT_PARAM) = Result;
+
+    P_NATIVE_END;
+}
+
+
 FYamlSerializationResult UYamlSerialization::DeserializeObject_BP(const FYamlNode& Node, UObject* Object,
                                                                   const FYamlDeserializeOptions& Options) {
-    return {};
+    FYamlSerializationResult Result;
+    DeserializeObject(Node, Object->GetClass(), Object, Options, Result);
+    return Result;
 }
 
 
@@ -591,8 +640,8 @@ int64 UYamlSerialization::DeserializeEnumValue(const FYamlNode& Node, const UEnu
 
     // If we arrive here and still have not been able to resolve to an enum, this must be a bad type.
     if (CheckEnums) {
-        Result.AddError(TEXT("Value of type '%s' cannot be parsed as an enum value for %s"),
-                        *EnumToString(Node.Type()), *Enum->CppType);
+        Result.AddError(TEXT("Value of type '%s' cannot be parsed as an enum value for %s"), *EnumToString(Node.Type()),
+                        *Enum->CppType);
     }
 
     return INDEX_NONE;
