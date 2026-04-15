@@ -9,14 +9,10 @@
 
 #if WITH_DEV_AUTOMATION_TESTS
 
-constexpr EAutomationTestFlags Flags = EAutomationTestFlags::ProductFilter | EAutomationTestFlags::HighPriority |
-#if ENGINE_MAJOR_VERSION >= 5
-    EAutomationTestFlags_ApplicationContextMask;
-#else
-    EAutomationTestFlags::ApplicationContextMask;
-#endif
-
-BEGIN_DEFINE_SPEC(FTestDeserialization, "UnrealYAML.Deserialization", Flags)
+BEGIN_DEFINE_SPEC(
+    FTestDeserialization, "UnrealYAML.Deserialization",
+    EAutomationTestFlags::ProductFilter | EAutomationTestFlags::HighPriority | EAutomationTestFlags_ApplicationContextMask
+)
 
     // Takes the errors from `AddExpectedErrors` and checks that the Results contain the expected error messages.
     void CheckExpectedErrors(const FYamlSerializationResult& Result) {
