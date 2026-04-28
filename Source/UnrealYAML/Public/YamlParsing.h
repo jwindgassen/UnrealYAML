@@ -5,6 +5,7 @@
 
 #include "CoreMinimal.h"
 #include "YamlNode.h"
+#include "Kismet/BlueprintFunctionLibrary.h"
 #include "YamlParsing.generated.h"
 
 

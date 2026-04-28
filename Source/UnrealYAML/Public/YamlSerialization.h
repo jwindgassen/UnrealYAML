@@ -7,6 +7,7 @@
 #include "YamlNode.h"
 #include "YamlParsing.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "Runtime/Launch/Resources/Version.h"
 
 #include "YamlSerialization.generated.h"
 
@@ -208,18 +209,24 @@ struct FYamlSerializationResult {
     UPROPERTY(BlueprintReadOnly, VisibleInstanceOnly)
     TArray<FString> Errors;
 
-    /// (De)serialization was successful of there were no errors
+    /// (De)serialization was successful if there were no errors
     FORCEINLINE bool Success() const {
         return Errors.Num() == 0;
     }
 
-    /// (De)serialization was successful of there were no errors
+    /// (De)serialization was successful if there were no errors
     FORCEINLINE explicit operator bool() const {
         return Success();
     }
 
+#if ENGINE_MINOR_VERSION >= 6
+    template<typename... Types>
+    void AddError(UE::Core::TCheckedFormatString<TCHAR, Types...> Fmt, Types... Args)
+#else
     template<typename FmtType, typename... Types>
-    void AddError(const FmtType& Fmt, Types... Args) {
+    void AddError(const FmtType& Fmt, Types... Args)
+#endif
+    {
         const FString ErrorMessage = FString::Printf(Fmt, Forward<Types>(Args)...);
         const FString WithScope = FString::Printf(TEXT("%s: %s"), *ScopeName(), *ErrorMessage);
 

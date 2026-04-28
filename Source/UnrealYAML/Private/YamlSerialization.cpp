@@ -601,7 +601,8 @@ void UYamlSerialization::DeserializeNativeType(const FYamlNode& Node, const UScr
 bool UYamlSerialization::EnsureNodeType(const FYamlNode& Node, const EYamlNodeType Expected, const bool Strict,
                                         FYamlSerializationResult& Result) {
     if (Strict && Node.IsDefined() && Node.Type() != Expected) {
-        Result.AddError(TEXT("Expected '%s' but found '%s'"), *EnumToString(Expected), *EnumToString(Node.Type()));
+        Result.AddError(TEXT("Expected '%s' but found '%s'"), *UEnum::GetValueAsString(Expected), 
+                        *UEnum::GetValueAsString(Node.Type()));
         return false;
     }
 
@@ -643,8 +644,8 @@ int64 UYamlSerialization::DeserializeEnumValue(const FYamlNode& Node, const UEnu
 
     // If we arrive here and still have not been able to resolve to an enum, this must be a bad type.
     if (CheckEnums) {
-        Result.AddError(TEXT("Value of type '%s' cannot be parsed as an enum value for %s"), *EnumToString(Node.Type()),
-                        *Enum->CppType);
+        Result.AddError(TEXT("Value of type '%s' cannot be parsed as an enum value for %s"), 
+                        *UEnum::GetValueAsString(Node.Type()), *Enum->CppType);
     }
 
     return INDEX_NONE;
