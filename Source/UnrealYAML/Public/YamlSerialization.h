@@ -219,20 +219,27 @@ struct FYamlSerializationResult {
         return Success();
     }
 
+
+    // Must be defined twice of UHT will get confused
 #if ENGINE_MINOR_VERSION >= 6
     template<typename... Types>
-    void AddError(UE::Core::TCheckedFormatString<TCHAR, Types...> Fmt, Types... Args)
-#else
-    template<typename FmtType, typename... Types>
-    void AddError(const FmtType& Fmt, Types... Args)
-#endif
-    {
+    void AddError(UE::Core::TCheckedFormatString<TCHAR, Types...> Fmt, Types... Args) {
         const FString ErrorMessage = FString::Printf(Fmt, Forward<Types>(Args)...);
         const FString WithScope = FString::Printf(TEXT("%s: %s"), *ScopeName(), *ErrorMessage);
 
         UE_LOG(LogYamlParsing, Error, TEXT("%s"), *WithScope)
         Errors.Add(WithScope);
     }
+#else
+    template<typename FmtType, typename... Types>
+    void AddError(const FmtType& Fmt, Types... Args) {
+        const FString ErrorMessage = FString::Printf(Fmt, Forward<Types>(Args)...);
+        const FString WithScope = FString::Printf(TEXT("%s: %s"), *ScopeName(), *ErrorMessage);
+
+        UE_LOG(LogYamlParsing, Error, TEXT("%s"), *WithScope)
+        Errors.Add(WithScope);
+    }
+#endif
 
 private:
     friend class UYamlSerialization;
@@ -249,6 +256,30 @@ private:
     void PushStack(const int32 Index);
     void PopStack();
 };
+
+
+#pragma region C++ Wrapper
+
+template<typename ObjectType>
+FYamlSerializationResult SerializeObject(FYamlNode&, const ObjectType*, const FYamlSerializeOptions& = {});
+
+template<typename StructType>
+FYamlSerializationResult SerializeStruct(FYamlNode&, const StructType&, const FYamlSerializeOptions& = {});
+
+FYamlSerializationResult SerializeStruct(FYamlNode&, const UScriptStruct*, const void*,
+                                         const FYamlSerializeOptions& = {});
+
+
+template<typename ObjectType>
+FYamlSerializationResult DeserializeObject(const FYamlNode&, ObjectType*, const FYamlDeserializeOptions& = {});
+
+template<typename StructType>
+FYamlSerializationResult DeserializeStruct(const FYamlNode&, StructType&, const FYamlDeserializeOptions& = {});
+
+FYamlSerializationResult DeserializeStruct(const FYamlNode&, const UScriptStruct*, void*,
+                                           const FYamlDeserializeOptions& = {});
+
+#pragma endregion
 
 
 
@@ -496,7 +527,7 @@ private:
  */
 template<typename ObjectType>
 FORCEINLINE FYamlSerializationResult SerializeObject(FYamlNode& Node, const ObjectType* Object,
-                                                     const FYamlSerializeOptions& Options = {}) {
+                                                     const FYamlSerializeOptions& Options) {
     static_assert(TIsDerivedFrom<ObjectType, UObject>::Value);
 
     FYamlSerializationResult Result;
@@ -516,7 +547,7 @@ FORCEINLINE FYamlSerializationResult SerializeObject(FYamlNode& Node, const Obje
  */
 template<typename StructType>
 FORCEINLINE FYamlSerializationResult SerializeStruct(FYamlNode& Node, const StructType& Struct,
-                                                     const FYamlSerializeOptions& Options = {}) {
+                                                     const FYamlSerializeOptions& Options) {
     FYamlSerializationResult Result;
     Node = UYamlSerialization::SerializeStruct(Struct.StaticStruct(), &Struct, Options, Result);
     return Result;
@@ -533,8 +564,7 @@ FORCEINLINE FYamlSerializationResult SerializeStruct(FYamlNode& Node, const Stru
  * @return The Result of the parsing operation
  */
 FORCEINLINE FYamlSerializationResult SerializeStruct(FYamlNode& Node, const UScriptStruct* Struct,
-                                                     const void* StructValue,
-                                                     const FYamlSerializeOptions& Options = {}) {
+                                                     const void* StructValue, const FYamlSerializeOptions& Options) {
     FYamlSerializationResult Result;
     Node = UYamlSerialization::SerializeStruct(Struct, StructValue, Options, Result);
     return Result;
@@ -553,7 +583,7 @@ FORCEINLINE FYamlSerializationResult SerializeStruct(FYamlNode& Node, const UScr
  */
 template<typename ObjectType>
 FORCEINLINE FYamlSerializationResult DeserializeObject(const FYamlNode& Node, ObjectType* Object,
-                                                       const FYamlDeserializeOptions& Options = {}) {
+                                                       const FYamlDeserializeOptions& Options) {
     static_assert(TIsDerivedFrom<ObjectType, UObject>::Value);
 
     FYamlSerializationResult Result;
@@ -573,7 +603,7 @@ FORCEINLINE FYamlSerializationResult DeserializeObject(const FYamlNode& Node, Ob
  */
 template<typename StructType>
 FORCEINLINE FYamlSerializationResult DeserializeStruct(const FYamlNode& Node, StructType& Struct,
-                                                       const FYamlDeserializeOptions& Options = {}) {
+                                                       const FYamlDeserializeOptions& Options) {
     FYamlSerializationResult Result;
     UYamlSerialization::DeserializeStruct(Node, Struct.StaticStruct(), &Struct, Options, Result);
     return Result;
@@ -590,7 +620,7 @@ FORCEINLINE FYamlSerializationResult DeserializeStruct(const FYamlNode& Node, St
  * @return The Result of the parsing operation
  */
 FORCEINLINE FYamlSerializationResult DeserializeStruct(const FYamlNode& Node, const UScriptStruct* Struct,
-                                                       void* StructValue, const FYamlDeserializeOptions& Options = {}) {
+                                                       void* StructValue, const FYamlDeserializeOptions& Options) {
     FYamlSerializationResult Result;
     UYamlSerialization::DeserializeStruct(Node, Struct, StructValue, Options, Result);
     return Result;
