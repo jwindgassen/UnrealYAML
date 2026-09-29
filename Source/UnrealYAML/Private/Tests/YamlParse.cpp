@@ -24,17 +24,18 @@ bool Parsing::RunTest(const FString& Parameters) {
     // From String
     {
         FYamlNode Node;
-        TestTrue("Parse Empty", UYamlParsing::ParseYaml(EmptyYaml, Node));
-        TestTrue("Parse Simple", UYamlParsing::ParseYaml(SimpleYaml, Node));
-        TestTrue("Parse Complex", UYamlParsing::ParseYaml(ComplexYaml, Node));
-        TestFalse("Parse Erroneous", UYamlParsing::ParseYaml(ErroneousYaml, Node));
+        TestTrue("Parse Empty", UYamlParsing::ParseYaml(EmptyYaml));
+        TestTrue("Parse Simple", UYamlParsing::ParseYaml(SimpleYaml));
+        TestTrue("Parse Complex", UYamlParsing::ParseYaml(ComplexYaml));
+        TestFalse("Parse Erroneous", UYamlParsing::ParseYaml(ErroneousYaml));
     }
 
     // Simple
     {
-        FYamlNode Node;
-        UYamlParsing::ParseYaml(SimpleYaml, Node);
+        const FParseResult ParseResult = UYamlParsing::ParseYaml(SimpleYaml);
+        TestTrue("Parsing should be successful", ParseResult.Success());
 
+        const FYamlNode& Node = ParseResult.Node;
         TestEqual("Parse String", Node["str"].As<FString>(), "A String");
         TestEqual("Parse Integer", Node["int"].As<int32>(), 42);
         TestTrue("Parse Boolean", Node["bool"].As<bool>());
@@ -45,16 +46,17 @@ bool Parsing::RunTest(const FString& Parameters) {
 
     // FName
     {
-        FYamlNode Node;
-        UYamlParsing::ParseYaml("name: TestName", Node);
+        const FParseResult ParseResult = UYamlParsing::ParseYaml("name: TestName");
+        TestTrue("Parsing should be successful", ParseResult.Success());
 
-        TestEqual("Parse Name", Node["name"].As<FName>(), FName("TestName"));
+        TestEqual("Parse Name", ParseResult.Node["name"].As<FName>(), FName("TestName"));
     }
 
     {
-        FYamlNode Node;
-        UYamlParsing::ParseYaml(ComplexYaml, Node);
+        const FParseResult ParseResult = UYamlParsing::ParseYaml(ComplexYaml);
+        TestTrue("Parsing should be successful", ParseResult.Success());
 
+        const FYamlNode& Node = ParseResult.Node;
         TestTrue("Parse nested Array",
                  Node["nested"].IsSequence() &&
                  Node["nested"][0].As<TArray<int>>() == TArray<int>{1, 2, 3} &&

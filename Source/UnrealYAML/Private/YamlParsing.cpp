@@ -8,21 +8,23 @@ DEFINE_LOG_CATEGORY(LogYamlParsing)
 
 
 // Parsing into/from Files ---------------------------------------------------------------------------------------------
-bool UYamlParsing::ParseYaml(const FString String, FYamlNode& Out) {
+FParseResult UYamlParsing::ParseYaml(const FString String) {
     try {
-        Out = FYamlNode(YAML::Load(TCHAR_TO_UTF8(*String)));
-        return true;
-    } catch (YAML::ParserException) {
-        return false;
+        const FYamlNode Node(YAML::Load(TCHAR_TO_UTF8(*String)));
+        return {.Node = Node, .ParseError = ""};
+    } catch (YAML::ParserException e) {
+        const FString Error = FString::Printf(
+            TEXT("Parsing Error at (%d,%d): %hs"), e.mark.line, e.mark.column, e.msg.c_str());
+        return {.Node = FYamlNode{}, .ParseError = Error};
     }
 }
 
-bool UYamlParsing::LoadYamlFromFile(const FString Path, FYamlNode& Out) {
+FParseResult UYamlParsing::LoadYamlFromFile(const FString Path) {
     FString Contents;
     if (FFileHelper::LoadFileToString(Contents, *Path)) {
-        return ParseYaml(Contents, Out);
+        return ParseYaml(Contents);
     }
-    return false;
+    return { .Node = FYamlNode{}, .ParseError = "Could not open file" };
 }
 
 void UYamlParsing::WriteYamlToFile(const FString Path, const FYamlNode Node) {
