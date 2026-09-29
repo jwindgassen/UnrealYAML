@@ -40,12 +40,12 @@ END_DEFINE_SPEC(FTestDeserialization)
 void FTestDeserialization::Define() {
     Describe("Simple Structs", [this]() {
         It("should be parseable from the templated wrapper", [this]() {
-            FYamlNode Node;
-            UYamlParsing::ParseYaml(SimpleYaml, Node);
+            const FParseResult ParseResult = UYamlParsing::ParseYaml(SimpleYaml);
+            TestTrue("Parsing should be successful", ParseResult.Success());
 
             // Ensure parsing produces no errors
             FSimpleStruct Simple;
-            const auto Result = DeserializeStruct(Node, Simple, FYamlDeserializeOptions::Strict());
+            const auto Result = DeserializeStruct(ParseResult.Node, Simple, FYamlDeserializeOptions::Strict());
             TestTrue("Deserialization should be successful", Result.Success());
 
             // Test whether fields match
@@ -60,13 +60,13 @@ void FTestDeserialization::Define() {
         });
 
         It("should be parseable to a dynamic struct", [this]() {
-            FYamlNode Node;
-            UYamlParsing::ParseYaml(SimpleYaml, Node);
+            const FParseResult ParseResult = UYamlParsing::ParseYaml(SimpleYaml);
+            TestTrue("Parsing should be successful", ParseResult.Success());
 
             // Ensure parsing produces no errors
             uint8* SimpleData = (uint8*)FMemory::Malloc(FSimpleStruct::StaticStruct()->GetStructureSize());
             FSimpleStruct::StaticStruct()->InitializeDefaultValue(SimpleData);
-            const auto Result = DeserializeStruct(Node, FSimpleStruct::StaticStruct(), SimpleData, FYamlDeserializeOptions::Strict());
+            const auto Result = DeserializeStruct(ParseResult.Node, FSimpleStruct::StaticStruct(), SimpleData, FYamlDeserializeOptions::Strict());
             TestTrue("Deserialization should be successful", Result.Success());
 
             // Test whether fields match
@@ -83,27 +83,27 @@ void FTestDeserialization::Define() {
         });
 
         It("should print errors when the types do not match", [this]() {
-            FYamlNode Node;
-            UYamlParsing::ParseYaml(SimpleYamlWrongTypes, Node);
+            const FParseResult ParseResult = UYamlParsing::ParseYaml(SimpleYamlWrongTypes);
+            TestTrue("Parsing should be successful", ParseResult.Success());
 
             AddExpectedErrorPlain("Int: Cannot convert 'not an int' to an Integer");
-            AddExpectedErrorPlain("Bool: Expected 'Scalar' but found 'Map'");
-            AddExpectedErrorPlain("Arr: Expected 'Sequence' but found 'Map'");
-            AddExpectedErrorPlain("Map: Expected 'Map' but found 'Sequence'");
+            AddExpectedErrorPlain("Bool: Expected 'EYamlNodeType::Scalar' but found 'EYamlNodeType::Map'");
+            AddExpectedErrorPlain("Arr: Expected 'EYamlNodeType::Sequence' but found 'EYamlNodeType::Map'");
+            AddExpectedErrorPlain("Map: Expected 'EYamlNodeType::Map' but found 'EYamlNodeType::Sequence'");
 
             // Parse and check if errors actually occurred
             FSimpleStruct Simple;
-            const auto Result = DeserializeStruct(Node, Simple, FYamlDeserializeOptions::Strict());
+            const auto Result = DeserializeStruct(ParseResult.Node, Simple, FYamlDeserializeOptions::Strict());
             CheckExpectedErrors(Result);
         });
 
         It("should not print errors when using default options", [this]() {
-            FYamlNode Node;
-            UYamlParsing::ParseYaml(SimpleYamlWrongTypes, Node);
+            const FParseResult ParseResult = UYamlParsing::ParseYaml(SimpleYamlWrongTypes);
+            TestTrue("Parsing should be successful", ParseResult.Success());
 
             // Ensure parsing produces no errors
             FSimpleStruct Simple;
-            const auto Result = DeserializeStruct(Node, Simple);
+            const auto Result = DeserializeStruct(ParseResult.Node, Simple);
             TestTrue("Deserialization should be successful", Result.Success());
 
             // Default options => Any wrong values will be skipped
@@ -122,12 +122,12 @@ void FTestDeserialization::Define() {
         });
 
         It("should preserve default values when there is no entry in the YamlNode", [this]() {
-            FYamlNode Node;
-            UYamlParsing::ParseYaml("{}", Node);
+            const FParseResult ParseResult = UYamlParsing::ParseYaml("{}");
+            TestTrue("Parsing should be successful", ParseResult.Success());
 
             // Ensure parsing produces no errors
             FSimpleStruct Simple;
-            const auto Result = DeserializeStruct(Node, Simple);
+            const auto Result = DeserializeStruct(ParseResult.Node, Simple);
             TestTrue("Deserialization should be successful", Result.Success());
 
             // Test for default values
@@ -142,26 +142,26 @@ void FTestDeserialization::Define() {
         });
 
         It("should print error when YAML has additional unused values", [this]() {
-            FYamlNode Node;
-            UYamlParsing::ParseYaml(SimpleYaml + "foo: bar\n", Node);
+            const FParseResult ParseResult = UYamlParsing::ParseYaml(SimpleYaml + "foo: bar\n");
+            TestTrue("Parsing should be successful", ParseResult.Success());
 
             AddExpectedErrorPlain("<root>: Struct has additional unused Keys: foo");
 
             // Parse and check if errors actually occurred
             FSimpleStruct Simple;
-            const auto Result = DeserializeStruct(Node, Simple, FYamlDeserializeOptions::Strict());
+            const auto Result = DeserializeStruct(ParseResult.Node, Simple, FYamlDeserializeOptions::Strict());
             CheckExpectedErrors(Result);
         });
     });
 
     Describe("Simple Objects", [this]() {
         It("should be parsed correctly", [this]() {
-            FYamlNode Node;
-            UYamlParsing::ParseYaml(SimpleYaml, Node);
+            const FParseResult ParseResult = UYamlParsing::ParseYaml(SimpleYaml);
+            TestTrue("Parsing should be successful", ParseResult.Success());
 
             // Ensure parsing produces no errors
             USimpleObject* Simple = NewObject<USimpleObject>();
-            const auto Result = DeserializeObject(Node, Simple, FYamlDeserializeOptions::Strict());
+            const auto Result = DeserializeObject(ParseResult.Node, Simple, FYamlDeserializeOptions::Strict());
             TestTrue("Deserialization should be successful", Result.Success());
 
             // Test whether fields match
@@ -178,11 +178,11 @@ void FTestDeserialization::Define() {
 
     Describe("Nested Structs", [this]() {
         It("should be parsed correctly", [this]() {
-            FYamlNode Node;
-            UYamlParsing::ParseYaml(NestedStruct, Node);
+            const FParseResult ParseResult = UYamlParsing::ParseYaml(NestedStruct);
+            TestTrue("Parsing should be successful", ParseResult.Success());
 
             FNestedStruct Struct;
-            const auto Result = DeserializeStruct(Node, Struct, FYamlDeserializeOptions::Strict());
+            const auto Result = DeserializeStruct(ParseResult.Node, Struct, FYamlDeserializeOptions::Strict());
             TestTrue("Deserialization should be successful", Result.Success());
 
             // Test Inner
@@ -220,29 +220,29 @@ void FTestDeserialization::Define() {
         });
 
         It("should not parse invalid nested objects", [this]() {
-            FYamlNode Node;
-            UYamlParsing::ParseYaml(NestedStructInvalid, Node);
+            const FParseResult ParseResult = UYamlParsing::ParseYaml(NestedStructInvalid);
+            TestTrue("Parsing should be successful", ParseResult.Success());
 
-            AddExpectedErrorPlain("Inner.Strings: Expected 'Sequence' but found 'Map'");
+            AddExpectedErrorPlain("Inner.Strings: Expected 'EYamlNodeType::Sequence' but found 'EYamlNodeType::Map'");
             AddExpectedErrorPlain("Inner.Float: Cannot convert 'foobar' to a Float");
-            AddExpectedErrorPlain("ChildArray.[0]: Expected 'Map' but found 'Scalar'");
-            AddExpectedErrorPlain("ChildMap.child1: Expected 'Map' but found 'Sequence'");
-            AddExpectedErrorPlain("ChildMap.notAnObject: Expected 'Map' but found 'Scalar'");
+            AddExpectedErrorPlain("ChildArray.[0]: Expected 'EYamlNodeType::Map' but found 'EYamlNodeType::Scalar'");
+            AddExpectedErrorPlain("ChildMap.child1: Expected 'EYamlNodeType::Map' but found 'EYamlNodeType::Sequence'");
+            AddExpectedErrorPlain("ChildMap.notAnObject: Expected 'EYamlNodeType::Map' but found 'EYamlNodeType::Scalar'");
 
             // Parse and check if errors actually occurred
             FNestedStruct Struct;
-            const auto Result = DeserializeStruct(Node, Struct, FYamlDeserializeOptions::Strict());
+            const auto Result = DeserializeStruct(ParseResult.Node, Struct, FYamlDeserializeOptions::Strict());
             CheckExpectedErrors(Result);
         });
     });
 
     Describe("Enums", [this]() {
         It("should parse from a string", [this]() {
-            FYamlNode Node;
-            UYamlParsing::ParseYaml("enumValue: value2\nenumAsByte: value3", Node);
+            const FParseResult ParseResult = UYamlParsing::ParseYaml("enumValue: value2\nenumAsByte: value3");
+            TestTrue("Parsing should be successful", ParseResult.Success());
 
             FEnumStruct EnumStruct;
-            const auto Result = DeserializeStruct(Node, EnumStruct, FYamlDeserializeOptions::Strict());
+            const auto Result = DeserializeStruct(ParseResult.Node, EnumStruct, FYamlDeserializeOptions::Strict());
 
             TestTrue("Deserialization should be successful", Result.Success());
             TestEqual("EnumValue matches", EnumStruct.EnumValue, EEnumClass::Value2);
@@ -250,11 +250,11 @@ void FTestDeserialization::Define() {
         });
 
         It("should parse from a integer", [this]() {
-            FYamlNode Node;
-            UYamlParsing::ParseYaml("enumValue: 43\nenumAsByte: 47\n", Node);
+            const FParseResult ParseResult = UYamlParsing::ParseYaml("enumValue: 43\nenumAsByte: 47\n");
+            TestTrue("Parsing should be successful", ParseResult.Success());
 
             FEnumStruct EnumStruct;
-            const auto Result = DeserializeStruct(Node, EnumStruct, FYamlDeserializeOptions::Strict());
+            const auto Result = DeserializeStruct(ParseResult.Node, EnumStruct, FYamlDeserializeOptions::Strict());
 
             TestTrue("Deserialization should be successful", Result.Success());
             TestEqual("EnumValue matches", EnumStruct.EnumValue, EEnumClass::Value2);
@@ -262,43 +262,42 @@ void FTestDeserialization::Define() {
         });
 
         It("should not parse from invalid strings", [this]() {
-            FYamlNode Node;
-            UYamlParsing::ParseYaml("enumValue: foo\nenumAsByte: bar\n", Node);
+            const FParseResult ParseResult = UYamlParsing::ParseYaml("enumValue: foo\nenumAsByte: bar\n");
+            TestTrue("Parsing should be successful", ParseResult.Success());
 
             AddExpectedErrorPlain("EnumValue: 'foo' is not an valid enum value of EEnumClass");
             AddExpectedErrorPlain("EnumAsByte: 'bar' is not an valid enum value of ENamespaceEnum");
 
             // Parse and check if errors actually occurred
             FEnumStruct EnumStruct;
-            const auto Result = DeserializeStruct(Node, EnumStruct, FYamlDeserializeOptions::Strict());
+            const auto Result = DeserializeStruct(ParseResult.Node, EnumStruct, FYamlDeserializeOptions::Strict());
             CheckExpectedErrors(Result);
         });
 
         It("should not parse from integers not matching any underlying values", [this]() {
-            FYamlNode Node;
-            UYamlParsing::ParseYaml("enumValue: 1\nenumAsByte: 2\n", Node);
+            const FParseResult ParseResult = UYamlParsing::ParseYaml("enumValue: 1\nenumAsByte: 2\n");
+            TestTrue("Parsing should be successful", ParseResult.Success());
 
             AddExpectedErrorPlain("EnumValue: 1 is not an valid enum value of EEnumClass");
             AddExpectedErrorPlain("EnumAsByte: 2 is not an valid enum value of ENamespaceEnum");
 
             // Parse and check if errors actually occurred
             FEnumStruct EnumStruct;
-            const auto Result = DeserializeStruct(Node, EnumStruct, FYamlDeserializeOptions::Strict());
+            const auto Result = DeserializeStruct(ParseResult.Node, EnumStruct, FYamlDeserializeOptions::Strict());
             CheckExpectedErrors(Result);
         });
     });
 
     Describe("References and Classes", [this]() {
         It("should correctly work with Blueprints", [this]() {
-            FYamlNode Node;
-            UYamlParsing::ParseYaml(
+            const FParseResult ParseResult = UYamlParsing::ParseYaml(
                 "class: \"/Script/Engine.Blueprint'/Engine/EngineSky/BP_Sky_Sphere.BP_Sky_Sphere'\" \n"
-                "meshObject: \"/Script/Engine.StaticMesh'/Engine/BasicShapes/Cube.Cube'\" \n",
-                Node
+                "meshObject: \"/Script/Engine.StaticMesh'/Engine/BasicShapes/Cube.Cube'\" \n"
             );
+            TestTrue("Parsing should be successful", ParseResult.Success());
 
             FReferencesStruct References;
-            const auto Result = DeserializeStruct(Node, References, FYamlDeserializeOptions::Strict());
+            const auto Result = DeserializeStruct(ParseResult.Node, References, FYamlDeserializeOptions::Strict());
             TestTrue("Deserialization should be successful", Result.Success());
 
             TestEqual("Class", References.Class->GetName(), "BP_Sky_Sphere_C");
@@ -308,38 +307,38 @@ void FTestDeserialization::Define() {
         });
 
         It("should correctly work with C++ classes", [this]() {
-            FYamlNode Node;
-            UYamlParsing::ParseYaml("class: \"/Script/CoreUObject.Class'/Script/Engine.Actor'\"\n", Node);
+            const FParseResult ParseResult = UYamlParsing::ParseYaml("class: \"/Script/CoreUObject.Class'/Script/Engine.Actor'\"\n");
+            TestTrue("Parsing should be successful", ParseResult.Success());
 
             FReferencesStruct References;
-            const auto Result = DeserializeStruct(Node, References, FYamlDeserializeOptions::Strict());
+            const auto Result = DeserializeStruct(ParseResult.Node, References, FYamlDeserializeOptions::Strict());
             TestTrue("Deserialization should be successful", Result.Success());
 
             TestEqual("Class", *References.Class, AActor::StaticClass());
         });
 
         It("should not parse from invalid object and class names", [this]() {
-            FYamlNode Node;
-            UYamlParsing::ParseYaml("class: not a class\nmeshObject: not an object\n", Node);
+            const FParseResult ParseResult = UYamlParsing::ParseYaml("class: not a class\nmeshObject: not an object\n");
+            TestTrue("Parsing should be successful", ParseResult.Success());
 
             AddExpectedErrorPlain("Class: Cannot find Class 'not a class'");
             AddExpectedErrorPlain("MeshObject: Cannot find Object 'not an object'");
 
             // Parse and check if errors actually occurred
             FReferencesStruct References;
-            const auto Result = DeserializeStruct(Node, References, FYamlDeserializeOptions::Strict());
+            const auto Result = DeserializeStruct(ParseResult.Node, References, FYamlDeserializeOptions::Strict());
             CheckExpectedErrors(Result);
         });
     });
 
     Describe("Native Types", [this]() {
         It("should parse correctly", [this]() {
-            FYamlNode Node;
-            UYamlParsing::ParseYaml(NativeTypesStruct, Node);
+            const FParseResult ParseResult = UYamlParsing::ParseYaml(NativeTypesStruct);
+            TestTrue("Parsing should be successful", ParseResult.Success());
 
             // Ensure parsing produces no errors
             FNativeTypesStruct Struct;
-            const auto Result = DeserializeStruct(Node, Struct, FYamlDeserializeOptions::Strict());
+            const auto Result = DeserializeStruct(ParseResult.Node, Struct, FYamlDeserializeOptions::Strict());
             TestTrue("Deserialization should be successful", Result.Success());
 
             TestEqual("Transform.Location", Struct.Transform.GetLocation(), FVector(1, 2, 3));
@@ -359,11 +358,11 @@ void FTestDeserialization::Define() {
 
     Describe("Required Fields", [this]() {
         It("should parse correctly when value is given", [this]() {
-            FYamlNode Node;
-            UYamlParsing::ParseYaml("required: 1\noptional: 2", Node);
+            const FParseResult ParseResult = UYamlParsing::ParseYaml("required: 1\noptional: 2");
+            TestTrue("Parsing should be successful", ParseResult.Success());
 
             FRequiredFieldsStruct Struct;
-            const auto Result = DeserializeStruct(Node, Struct, FYamlDeserializeOptions::Strict());
+            const auto Result = DeserializeStruct(ParseResult.Node, Struct, FYamlDeserializeOptions::Strict());
 
             TestTrue("Deserialization should be successful", Result.Success());
             TestEqual("Required", Struct.Required, 1);
@@ -371,14 +370,14 @@ void FTestDeserialization::Define() {
         });
 
         It("should print an error when required value is missing", [this]() {
-            FYamlNode Node;
-            UYamlParsing::ParseYaml("optional: 2", Node);
+            const FParseResult ParseResult = UYamlParsing::ParseYaml("optional: 2");
+            TestTrue("Parsing should be successful", ParseResult.Success());
 
             AddExpectedErrorPlain("Required: Missing Required Key: Required");
 
             // Parse and check if errors actually occurred
             FRequiredFieldsStruct Struct;
-            const auto Result = DeserializeStruct(Node, Struct, FYamlDeserializeOptions::Strict());
+            const auto Result = DeserializeStruct(ParseResult.Node, Struct, FYamlDeserializeOptions::Strict());
             CheckExpectedErrors(Result);
         });
     });
@@ -397,8 +396,8 @@ void FTestDeserialization::Define() {
         };
 
         It("should correctly deserialize a value", [this]() {
-            FYamlNode Node;
-            UYamlParsing::ParseYaml("customValue: 42", Node);
+            const FParseResult ParseResult = UYamlParsing::ParseYaml("customValue: 42");
+            TestTrue("Parsing should be successful", ParseResult.Success());
 
             // Register custom type handlers
             FYamlDeserializeOptions Options = FYamlDeserializeOptions::Strict();
@@ -406,15 +405,15 @@ void FTestDeserialization::Define() {
 
             // Ensure parsing produces no errors
             FCustomTypeStruct CustomTypeStruct;
-            const auto Result = DeserializeStruct(Node, CustomTypeStruct, Options);
+            const auto Result = DeserializeStruct(ParseResult.Node, CustomTypeStruct, Options);
             TestTrue("Deserialization should be successful", Result.Success());
 
             TestEqual("Parsed Value", CustomTypeStruct.CustomValue.InnerValue, "CustomValue is 42");
         });
 
         It("should correctly propagate a printed error", [this]() {
-            FYamlNode Node;
-            UYamlParsing::ParseYaml("customValue: not an int!", Node);
+            const FParseResult ParseResult = UYamlParsing::ParseYaml("customValue: not an int!");
+            TestTrue("Parsing should be successful", ParseResult.Success());
 
             AddExpectedError("CustomValue: Value cannot be parsed to a FCustomType");
 
@@ -424,7 +423,7 @@ void FTestDeserialization::Define() {
 
             // Parse and check if errors actually occurred
             FCustomTypeStruct CustomTypeStruct;
-            const auto Result = DeserializeStruct(Node, CustomTypeStruct, Options);
+            const auto Result = DeserializeStruct(ParseResult.Node, CustomTypeStruct, Options);
             CheckExpectedErrors(Result);
         });
     });

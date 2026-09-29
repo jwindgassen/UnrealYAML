@@ -202,7 +202,7 @@ struct FObjectTypes {
     FChildStruct ChildStruct;
 
     UPROPERTY()
-    UChildObject* ChildObject;
+    UChildObject* ChildObject = nullptr;
 };
 
 

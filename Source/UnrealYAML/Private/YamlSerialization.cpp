@@ -221,6 +221,20 @@ FYamlNode UYamlSerialization::SerializeProperty(const FProperty& Property, const
 
         return Sequence;
     }
+    
+    if (const FSetProperty* SetProperty = CastField<FSetProperty>(&Property)) {
+        FYamlNode Sequence{EYamlNodeType::Sequence};
+
+        // We need the helper to get to the items of the array
+        FScriptSetHelper Helper(SetProperty, PropertyValue);
+        for (int32 i = 0; i < Helper.Num(); ++i) {
+            Result.PushStack(i);
+            Sequence.Push(SerializeProperty(*SetProperty->ElementProp, Helper.GetElementPtr(i), Options, Result));
+            Result.PopStack();
+        }
+
+        return Sequence;
+    }
 
     if (const FMapProperty* MapProperty = CastField<FMapProperty>(&Property)) {
         FYamlNode Map{EYamlNodeType::Map};

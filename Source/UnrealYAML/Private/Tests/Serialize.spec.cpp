@@ -36,6 +36,11 @@ BEGIN_DEFINE_SPEC(
 END_DEFINE_SPEC(FTestSerialization)
 
 
+bool AreSetsEqual(const TSet<int32>& A, const TSet<int32>& B){
+    return A.Num() == B.Num() && A.Includes(B);
+}
+
+
 void FTestSerialization::Define() {
     Describe("Simple Structs", [this]() {
         It("should be serialized correctly", [this]() {
@@ -332,7 +337,7 @@ void FTestSerialization::Define() {
             TestTrue("Rotator", Node["rotator"].As<FRotator>().Equals({90, 180, 0}));
             TestTrue("Vector", Node["vector"].As<FVector>().Equals({13.23f, 0.0f, -12.4f}));
             TestTrue("Vector2D", Node["vector2D"].As<FVector2D>().Equals({5.0f, 4.0f}));
-            TestEqual("Set", Node["set"].As<TSet<int32>>().Array(), TArray{0, 1, 2, 3, 4});
+            TestTrue("Set", AreSetsEqual(Node["set"].As<TSet<int32>>(), TSet{0, 1, 2, 3, 4}));
             TestEqual("LinearColor", Node["linearColor"].Scalar(), "red");
             TestEqual("Color size", Node["color"].Scalar(), "white");
             TestEqual("Text", Node["text"].Scalar(), "this is some text");
